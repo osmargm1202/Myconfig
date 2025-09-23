@@ -1,0 +1,242 @@
+;==========================================================
+;
+;   ██████╗  ██████╗ ██╗  ██╗   ██╗██████╗  █████╗ ██████╗
+;   ██╔══██╗██╔═══██╗██║  ╚██╗ ██╔╝██╔══██╗██╔══██╗██╔══██╗
+;   ██████╔╝██║   ██║██║   ╚████╔╝ ██████╔╝███████║██████╔╝
+;   ██╔═══╝ ██║   ██║██║    ╚██╔╝  ██╔══██╗██╔══██║██╔══██╗
+;   ██║     ╚██████╔╝███████╗██║   ██████╔╝██║  ██║██║  ██║
+;   ╚═╝      ╚═════╝ ╚══════╝╚═╝   ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
+;
+;   Configuración Tokyo Night - República Dominicana
+;   Basado en el esquema de colores Tokyo Night
+;
+;==========================================================
+
+[colors]
+; Tokyo Night Color Scheme - Con transparencia
+background = #CC1a1b26          ; 80% transparencia (CC = 204/255)
+background-alt = #E024283b      ; 88% transparencia (E0 = 224/255)
+background-light = #F0414868    ; 94% transparencia (F0 = 240/255)
+foreground = #c0caf5
+foreground-alt = #a9b1d6
+
+; Accent Colors
+primary = #7aa2f7        ; Tokyo Night Blue
+secondary = #bb9af7      ; Tokyo Night Purple
+accent = #73daca         ; Tokyo Night Cyan
+warning = #e0af68        ; Tokyo Night Yellow
+alert = #f7768e          ; Tokyo Night Red
+success = #9ece6a        ; Tokyo Night Green
+disabled = #565f89       ; Tokyo Night Comment
+
+[bar/modern]
+width = 100%
+height = 30pt
+radius = 12
+
+background = ${colors.background}
+foreground = ${colors.foreground}
+
+line-size = 2pt
+border-size = 6pt
+border-color = #00000000
+
+padding-left = 2
+padding-right = 2
+module-margin = 1
+
+separator = 
+separator-foreground = ${colors.disabled}
+
+font-0 = "JetBrainsMono Nerd Font:style=Medium:size=10;3"
+font-1 = "JetBrainsMono Nerd Font:style=Bold:size=11;3"
+font-2 = "JetBrainsMono Nerd Font:style=Medium:size=14;4"
+
+modules-left = xworkspaces xwindow
+modules-center = date
+modules-right = filesystem pulseaudio memory cpu cpu-temp gpu-temp wlan eth
+
+cursor-click = pointer
+cursor-scroll = ns-resize
+enable-ipc = true
+
+[module/xworkspaces]
+type = internal/xworkspaces
+
+label-active = %{T2}%name%
+label-active-background = ${colors.primary}
+label-active-foreground = ${colors.background}
+label-active-padding = 2
+label-active-margin = 1
+
+label-occupied = %name%
+label-occupied-background = ${colors.background-alt}
+label-occupied-padding = 2
+label-occupied-margin = 1
+
+label-urgent = %{T2}%name%
+label-urgent-background = ${colors.alert}
+label-urgent-foreground = ${colors.background}
+label-urgent-padding = 2
+label-urgent-margin = 1
+
+label-empty = %name%
+label-empty-foreground = ${colors.disabled}
+label-empty-padding = 2
+label-empty-margin = 1
+
+[module/xwindow]
+type = internal/xwindow
+label = %{T1}%title:0:50:...%
+label-foreground = ${colors.foreground-alt}
+label-margin = 1
+
+[module/filesystem]
+type = internal/fs
+interval = 30
+mount-0 = /
+
+format-mounted = <label-mounted>
+format-mounted-background = ${colors.background-alt}
+format-mounted-padding = 2
+
+label-mounted = %{F#7aa2f7}󰋊%{F-} Disco %percentage_used%%
+label-unmounted = %{F#f7768e}󰋊%{F-} %mountpoint% desconectado
+label-unmounted-foreground = ${colors.disabled}
+
+[module/pulseaudio]
+type = internal/pulseaudio
+
+format-volume = <label-volume>
+format-volume-background = ${colors.background-alt}
+format-volume-padding = 2
+
+format-muted = <label-muted>
+format-muted-background = ${colors.background-alt}
+format-muted-padding = 2
+
+label-volume = %{F#bb9af7}󰕾%{F-} %percentage%%
+label-muted = %{F#f7768e}󰖁%{F-} Silenciado
+label-muted-foreground = ${colors.disabled}
+
+[module/memory]
+type = internal/memory
+interval = 3
+
+format = <label>
+format-background = ${colors.background-alt}
+format-padding = 2
+
+label = %{F#73daca}󰍛%{F-} %used%/%total%
+
+[module/cpu]
+type = internal/cpu
+interval = 2
+
+format = <label>
+format-background = ${colors.background-alt}
+format-padding = 2
+
+label = %{F#e0af68}󰻠%{F-} CPU %percentage%%
+
+[network-base]
+type = internal/network
+interval = 5
+format-connected-background = ${colors.background-alt}
+format-connected-padding = 2
+format-disconnected-background = ${colors.background-alt}
+format-disconnected-padding = 2
+
+[module/wlan]
+inherit = network-base
+interface-type = wireless
+
+format-connected = <label-connected>
+format-disconnected = <label-disconnected>
+
+label-connected = %{F#9ece6a}󰖨%{F-} %essid%
+label-disconnected = %{F#f7768e}󰖪%{F-} WiFi Desconectado
+
+[module/eth]
+inherit = network-base
+interface-type = wired
+
+format-connected = <label-connected>
+format-disconnected = <label-disconnected>
+
+label-connected = %{F#9ece6a}󰈀%{F-} Ethernet
+[module/cpu-temp]
+type = internal/temperature
+interval = 2
+
+; Rutas comunes para la temperatura del CPU
+; Ajusta según tu sistema
+thermal-zone = 0
+base-temperature = 20
+warn-temperature = 80
+
+format = <label>
+format-background = ${colors.background-alt}
+format-padding = 2
+format-warn = <label-warn>
+format-warn-background = ${colors.alert}
+format-warn-padding = 2
+
+label = %{F#e0af68}󰔄%{F-} %temperature-c%
+label-warn = %{F#1a1b26}󰔄%{F-} %temperature-c%
+
+[module/gpu-temp]
+type = custom/script
+interval = 5
+
+; Script para temperatura de GPU NVIDIA
+exec = nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null || echo "N/A"
+
+; Script alternativo para GPU AMD (descomenta si usas AMD)
+; exec = cat /sys/class/drm/card0/device/hwmon/hwmon*/temp1_input 2>/dev/null | awk '{print int($1/1000)}' || echo "N/A"
+
+format = <label>
+format-background = ${colors.background-alt}
+format-padding = 2
+
+label = %{F#f7768e}󰢮%{F-} %output%°C
+
+[module/date]
+type = internal/date
+interval = 1
+
+; Formato principal: Hora y fecha en español para República Dominicana
+date = %A, %d de %B de %Y
+time = %I:%M %p
+
+; Formato alternativo al hacer click
+date-alt = %d/%m/%Y
+time-alt = %H:%M:%S
+
+format = <label>
+format-background = ${colors.background-light}
+format-padding = 3
+
+label = %{T2}%{F#7aa2f7}󰃭%{F-} %date% %{F#bb9af7}󰥔%{F-} %time%
+label-font = 1
+
+; Módulo de bandeja del sistema (opcional)
+[module/systray]
+type = internal/tray
+format-margin = 8pt
+tray-spacing = 16pt
+tray-background = ${colors.background-alt}
+
+[settings]
+screenchange-reload = true
+pseudo-transparency = true
+
+; Compositor necesario para transparencia real
+; Descomenta si tienes picom/compton instalado:
+; compositing-background = source
+; compositing-foreground = source
+; compositing-overline = source
+; compositing-underline = source
+; compositing-border = source
+
+; vim:ft=dosini
