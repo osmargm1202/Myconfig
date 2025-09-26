@@ -1,6 +1,5 @@
+configuration {
+    font: "JetBrainsMono Nerd Font 12";
+}
 
-//@theme "/home/osmar/.local/share/rofi/themes/launchpad.rasi"
-
-//@theme "/home/osmar/.local/share/rofi/themes/gamelauncher_5.rasi"
-
-@theme "/home/osmar/.local/share/rofi/themes/style_11.rasi"
+@theme "/usr/share/rofi/themes/DarkBlue.rasi"
