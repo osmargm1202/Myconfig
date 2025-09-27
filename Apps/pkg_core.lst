@@ -58,7 +58,6 @@ cursor-bin                                             # ide text editor
 nwg-displays                                           # monitor management utility
 fzf                                                    # Command-line fuzzy finder
 localsend
-libreoffice
 mpv
 bat
 
