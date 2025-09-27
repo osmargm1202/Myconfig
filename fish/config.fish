@@ -24,6 +24,9 @@ alias rg="rg --hidden --glob '!.git/*'"
 
 # fd (buscar archivos mejor que find)
 alias f="fd --hidden --exclude .git"
+set TERM xterm-256color
+set EDITOR nvim
+set FZF_DEFAULT_OPTS "--height=50% --reverse --inline-info --border --color=fg:15,bg:0"
 
 # history search (ctrl+r mejorado con fzf si lo instalas)
 if type -q fzf
