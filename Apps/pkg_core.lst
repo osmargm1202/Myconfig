@@ -18,7 +18,7 @@ qt5-quickcontrols2                                     # for sddm theme ui eleme
 qt5-graphicaleffects                                   # for sddm theme effects
 
 # --------------------------------------------------- // Window Manager
-i3                                                     # window manager
+i3-wm                                                     # window manager
 dunst                                                  # notification daemon
 rofi                                                   # application launcher
 polybar                                                 # system bar
@@ -26,8 +26,8 @@ feh                                                   # wallpaper
 i3lock                                                # lock screen                                                # logout menu
 flameshot                                                   # screenshot tool
 xclip                                               # clipboard manager
-clipmenu  
-
+clipmenu
+picom
 # --------------------------------------------------- // Dependencies
 pacman-contrib                                         # for system update check
 imagemagick                                            # for image processing
@@ -38,6 +38,7 @@ libnotify                                              # for notifications
 noto-fonts-emoji                                       # emoji font
 ttf-jetbrains-mono-nerd
 ttf-jetbrains-mono
+ttf-roboto
 # --------------------------------------------------- // Theming
 nwg-look                                               # gtk configuration tool
 qt5ct                                                  # qt5 configuration tool
@@ -63,7 +64,6 @@ bat
 # --------------------------------------------------- // Shell
 starship                                           # customizable shell prompt written in Rust
 eza                                               # file lister for fish
-starship                                          # customizable shell prompt
 duf                                               # prettier version of df for fish
 fastfetch                                              # system information fetch tool
 zoxide                                                  # cd command
@@ -75,7 +75,19 @@ lazydocker
 docker
 btop
 impala
-typora
 inkscape
 gimp
 gnome-calculator
+okular
+kate
+dysk
+
+# --------------------------------------------------- // programming
+go
+uv
+vim
+nano
+neovim
+nodejs
+pacseek
+

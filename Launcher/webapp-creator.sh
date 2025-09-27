@@ -692,20 +692,18 @@ main_menu() {
     echo -e "${CYAN}1.${NC} Create New WebApp"
     echo -e "${CYAN}2.${NC} List WebApps"
     echo -e "${CYAN}3.${NC} Export WebApps"
-    echo -e "${CYAN}4.${NC} Install App (Self-Install)"
-    echo -e "${CYAN}5.${NC} Remove WebApp"
-    echo -e "${CYAN}6.${NC} Exit"
+    echo -e "${CYAN}4.${NC} Remove WebApp"
+    echo -e "${CYAN}5.${NC} Exit"
     echo
-    echo -ne "${YELLOW}Select option (1-6): ${NC}"
+    echo -ne "${YELLOW}Select option (1-5): ${NC}"
     read -r choice
 
     case $choice in
     1) create_webapp ;;
     2) list_webapps ;;
     3) export_webapps ;;
-    4) install_app ;;
-    5) remove_webapp ;;
-    6)
+    4) remove_webapp ;;
+    5)
       echo -e "${GREEN}Goodbye!${NC}"
       exit 0
       ;;

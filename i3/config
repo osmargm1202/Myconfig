@@ -65,7 +65,7 @@ bindsym $mod+Return exec $term
 bindsym $mod+Shift+q kill
 
 # start dmenu (a program launcher)
-bindsym $mod+m exec --no-startup-id rofi -show drun
+bindsym $mod+m exec --no-startup-id rofi -show drun -show-icons
 bindsym $mod+e exec --no-startup-id $file-manager
 bindsym $mod+w exec --no-startup-id $browser
 bindsym $mod+Shift+s exec --no-startup-id steam
@@ -77,7 +77,7 @@ bindsym $mod+Shift+o exec systemctl suspend
 bindsym $mod+Mod1+o exec poweroff
 bindsym $mod+k exec --no-startup-id "setxkbmap -query | grep -q 'layout:.*us' && setxkbmap latam || setxkbmap us"
 bindsym $mod+Tab exec --no-startup-id "rofi -show window"
-bindsym $mod+l exec --no-startup-id launcher.sh 
+bindsym $mod+Mod1+space exec --no-startup-id feh --bg-fill "$(find ~/Pictures -type f | shuf -n1)"
 
 
 # Modo juego con Mod+Alt+G
