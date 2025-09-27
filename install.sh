@@ -228,51 +228,138 @@ install_webapp_creator() {
   read -p "Press Enter to continue..."
 }
 
-# Function to copy to system directories (requires sudo)
-install_system() {
-  echo -e "${BLUE}Installing to system directories...${NC}"
+# Function to install everything automatically
+install_all() {
+  show_header
+  echo -e "${WHITE}Instalación Completa Automática${NC}"
+  echo -e "${WHITE}─────────────────────────────${NC}"
+  echo
 
-  # Copy webapp-creator to /usr/local/bin
-  if [[ -f "$WEBAPP_CREATOR" ]]; then
-    sudo cp "$WEBAPP_CREATOR" "$SYSTEM_BIN/webapp-creator"
-    sudo chmod +x "$SYSTEM_BIN/webapp-creator"
-    echo -e "${GREEN}✓ Copied webapp-creator to: $SYSTEM_BIN/webapp-creator${NC}"
-  else
-    echo -e "${RED}✗ WebApp Creator script not found: $WEBAPP_CREATOR${NC}"
+  echo -e "${BLUE}Este proceso instalará todo automáticamente:${NC}"
+  echo -e "${WHITE}  1. AUR Helper${NC}"
+  echo -e "${WHITE}  2. Paquetes del sistema${NC}"
+  echo -e "${WHITE}  3. Configuraciones del sistema${NC}"
+  echo -e "${WHITE}  4. WebApp Creator${NC}"
+  echo
+  echo -e "${YELLOW}¿Continuar con la instalación completa? (y/N):${NC} "
+  read -r confirm_all
+
+  if [[ ! "$confirm_all" =~ ^[Yy]$ ]]; then
+    echo -e "${BLUE}Instalación cancelada${NC}"
+    read -p "Press Enter to continue..."
     return 1
   fi
 
-  # Copy launcher if it exists
+  echo
+  echo -e "${GREEN}Iniciando instalación completa...${NC}"
+  echo
+
+  # Step 1: Install AUR Helper
+  echo -e "${BLUE}Paso 1/4: Instalando AUR Helper...${NC}"
+  install_aur_silent
+
+  # Step 2: Install packages
+  echo -e "${BLUE}Paso 2/4: Instalando paquetes del sistema...${NC}"
+  install_packages_silent
+
+  # Step 3: Install configurations
+  echo -e "${BLUE}Paso 3/4: Instalando configuraciones...${NC}"
+  install_configs_silent
+
+  # Step 4: Install WebApp Creator
+  echo -e "${BLUE}Paso 4/4: Instalando WebApp Creator...${NC}"
+  install_webapp_creator_silent
+
+  echo
+  echo -e "${GREEN}✓ ¡Instalación completa finalizada!${NC}"
+  echo -e "${BLUE}Debes reiniciar tu sesión para que todos los cambios tomen efecto${NC}"
+  echo
+  read -p "Press Enter to continue..."
+}
+
+# Silent installation functions for automated install
+install_aur_silent() {
+  local aur_script="$APPS_DIR/install_aur.sh"
+  if [[ -f "$aur_script" ]]; then
+    chmod +x "$aur_script"
+    "$aur_script"
+  else
+    echo -e "${RED}✗ AUR installer not found: $aur_script${NC}"
+    return 1
+  fi
+}
+
+install_packages_silent() {
+  local pkg_script="$APPS_DIR/install_pkg.sh"
+  if [[ -f "$pkg_script" ]]; then
+    chmod +x "$pkg_script"
+    "$pkg_script"
+  else
+    echo -e "${RED}✗ Package installer not found: $pkg_script${NC}"
+    return 1
+  fi
+}
+
+install_configs_silent() {
+  echo -e "${BLUE}Installing configuration files...${NC}"
+
+  # Copy all directories except Apps and Launcher to ~/.config/
+  for config_dir in "$SCRIPT_DIR"/*; do
+    if [[ -d "$config_dir" ]]; then
+      local dir_name=$(basename "$config_dir")
+
+      # Skip Apps and Launcher directories
+      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" ]]; then
+        continue
+      fi
+
+      local target_dir="$HOME/.config/$dir_name"
+
+      # Remove existing without backup for silent install
+      if [[ -d "$target_dir" ]]; then
+        rm -rf "$target_dir"
+      fi
+
+      # Copy configuration
+      cp -r "$config_dir" "$target_dir"
+      echo -e "${GREEN}  ✓ Installed $dir_name configuration${NC}"
+    fi
+  done
+}
+
+install_webapp_creator_silent() {
+  # Check Chromium
+  check_chromium
+
+  local bin_dir="$HOME/.local/bin"
+  local script_name="webapp-creator"
+
+  # Create directories
+  mkdir -p "$bin_dir"
+  mkdir -p "$HOME/.local/share/applications"
+  mkdir -p "$HOME/.local/share/icons/webapp-icons"
+  mkdir -p "$HOME/.local/share/webapp-sync"
+
+  # Copy webapp-creator script
+  if [[ -f "$WEBAPP_CREATOR" ]]; then
+    cp "$WEBAPP_CREATOR" "$bin_dir/$script_name"
+    chmod +x "$bin_dir/$script_name"
+    echo -e "${GREEN}✓ WebApp Creator installed${NC}"
+  fi
+
+  # Copy additional scripts
   if [[ -f "$LAUNCHER_SCRIPT" ]]; then
-    sudo cp "$LAUNCHER_SCRIPT" "$SYSTEM_BIN/webapp-launcher"
-    sudo chmod +x "$SYSTEM_BIN/webapp-launcher"
-    echo -e "${GREEN}✓ Copied launcher to: $SYSTEM_BIN/webapp-launcher${NC}"
-  else
-    echo -e "${YELLOW}! Launcher script not found, skipping...${NC}"
+    cp "$LAUNCHER_SCRIPT" "$bin_dir/"
+    chmod +x "$bin_dir/launcher.sh"
   fi
 
-  # Copy game-mode script if it exists
   if [[ -f "$GAMEMODE_SCRIPT" ]]; then
-    sudo cp "$GAMEMODE_SCRIPT" "$SYSTEM_BIN/webapp-gamemode"
-    sudo chmod +x "$SYSTEM_BIN/webapp-gamemode"
-    echo -e "${GREEN}✓ Copied game-mode to: $SYSTEM_BIN/webapp-gamemode${NC}"
-  else
-    echo -e "${YELLOW}! Game-mode script not found, skipping...${NC}"
+    cp "$GAMEMODE_SCRIPT" "$bin_dir/"
+    chmod +x "$bin_dir/game-mode.sh"
   fi
 
-  # Create symlinks for easier access
-  if [[ ! -L "$SYSTEM_BIN/wac" ]]; then
-    sudo ln -s "$SYSTEM_BIN/webapp-creator" "$SYSTEM_BIN/wac"
-    echo -e "${GREEN}✓ Created symlink: wac -> webapp-creator${NC}"
-  fi
-
-  if [[ -f "$SYSTEM_BIN/webapp-gamemode" && ! -L "$SYSTEM_BIN/wac-game" ]]; then
-    sudo ln -s "$SYSTEM_BIN/webapp-gamemode" "$SYSTEM_BIN/wac-game"
-    echo -e "${GREEN}✓ Created symlink: wac-game -> webapp-gamemode${NC}"
-  fi
-
-  echo -e "${GREEN}✓ System installation completed${NC}"
-  return 0
+  # Create desktop entry
+  create_webapp_creator_desktop
 }
 
 # Function to copy to user directories
@@ -504,33 +591,7 @@ install_packages() {
 
 # Function to uninstall everything
 uninstall() {
-  echo -e "${YELLOW}Uninstalling WebApp Creator...${NC}"
-
-  # Remove from system directories
-  if [[ -f "$SYSTEM_BIN/webapp-creator" ]]; then
-    sudo rm -f "$SYSTEM_BIN/webapp-creator"
-    echo -e "${GREEN}✓ Removed from: $SYSTEM_BIN/webapp-creator${NC}"
-  fi
-
-  if [[ -f "$SYSTEM_BIN/webapp-launcher" ]]; then
-    sudo rm -f "$SYSTEM_BIN/webapp-launcher"
-    echo -e "${GREEN}✓ Removed from: $SYSTEM_BIN/webapp-launcher${NC}"
-  fi
-
-  if [[ -f "$SYSTEM_BIN/webapp-gamemode" ]]; then
-    sudo rm -f "$SYSTEM_BIN/webapp-gamemode"
-    echo -e "${GREEN}✓ Removed from: $SYSTEM_BIN/webapp-gamemode${NC}"
-  fi
-
-  if [[ -L "$SYSTEM_BIN/wac" ]]; then
-    sudo rm -f "$SYSTEM_BIN/wac"
-    echo -e "${GREEN}✓ Removed symlink: $SYSTEM_BIN/wac${NC}"
-  fi
-
-  if [[ -L "$SYSTEM_BIN/wac-game" ]]; then
-    sudo rm -f "$SYSTEM_BIN/wac-game"
-    echo -e "${GREEN}✓ Removed symlink: $SYSTEM_BIN/wac-game${NC}"
-  fi
+  echo -e "${YELLOW}Uninstalling WebApp Creator and configurations...${NC}"
 
   # Remove from user directories
   if [[ -f "$LOCAL_BIN/webapp-creator" ]]; then
@@ -558,7 +619,19 @@ uninstall() {
     echo -e "${GREEN}✓ Removed symlink: $LOCAL_BIN/wac-game${NC}"
   fi
 
+  # Remove WebApp Creator data
+  if [[ -d "$HOME/.local/share/webapp-sync" ]]; then
+    rm -rf "$HOME/.local/share/webapp-sync"
+    echo -e "${GREEN}✓ Removed WebApp Creator data${NC}"
+  fi
+
+  if [[ -d "$HOME/.local/share/icons/webapp-icons" ]]; then
+    rm -rf "$HOME/.local/share/icons/webapp-icons"
+    echo -e "${GREEN}✓ Removed WebApp Creator icons${NC}"
+  fi
+
   echo -e "${GREEN}✓ Uninstallation completed${NC}"
+  echo -e "${BLUE}Note: System configurations in ~/.config/ were not removed${NC}"
 }
 
 # Main menu
@@ -569,8 +642,8 @@ main_menu() {
     echo -e "${WHITE}Installation Options${NC}"
     echo -e "${WHITE}───────────────────${NC}"
     echo
-    echo -e "${CYAN}1.${NC} Install WebApp Creator (User) - Current user only"
-    echo -e "${CYAN}2.${NC} Install for System (requires sudo) - Available for all users"
+    echo -e "${CYAN}1.${NC} Instalación Completa Automática - Instala todo de una vez"
+    echo -e "${CYAN}2.${NC} Install WebApp Creator (User) - Current user only"
     echo -e "${CYAN}3.${NC} Development Setup - Make scripts executable"
     echo -e "${CYAN}4.${NC} Install System Configurations - Copy configs to ~/.config/"
     echo -e "${CYAN}5.${NC} Install AUR Helper"
@@ -581,16 +654,16 @@ main_menu() {
 
     # Show current installations
     echo -e "${WHITE}Current Status:${NC}"
-    if [[ -f "$SYSTEM_BIN/webapp-creator" ]]; then
-      echo -e "${GREEN}  ✓ System installation found${NC}"
-    else
-      echo -e "${YELLOW}  ○ No system installation${NC}"
-    fi
-
     if [[ -f "$LOCAL_BIN/webapp-creator" ]]; then
       echo -e "${GREEN}  ✓ User installation found${NC}"
     else
       echo -e "${YELLOW}  ○ No user installation${NC}"
+    fi
+
+    if [[ -d "$HOME/.config/i3" && -d "$HOME/.config/polybar" ]]; then
+      echo -e "${GREEN}  ✓ System configurations installed${NC}"
+    else
+      echo -e "${YELLOW}  ○ No system configurations${NC}"
     fi
     echo
 
@@ -599,19 +672,11 @@ main_menu() {
 
     case $choice in
     1)
-      echo
-      install_webapp_creator
+      install_all
       ;;
     2)
       echo
-      if install_system; then
-        echo -e "${GREEN}System installation successful!${NC}"
-        echo -e "${BLUE}All users can now run: webapp-creator, wac, wac-game${NC}"
-      else
-        echo -e "${RED}System installation failed${NC}"
-      fi
-      echo
-      read -p "Press Enter to continue..."
+      install_webapp_creator
       ;;
     3)
       echo

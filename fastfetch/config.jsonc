@@ -12,7 +12,7 @@
   "logo": {
     //"source": "auto",  // Usa el logo del OS automáticamente
     // Para usar una imagen personalizada, cambia a:
-    "source": "~/Pictures/orgm.png",
+    "source": "./orgm.png",
     "width": 35,
     "height": 6,
     "padding": {

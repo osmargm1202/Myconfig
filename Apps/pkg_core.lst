@@ -23,8 +23,9 @@ dunst                                                  # notification daemon
 rofi                                                   # application launcher
 polybar                                                 # system bar
 feh                                                   # wallpaper
-i3lock                                                # lock screen                                                # logout menu
-flameshot                                                   # screenshot tool
+i3lock-color                                           # enhanced lock screen with blur and transparency
+scrot                                                      # screenshot utility for lock screen
+flameshot                                                  # screenshot tool
 xclip                                               # clipboard manager
 clipmenu
 picom
