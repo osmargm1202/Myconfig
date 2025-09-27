@@ -12,7 +12,7 @@ cp -r Myconfig/* ~/.config/
 ```
 cd Myconfig
 git pull origin master
-cp -r * ~/.config/
+cp -r ./* ~/.config/
 ```
 
 ### GameMode
@@ -24,3 +24,4 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
 cp game-mode.sh ~/.local/bin
 chmod +x ~/.local/bin/game-mode.sh
 ```
+
