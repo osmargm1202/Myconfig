@@ -112,8 +112,6 @@ clone_repository() {
     echo
     echo -e "${GREEN}✓ Repositorio listo en: $REPO_DIR${NC}"
     echo
-    echo -e "${BLUE}Esperando 20 segundos antes de continuar...${NC}"
-    sleep 20
   fi
 }
 
