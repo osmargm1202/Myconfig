@@ -50,8 +50,16 @@ clone_repository() {
     # Check if repository already exists
     if [[ -d "$REPO_DIR" ]]; then
       echo -e "${YELLOW}El repositorio ya existe en: $REPO_DIR${NC}"
-      echo -e "${BLUE}¿Quieres actualizarlo? (y/N):${NC} "
-      read -r update_repo
+      echo -e "${BLUE}¿Quieres actualizarlo? (y/N) [10s timeout]:${NC} "
+      read -t 10 -r update_repo
+      local read_exit_code=$?
+
+      # Handle timeout (exit code 142) or empty response
+      if [[ $read_exit_code -gt 128 ]] || [[ -z "$update_repo" ]]; then
+        echo
+        echo -e "${YELLOW}Timeout o sin respuesta - continuando sin actualizar${NC}"
+        update_repo="n"
+      fi
 
       if [[ "$update_repo" =~ ^[Yy]$ ]]; then
         echo -e "${BLUE}Actualizando repositorio...${NC}"
