@@ -2,6 +2,11 @@
 
 # Install Script for WebApp Creator and System Configuration
 # This script installs webapp-creator and system configurations
+# Can be run directly via curl or from cloned repository
+
+# Repository information
+REPO_URL="https://github.com/osmar/Myconfig.git"  # Replace with your actual repository URL
+REPO_NAME="Myconfig"
 
 # Colors
 RED='\033[0;31m'
@@ -13,15 +18,97 @@ CYAN='\033[0;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
-# Configuration
-SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-LAUNCHER_DIR="$SCRIPT_DIR/Launcher"
-APPS_DIR="$SCRIPT_DIR/Apps"
-WEBAPP_CREATOR="$LAUNCHER_DIR/webapp-creator.sh"
-LAUNCHER_SCRIPT="$LAUNCHER_DIR/launcher.sh"
-GAMEMODE_SCRIPT="$LAUNCHER_DIR/game-mode.sh"
-SYSTEM_BIN="/usr/local/bin"
-LOCAL_BIN="$HOME/.local/bin"
+# Function to detect if we're in repository or standalone
+detect_environment() {
+  SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+
+  # Check if we're in the repository structure
+  if [[ -d "$SCRIPT_DIR/Launcher" && -d "$SCRIPT_DIR/Apps" ]]; then
+    IS_STANDALONE=false
+    REPO_DIR="$SCRIPT_DIR"
+  else
+    IS_STANDALONE=true
+    REPO_DIR="$HOME/$REPO_NAME"
+  fi
+
+  LAUNCHER_DIR="$REPO_DIR/Launcher"
+  APPS_DIR="$REPO_DIR/Apps"
+  WEBAPP_CREATOR="$LAUNCHER_DIR/webapp-creator.sh"
+  LAUNCHER_SCRIPT="$LAUNCHER_DIR/launcher.sh"
+  GAMEMODE_SCRIPT="$LAUNCHER_DIR/game-mode.sh"
+  SYSTEM_BIN="/usr/local/bin"
+  LOCAL_BIN="$HOME/.local/bin"
+}
+
+# Function to clone repository if running standalone
+clone_repository() {
+  if [[ "$IS_STANDALONE" == true ]]; then
+    show_header
+    echo -e "${BLUE}Detectado modo independiente - descargando repositorio...${NC}"
+    echo
+
+    # Check if repository already exists
+    if [[ -d "$REPO_DIR" ]]; then
+      echo -e "${YELLOW}El repositorio ya existe en: $REPO_DIR${NC}"
+      echo -e "${BLUE}¿Quieres actualizarlo? (y/N):${NC} "
+      read -r update_repo
+
+      if [[ "$update_repo" =~ ^[Yy]$ ]]; then
+        echo -e "${BLUE}Actualizando repositorio...${NC}"
+        cd "$REPO_DIR" && git pull
+        if [[ $? -eq 0 ]]; then
+          echo -e "${GREEN}✓ Repositorio actualizado${NC}"
+        else
+          echo -e "${RED}✗ Error al actualizar repositorio${NC}"
+          exit 1
+        fi
+      fi
+    else
+      # Clone repository
+      echo -e "${BLUE}Clonando repositorio desde: $REPO_URL${NC}"
+
+      if command -v git &>/dev/null; then
+        git clone "$REPO_URL" "$REPO_DIR"
+        if [[ $? -eq 0 ]]; then
+          echo -e "${GREEN}✓ Repositorio clonado exitosamente${NC}"
+        else
+          echo -e "${RED}✗ Error al clonar repositorio${NC}"
+          echo -e "${YELLOW}Asegúrate de que git esté instalado y la URL sea correcta${NC}"
+          exit 1
+        fi
+      else
+        echo -e "${RED}✗ Git no está instalado${NC}"
+        echo -e "${BLUE}Instalando git...${NC}"
+
+        if command -v pacman &>/dev/null; then
+          sudo pacman -S git --noconfirm
+        elif command -v apt &>/dev/null; then
+          sudo apt update && sudo apt install -y git
+        elif command -v yum &>/dev/null; then
+          sudo yum install -y git
+        else
+          echo -e "${RED}✗ No se pudo instalar git automáticamente${NC}"
+          echo -e "${BLUE}Por favor instala git manualmente y vuelve a ejecutar el script${NC}"
+          exit 1
+        fi
+
+        # Try cloning again after installing git
+        git clone "$REPO_URL" "$REPO_DIR"
+        if [[ $? -eq 0 ]]; then
+          echo -e "${GREEN}✓ Repositorio clonado exitosamente${NC}"
+        else
+          echo -e "${RED}✗ Error al clonar repositorio${NC}"
+          exit 1
+        fi
+      fi
+    fi
+
+    echo
+    echo -e "${GREEN}✓ Repositorio listo en: $REPO_DIR${NC}"
+    echo
+    sleep 2
+  fi
+}
 
 # Function to display header
 show_header() {
@@ -717,17 +804,29 @@ main_menu() {
   done
 }
 
-# Check if required directories exist
+# Initialize environment
+detect_environment
+
+# Clone repository if running standalone
+clone_repository
+
+# Check if required directories exist after potential cloning
 if [[ ! -d "$LAUNCHER_DIR" ]]; then
   show_header
   echo -e "${RED}✗ Launcher directory not found: $LAUNCHER_DIR${NC}"
   echo -e "${BLUE}Expected structure:${NC}"
-  echo -e "${WHITE}  Myconfig/${NC}"
+  echo -e "${WHITE}  $REPO_NAME/${NC}"
   echo -e "${WHITE}  ├── install.sh${NC}"
   echo -e "${WHITE}  ├── Launcher/        ${YELLOW}(webapp-creator files)${NC}"
   echo -e "${WHITE}  ├── Apps/            ${YELLOW}(installer scripts)${NC}"
   echo -e "${WHITE}  ├── i3/              ${YELLOW}(config directories)${NC}"
   echo -e "${WHITE}  └── polybar/         ${YELLOW}(to copy to ~/.config/)${NC}"
+
+  if [[ "$IS_STANDALONE" == true ]]; then
+    echo
+    echo -e "${YELLOW}Si el problema persiste, verifica la URL del repositorio${NC}"
+    echo -e "${BLUE}URL actual: $REPO_URL${NC}"
+  fi
   exit 1
 fi
 

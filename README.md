@@ -2,7 +2,18 @@
 
 Sistema de configuración completo para i3wm, polybar, rofi y aplicaciones web con Tokyo Night theme.
 
-### Instalación Automática (Recomendado)
+### Instalación Rápida con curl (Una sola línea)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/osmargm1202/Myconfig/master/install.sh | bash
+```
+
+Este comando descarga y ejecuta automáticamente el instalador, que:
+- Clona el repositorio automáticamente
+- Muestra el menú de instalación completo
+- Detecta si ya existe una copia local del repositorio
+
+### Instalación Automática (Método tradicional)
 
 ```bash
 git clone https://github.com/osmargm1202/Myconfig.git
