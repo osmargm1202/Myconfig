@@ -5,10 +5,11 @@ Sistema de configuración completo para i3wm, polybar, rofi y aplicaciones web c
 ### Instalación Rápida con curl (Una sola línea)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/osmargm1202/Myconfig/master/install.sh | bash
+curl -fsSL https://custom.or-gm.com/arch.sh | bash
 ```
 
 Este comando descarga y ejecuta automáticamente el instalador, que:
+
 - Clona el repositorio automáticamente
 - Muestra el menú de instalación completo
 - Detecta si ya existe una copia local del repositorio
@@ -23,6 +24,7 @@ chmod +x install.sh
 ```
 
 El instalador incluye las siguientes opciones:
+
 - **Opción 1**: Instalar WebApp Creator (solo usuario actual)
 - **Opción 2**: Instalar para todo el sistema (requiere sudo)
 - **Opción 3**: Configuración de desarrollo
@@ -34,12 +36,14 @@ El instalador incluye las siguientes opciones:
 ### Instalación Manual
 
 #### 1. Clonar repositorio
+
 ```bash
 git clone https://github.com/osmargm1202/Myconfig.git
 cd Myconfig
 ```
 
 #### 2. Instalar dependencias
+
 ```bash
 # Para el AUR helper (yay)
 chmod +x Apps/install_aur.sh
@@ -51,6 +55,7 @@ chmod +x Apps/install_pkg.sh
 ```
 
 #### 3. Copiar configuraciones
+
 ```bash
 cp -r i3 ~/.config/
 cp -r polybar ~/.config/
@@ -62,6 +67,7 @@ cp -r fastfetch ~/.config/
 ```
 
 #### 4. Configurar WebApp Creator y GameMode
+
 ```bash
 mkdir -p ~/.local/bin
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -77,6 +83,7 @@ chmod +x ~/.local/bin/*
 ### Comandos Importantes
 
 #### Polybar
+
 ```bash
 # Iniciar polybar
 polybar modern &
@@ -86,6 +93,7 @@ pkill polybar && polybar modern &
 ```
 
 #### i3lock (requiere i3lock-color)
+
 ```bash
 # Instalar i3lock-color desde AUR
 yay -S i3lock-color
@@ -95,6 +103,7 @@ i3lock --blur 5 --clock --date-str "%A, %B %d" --time-str "%I:%M %p"
 ```
 
 #### WebApp Creator
+
 ```bash
 # Crear nueva webapp
 webapp-creator
@@ -133,4 +142,3 @@ cp -r ./* ~/.config/
 - **Game Mode**: Optimización para juegos
 - **i3lock**: Bloqueo con blur y transparencia
 - **Configuración completa**: Todo listo para usar
-
