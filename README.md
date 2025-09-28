@@ -1,4 +1,29 @@
-## Myconfig
+# Qué son estos dotfiles / “Myconfig”
+
+Este repositorio contiene mi configuración completa para un entorno i3 (window manager) + herramientas afines en sistemas basados en Arch Linux.
+Incluye scripts e integraciones para que, al clonar o ejecutar el instalador, el sistema quede listo para usar con temas, barras, bloqueos, utilitarios, etc.
+
+## Funcionalidades principales
+
+Algunas de las cosas que este conjunto de dotfiles / scripts permite hacer:
+
+## Módulo / Componente Qué hace / qué configura
+
+install.sh Script central: clona el repositorio, detecta si ya existe copia, muestra menú de opciones (instalar dependencias, paquetes, configuraciones completas, desinstalar).
+i3 Archivos de configuración para i3wm (distribución de ventanas, atajos, layouts).
+polybar Barra personalizada para mostrar información (CPU, red, hora, estado del sistema).
+rofi Menús visuales, launcher de aplicaciones, selector de ventanas.
+picom Compositor para sombras, transparencia, efectos visuales.
+kitty Configuración del emulador de terminal.
+dunst Notificaciones visuales y estéticas.
+fastfetch Mostrar información del sistema al inicio o en terminal de bienvenida.
+Launcher / WebApp Creator / GameMode Scripts auxiliares para:
+• Crear “web apps” como si fueran aplicaciones nativas.
+• Activar modo de optimización para juegos.
+• Un lanzador personalizado de scripts/aplicaciones.
+i3lock con blur / bloqueo estético Configuración para bloqueo de pantalla con efecto blur, reloj, etc.
+
+# Myconfig
 
 Sistema de configuración completo para i3wm, polybar, rofi y aplicaciones web con Tokyo Night theme.
 
