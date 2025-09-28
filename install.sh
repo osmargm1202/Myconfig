@@ -50,68 +50,70 @@ clone_repository() {
     # Check if repository already exists
     if [[ -d "$REPO_DIR" ]]; then
       echo -e "${YELLOW}El repositorio ya existe en: $REPO_DIR${NC}"
-      echo -e "${BLUE}¿Quieres actualizarlo? (Y/n):${NC} "
-      read -r update_repo
 
-      # Handle empty response - default to yes
-      if [[ -z "$update_repo" ]]; then
-        update_repo="y"
-      fi
-
-      if [[ "$update_repo" =~ ^[Yy]$ ]]; then
-        echo -e "${BLUE}Actualizando repositorio...${NC}"
-        cd "$REPO_DIR" && git pull
-        if [[ $? -eq 0 ]]; then
-          echo -e "${GREEN}✓ Repositorio actualizado${NC}"
+      # Check if git is installed before trying to update
+      if ! command -v git &>/dev/null; then
+        echo -e "${YELLOW}Git no está instalado, instalando...${NC}"
+        if command -v pacman &>/dev/null; then
+          sudo pacman -S git --noconfirm
+          if [[ $? -eq 0 ]]; then
+            echo -e "${GREEN}✓ Git instalado exitosamente${NC}"
+          else
+            echo -e "${RED}✗ Error al instalar git${NC}"
+            exit 1
+          fi
         else
-          echo -e "${RED}✗ Error al actualizar repositorio${NC}"
+          echo -e "${RED}✗ No se pudo instalar git automáticamente (pacman no encontrado)${NC}"
           exit 1
         fi
+      fi
+
+      echo -e "${BLUE}Actualizando repositorio automáticamente...${NC}"
+      cd "$REPO_DIR" && git pull
+      if [[ $? -eq 0 ]]; then
+        echo -e "${GREEN}✓ Repositorio actualizado${NC}"
+      else
+        echo -e "${RED}✗ Error al actualizar repositorio${NC}"
+        exit 1
       fi
     else
       # Clone repository
       echo -e "${BLUE}Clonando repositorio desde: $REPO_URL${NC}"
 
-      if command -v git &>/dev/null; then
-        git clone "$REPO_URL" "$REPO_DIR"
-        if [[ $? -eq 0 ]]; then
-          echo -e "${GREEN}✓ Repositorio clonado exitosamente${NC}"
-        else
-          echo -e "${RED}✗ Error al clonar repositorio${NC}"
-          echo -e "${YELLOW}Asegúrate de que git esté instalado y la URL sea correcta${NC}"
-          exit 1
-        fi
-      else
-        echo -e "${RED}✗ Git no está instalado${NC}"
-        echo -e "${BLUE}Instalando git...${NC}"
-
+      # Check if git is installed before trying to clone
+      if ! command -v git &>/dev/null; then
+        echo -e "${YELLOW}Git no está instalado, instalando...${NC}"
         if command -v pacman &>/dev/null; then
           sudo pacman -S git --noconfirm
-        elif command -v apt &>/dev/null; then
-          sudo apt update && sudo apt install -y git
-        elif command -v yum &>/dev/null; then
-          sudo yum install -y git
+          if [[ $? -eq 0 ]]; then
+            echo -e "${GREEN}✓ Git instalado exitosamente${NC}"
+          else
+            echo -e "${RED}✗ Error al instalar git${NC}"
+            exit 1
+          fi
         else
-          echo -e "${RED}✗ No se pudo instalar git automáticamente${NC}"
+          echo -e "${RED}✗ No se pudo instalar git automáticamente (pacman no encontrado)${NC}"
           echo -e "${BLUE}Por favor instala git manualmente y vuelve a ejecutar el script${NC}"
           exit 1
         fi
+      fi
 
-        # Try cloning again after installing git
-        git clone "$REPO_URL" "$REPO_DIR"
-        if [[ $? -eq 0 ]]; then
-          echo -e "${GREEN}✓ Repositorio clonado exitosamente${NC}"
-        else
-          echo -e "${RED}✗ Error al clonar repositorio${NC}"
-          exit 1
-        fi
+      # Clone the repository
+      git clone "$REPO_URL" "$REPO_DIR"
+      if [[ $? -eq 0 ]]; then
+        echo -e "${GREEN}✓ Repositorio clonado exitosamente${NC}"
+      else
+        echo -e "${RED}✗ Error al clonar repositorio${NC}"
+        echo -e "${YELLOW}Asegúrate de que la URL sea correcta${NC}"
+        exit 1
       fi
     fi
 
     echo
     echo -e "${GREEN}✓ Repositorio listo en: $REPO_DIR${NC}"
     echo
-    sleep 2
+    echo -e "${BLUE}Esperando 20 segundos antes de continuar...${NC}"
+    sleep 20
   fi
 }
 
