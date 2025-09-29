@@ -734,12 +734,58 @@ main_menu() {
     echo -e "${WHITE}Installation Options${NC}"
     echo -e "${WHITE}───────────────────${NC}"
     echo
-    echo -e "${CYAN}1.${NC} Instalación Completa Automática - Instala todo de una vez"
-    echo -e "${CYAN}2.${NC} Install WebApp Creator (User) - Current user only"
-    echo -e "${CYAN}3.${NC} Development Setup - Make scripts executable"
+
+    # Check availability of options based on directory structure
+    local launcher_available=true
+    local apps_available=true
+
+    if [[ ! -d "$LAUNCHER_DIR" ]]; then
+      launcher_available=false
+    fi
+
+    if [[ ! -d "$APPS_DIR" ]]; then
+      apps_available=false
+    fi
+
+    # Option 1
+    if [[ "$launcher_available" == true && "$apps_available" == true ]]; then
+      echo -e "${CYAN}1.${NC} Instalación Completa Automática - Instala todo de una vez"
+    else
+      echo -e "${RED}1.${NC} ${RED}Instalación Completa Automática - No disponible (faltan directorios)${NC}"
+    fi
+
+    # Option 2
+    if [[ "$launcher_available" == true ]]; then
+      echo -e "${CYAN}2.${NC} Install WebApp Creator (User) - Current user only"
+    else
+      echo -e "${RED}2.${NC} ${RED}Install WebApp Creator - No disponible (falta directorio Launcher)${NC}"
+    fi
+
+    # Option 3
+    if [[ "$launcher_available" == true ]]; then
+      echo -e "${CYAN}3.${NC} Development Setup - Make scripts executable"
+    else
+      echo -e "${RED}3.${NC} ${RED}Development Setup - No disponible (falta directorio Launcher)${NC}"
+    fi
+
+    # Option 4 - Always available
     echo -e "${CYAN}4.${NC} Install System Configurations - Copy configs to ~/.config/"
-    echo -e "${CYAN}5.${NC} Install AUR Helper"
-    echo -e "${CYAN}6.${NC} Install Packages"
+
+    # Option 5
+    if [[ "$apps_available" == true ]]; then
+      echo -e "${CYAN}5.${NC} Install AUR Helper"
+    else
+      echo -e "${RED}5.${NC} ${RED}Install AUR Helper - No disponible (falta directorio Apps)${NC}"
+    fi
+
+    # Option 6
+    if [[ "$apps_available" == true ]]; then
+      echo -e "${CYAN}6.${NC} Install Packages"
+    else
+      echo -e "${RED}6.${NC} ${RED}Install Packages - No disponible (falta directorio Apps)${NC}"
+    fi
+
+    # Options 7 and 8 - Always available
     echo -e "${CYAN}7.${NC} Uninstall - Remove all installations"
     echo -e "${CYAN}8.${NC} Exit"
     echo
@@ -764,26 +810,61 @@ main_menu() {
 
     case $choice in
     1)
-      install_all
+      if [[ "$launcher_available" == true && "$apps_available" == true ]]; then
+        install_all
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Faltan directorios requeridos.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
       ;;
     2)
-      echo
-      install_webapp_creator
+      if [[ "$launcher_available" == true ]]; then
+        echo
+        install_webapp_creator
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Launcher.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
       ;;
     3)
-      echo
-      setup_dev_environment
-      echo
-      read -p "Press Enter to continue..."
+      if [[ "$launcher_available" == true ]]; then
+        echo
+        setup_dev_environment
+        echo
+        read -p "Press Enter to continue..."
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Launcher.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
       ;;
     4)
       install_configs
       ;;
     5)
-      install_aur
+      if [[ "$apps_available" == true ]]; then
+        install_aur
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
       ;;
     6)
-      install_packages
+      if [[ "$apps_available" == true ]]; then
+        install_packages
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
       ;;
     7)
       echo
@@ -818,7 +899,7 @@ clone_repository
 # Check if required directories exist after potential cloning
 if [[ ! -d "$LAUNCHER_DIR" ]]; then
   show_header
-  echo -e "${RED}✗ Launcher directory not found: $LAUNCHER_DIR${NC}"
+  echo -e "${YELLOW}⚠ Launcher directory not found: $LAUNCHER_DIR${NC}"
   echo -e "${BLUE}Expected structure:${NC}"
   echo -e "${WHITE}  $REPO_NAME/${NC}"
   echo -e "${WHITE}  ├── install.sh${NC}"
@@ -826,13 +907,19 @@ if [[ ! -d "$LAUNCHER_DIR" ]]; then
   echo -e "${WHITE}  ├── Apps/            ${YELLOW}(installer scripts)${NC}"
   echo -e "${WHITE}  ├── i3/              ${YELLOW}(config directories)${NC}"
   echo -e "${WHITE}  └── polybar/         ${YELLOW}(to copy to ~/.config/)${NC}"
+  echo
+  echo -e "${BLUE}Algunas opciones pueden no estar disponibles sin estos directorios.${NC}"
+  echo -e "${YELLOW}Continuando con las opciones disponibles...${NC}"
+  echo
 
   if [[ "$IS_STANDALONE" == true ]]; then
-    echo
     echo -e "${YELLOW}Si el problema persiste, verifica la URL del repositorio${NC}"
     echo -e "${BLUE}URL actual: $REPO_URL${NC}"
+    echo
   fi
-  exit 1
+
+  # Wait a moment for user to read the message
+  sleep 2
 fi
 
 # Start the application
