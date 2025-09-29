@@ -759,7 +759,7 @@ main_menu() {
     fi
     echo
 
-    echo -ne "${YELLOW}Select option (1-8): ${NC}"
+    printf "${YELLOW}Select option (1-8): ${NC}"
     read -r choice
 
     case $choice in
