@@ -5,7 +5,7 @@
 # Can be run directly via curl or from cloned repository
 
 # Repository information
-REPO_URL="https://github.com/osmar/Myconfig.git"  # Replace with your actual repository URL
+REPO_URL="https://github.com/osmargm1202/Myconfig.git"
 REPO_NAME="Myconfig"
 
 # Colors
