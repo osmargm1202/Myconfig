@@ -12,6 +12,34 @@ CYAN='\033[0;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
+# Check if Gum is available and set colors
+HAS_GUM=false
+if command -v gum &>/dev/null; then
+  HAS_GUM=true
+  # Gum color configuration
+  export GUM_CHOOSE_SELECTED_FOREGROUND="#87CEEB"  # Sky Blue
+  export GUM_CHOOSE_CURSOR_FOREGROUND="#00BFFF"    # Deep Sky Blue
+  export GUM_CONFIRM_SELECTED_FOREGROUND="#87CEEB"
+  export GUM_INPUT_CURSOR_FOREGROUND="#00BFFF"
+  export GUM_INPUT_PROMPT_FOREGROUND="#87CEEB"
+fi
+
+# Function to ask for confirmation with Gum support
+ask_confirmation() {
+  local message="$1"
+  
+  if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
+    gum confirm "$message"
+    return $?
+  else
+    # Fallback to traditional prompt
+    echo -e "${YELLOW}$message (y/N):${NC} "
+    read -r response </dev/tty
+    [[ "$response" =~ ^[Yy]$ ]]
+    return $?
+  fi
+}
+
 # Function to display header
 show_header() {
   clear
@@ -84,8 +112,10 @@ configure_sddm() {
   
   # Ask about autologin
   echo
-  echo -e "${YELLOW}¿Deseas activar autologin (inicio automático sin contraseña)? (y/N):${NC} "
-  read -r enable_autologin </dev/tty
+  local enable_autologin="n"
+  if ask_confirmation "¿Deseas activar autologin (inicio automático sin contraseña)?"; then
+    enable_autologin="y"
+  fi
   
   local autologin_user=""
   if [[ "$enable_autologin" =~ ^[Yy]$ ]]; then
@@ -185,10 +215,7 @@ main() {
   echo -e "${BLUE}  4. Opción de autologin${NC}"
   echo
   
-  echo -e "${YELLOW}¿Continuar con la instalación? (y/N):${NC} "
-  read -r confirm </dev/tty
-  
-  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+  if ! ask_confirmation "¿Continuar con la instalación de SDDM?"; then
     echo -e "${BLUE}Instalación cancelada${NC}"
     exit 0
   fi

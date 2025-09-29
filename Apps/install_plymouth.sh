@@ -12,6 +12,34 @@ CYAN='\033[0;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
+# Check if Gum is available and set colors
+HAS_GUM=false
+if command -v gum &>/dev/null; then
+  HAS_GUM=true
+  # Gum color configuration
+  export GUM_CHOOSE_SELECTED_FOREGROUND="#87CEEB"  # Sky Blue
+  export GUM_CHOOSE_CURSOR_FOREGROUND="#00BFFF"    # Deep Sky Blue
+  export GUM_CONFIRM_SELECTED_FOREGROUND="#87CEEB"
+  export GUM_INPUT_CURSOR_FOREGROUND="#00BFFF"
+  export GUM_INPUT_PROMPT_FOREGROUND="#87CEEB"
+fi
+
+# Function to ask for confirmation with Gum support
+ask_confirmation() {
+  local message="$1"
+  
+  if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
+    gum confirm "$message"
+    return $?
+  else
+    # Fallback to traditional prompt
+    echo -e "${YELLOW}$message (y/N):${NC} "
+    read -r response </dev/tty
+    [[ "$response" =~ ^[Yy]$ ]]
+    return $?
+  fi
+}
+
 # Function to display header
 show_header() {
   clear
@@ -52,54 +80,64 @@ get_plymouth_themes() {
   return 0
 }
 
-# Function to show theme selection menu
+# Function to show theme selection menu with Gum support
 show_theme_menu() {
   local themes=("$@")
-  local choice
   
-  # Display menu to stderr to avoid mixing with return value
-  {
-    echo -e "${WHITE}Temas de Plymouth disponibles:${NC}"
-    echo
+  if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
+    # Use Gum for beautiful theme selection
+    local selected
+    selected=$(printf '%s\n' "${themes[@]}" | gum choose --header "🎨 Selecciona un tema de Plymouth" --height 15)
+    
+    if [[ -n "$selected" ]]; then
+      echo "$selected"
+      return 0
+    else
+      return 1
+    fi
+  else
+    # Fallback to traditional menu
+    echo -e "${WHITE}Temas de Plymouth disponibles:${NC}" >&2
+    echo >&2
     
     for i in "${!themes[@]}"; do
       local theme_name="${themes[$i]}"
-      echo -e "${CYAN}$((i+1)).${NC} $theme_name"
+      echo -e "${CYAN}$((i+1)).${NC} $theme_name" >&2
     done
     
-    echo
-    echo -e "${CYAN}$((${#themes[@]}+1)).${NC} Cancelar"
-    echo
-  } >&2
-  
-  while true; do
-    echo -ne "${YELLOW}Selecciona un tema (1-$((${#themes[@]}+1))): ${NC}" >&2
+    echo >&2
+    echo -e "${CYAN}$((${#themes[@]}+1)).${NC} Cancelar" >&2
+    echo >&2
     
-    # Check if TTY is available for interactive input
-    if [[ -t 0 && -c /dev/tty ]]; then
-      read -r choice </dev/tty
-    else
-      # Default to first theme in non-interactive mode
-      echo -e "${GREEN}Modo automático: seleccionando primer tema disponible${NC}" >&2
-      choice=1
-    fi
-    
-    if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#themes[@]} )); then
-      # Only output the theme name to stdout
-      echo "${themes[$((choice-1))]}"
-      return 0
-    elif [[ "$choice" == "$((${#themes[@]}+1))" ]]; then
-      return 1
-    else
-      echo -e "${RED}Opción inválida. Intenta de nuevo.${NC}" >&2
-      # In non-interactive mode, don't loop forever
-      if [[ ! -t 0 || ! -c /dev/tty ]]; then
-        echo -e "${YELLOW}Seleccionando primer tema por defecto...${NC}" >&2
-        echo "${themes[0]}"
-        return 0
+    while true; do
+      echo -ne "${YELLOW}Selecciona un tema (1-$((${#themes[@]}+1))): ${NC}" >&2
+      
+      # Check if TTY is available for interactive input
+      if [[ -t 0 && -c /dev/tty ]]; then
+        read -r choice </dev/tty
+      else
+        # Default to first theme in non-interactive mode
+        echo -e "${GREEN}Modo automático: seleccionando primer tema disponible${NC}" >&2
+        choice=1
       fi
-    fi
-  done
+      
+      if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#themes[@]} )); then
+        # Only output the theme name to stdout
+        echo "${themes[$((choice-1))]}"
+        return 0
+      elif [[ "$choice" == "$((${#themes[@]}+1))" ]]; then
+        return 1
+      else
+        echo -e "${RED}Opción inválida. Intenta de nuevo.${NC}" >&2
+        # In non-interactive mode, don't loop forever
+        if [[ ! -t 0 || ! -c /dev/tty ]]; then
+          echo -e "${YELLOW}Seleccionando primer tema por defecto...${NC}" >&2
+          echo "${themes[0]}"
+          return 0
+        fi
+      fi
+    done
+  fi
 }
 
 # Function to install Plymouth base if not installed
@@ -311,12 +349,9 @@ main() {
   echo -e "${BLUE}  5. Regenerar initramfs automáticamente${NC}"
   echo
   
-  # Check if TTY is available for interactive mode
+  # Ask for confirmation to continue
   if [[ -t 0 && -c /dev/tty ]]; then
-    echo -e "${YELLOW}¿Continuar? (y/N):${NC} "
-    read -r confirm </dev/tty
-    
-    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+    if ! ask_confirmation "¿Continuar con la instalación de Plymouth?"; then
       echo -e "${BLUE}Operación cancelada${NC}"
       exit 0
     fi

@@ -33,6 +33,77 @@ is_in_path() {
   esac
 }
 
+# Function to check and install Gum if needed
+check_install_gum() {
+  if command -v gum &>/dev/null; then
+    return 0
+  fi
+  
+  echo -e "${BLUE}Gum no está instalado. Es necesario para una mejor experiencia de usuario.${NC}"
+  echo -e "${YELLOW}¿Instalar Gum ahora? (y/N):${NC} "
+  read -r install_gum </dev/tty
+  
+  if [[ "$install_gum" =~ ^[Yy]$ ]]; then
+    echo -e "${BLUE}Instalando Gum...${NC}"
+    if sudo pacman -S gum --noconfirm; then
+      echo -e "${GREEN}✓ Gum instalado exitosamente${NC}"
+      return 0
+    else
+      echo -e "${RED}✗ Error al instalar Gum${NC}"
+      echo -e "${YELLOW}Continuando sin Gum (funcionalidad básica)${NC}"
+      return 1
+    fi
+  else
+    echo -e "${YELLOW}Continuando sin Gum (funcionalidad básica)${NC}"
+    return 1
+  fi
+}
+
+# Gum color configuration
+export GUM_CHOOSE_SELECTED_FOREGROUND="#87CEEB"  # Sky Blue
+export GUM_CHOOSE_CURSOR_FOREGROUND="#00BFFF"    # Deep Sky Blue
+export GUM_CONFIRM_SELECTED_FOREGROUND="#87CEEB"
+export GUM_INPUT_CURSOR_FOREGROUND="#00BFFF"
+export GUM_INPUT_PROMPT_FOREGROUND="#87CEEB"
+export GUM_FILTER_INDICATOR_FOREGROUND="#00BFFF"
+export GUM_FILTER_MATCH_FOREGROUND="#87CEEB"
+
+# Function to ask for confirmation with Gum support
+ask_confirmation() {
+  local message="$1"
+  local default="${2:-N}"  # Default to N if not specified
+  
+  if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
+    gum confirm "$message"
+    return $?
+  else
+    # Fallback to traditional prompt
+    echo -e "${YELLOW}$message (y/N):${NC} "
+    read -r response </dev/tty
+    [[ "$response" =~ ^[Yy]$ ]]
+    return $?
+  fi
+}
+
+# Function to get input with Gum support
+get_input() {
+  local prompt="$1"
+  local placeholder="${2:-}"
+  
+  if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
+    if [[ -n "$placeholder" ]]; then
+      gum input --prompt "$prompt " --placeholder "$placeholder"
+    else
+      gum input --prompt "$prompt "
+    fi
+  else
+    # Fallback to traditional prompt
+    echo -ne "${YELLOW}$prompt${NC} "
+    read -r input </dev/tty
+    echo "$input"
+  fi
+}
+
 # Function to detect if we're in repository or standalone
 detect_environment() {
   # Use readlink if available, fallback to realpath or plain dirname
@@ -888,14 +959,49 @@ uninstall() {
   echo -e "${BLUE}Note: System configurations in ~/.config/ were not removed${NC}"
 }
 
-# Main menu
+# Function to show status with Gum
+show_status() {
+  echo
+  if [[ "$HAS_GUM" == true ]]; then
+    gum style --foreground "#87CEEB" --bold "Estado Actual:"
+  else
+    echo -e "${WHITE}Current Status:${NC}"
+  fi
+  
+  if [[ -f "$LOCAL_BIN/webapp-creator" ]]; then
+    if [[ "$HAS_GUM" == true ]]; then
+      gum style --foreground "#90EE90" "  ✓ User installation found"
+    else
+      echo -e "${GREEN}  ✓ User installation found${NC}"
+    fi
+  else
+    if [[ "$HAS_GUM" == true ]]; then
+      gum style --foreground "#FFD700" "  ○ No user installation"
+    else
+      echo -e "${YELLOW}  ○ No user installation${NC}"
+    fi
+  fi
+
+  if [[ -d "$HOME/.config/i3" && -d "$HOME/.config/polybar" ]]; then
+    if [[ "$HAS_GUM" == true ]]; then
+      gum style --foreground "#90EE90" "  ✓ System configurations installed"
+    else
+      echo -e "${GREEN}  ✓ System configurations installed${NC}"
+    fi
+  else
+    if [[ "$HAS_GUM" == true ]]; then
+      gum style --foreground "#FFD700" "  ○ No system configurations"
+    else
+      echo -e "${YELLOW}  ○ No system configurations${NC}"
+    fi
+  fi
+  echo
+}
+
+# Main menu with Gum support
 main_menu() {
   while true; do
     show_header
-
-    echo -e "${WHITE}Installation Options${NC}"
-    echo -e "${WHITE}───────────────────${NC}"
-    echo
 
     # Check availability of options based on directory structure
     local launcher_available=true
@@ -909,74 +1015,104 @@ main_menu() {
       apps_available=false
     fi
 
+    # Build menu options array
+    local options=()
+    
     # Option 1
     if [[ "$launcher_available" == true && "$apps_available" == true ]]; then
-      echo -e "${CYAN}1.${NC} Instalación Completa Automática - Instala todo de una vez"
+      options+=("Instalación Completa Automática - Instala todo de una vez")
     else
-      echo -e "${RED}1.${NC} ${RED}Instalación Completa Automática - No disponible (faltan directorios)${NC}"
+      options+=("[DESHABILITADO] Instalación Completa Automática - Faltan directorios")
     fi
 
-    # Option 2 - WebApp Creator + Configs (merged 2&3, auto-runs 4)
+    # Option 2
     if [[ "$launcher_available" == true ]]; then
-      echo -e "${CYAN}2.${NC} Install WebApp Creator + System Configs - Complete setup"
+      options+=("Install WebApp Creator + System Configs - Complete setup")
     else
-      echo -e "${RED}2.${NC} ${RED}Install WebApp Creator + Configs - No disponible (falta directorio Launcher)${NC}"
+      options+=("[DESHABILITADO] Install WebApp Creator + Configs - Falta directorio Launcher")
     fi
 
-    # Option 3 - AUR Helper
+    # Option 3
     if [[ "$apps_available" == true ]]; then
-      echo -e "${CYAN}3.${NC} Install AUR Helper"
+      options+=("Install AUR Helper")
     else
-      echo -e "${RED}3.${NC} ${RED}Install AUR Helper - No disponible (falta directorio Apps)${NC}"
+      options+=("[DESHABILITADO] Install AUR Helper - Falta directorio Apps")
     fi
 
-    # Option 4 - Packages
+    # Option 4
     if [[ "$apps_available" == true ]]; then
-      echo -e "${CYAN}4.${NC} Install Packages"
+      options+=("Install Packages")
     else
-      echo -e "${RED}4.${NC} ${RED}Install Packages - No disponible (falta directorio Apps)${NC}"
+      options+=("[DESHABILITADO] Install Packages - Falta directorio Apps")
     fi
 
-    # Option 5 - SDDM Theme
+    # Option 5
     if [[ "$apps_available" == true ]]; then
-      echo -e "${CYAN}5.${NC} Install SDDM Theme (Corners) - Login manager setup"
+      options+=("Install SDDM Theme (Corners) - Login manager setup")
     else
-      echo -e "${RED}5.${NC} ${RED}Install SDDM Theme - No disponible (falta directorio Apps)${NC}"
+      options+=("[DESHABILITADO] Install SDDM Theme - Falta directorio Apps")
     fi
 
-    # Option 6 - Plymouth Themes
+    # Option 6
     if [[ "$apps_available" == true ]]; then
-      echo -e "${CYAN}6.${NC} Install Plymouth Themes - Boot splash themes"
+      options+=("Install Plymouth Themes - Boot splash themes")
     else
-      echo -e "${RED}6.${NC} ${RED}Install Plymouth Themes - No disponible (falta directorio Apps)${NC}"
+      options+=("[DESHABILITADO] Install Plymouth Themes - Falta directorio Apps")
     fi
 
-    # Option 7 - Uninstall
-    echo -e "${CYAN}7.${NC} Uninstall - Remove all installations"
-    
-    # Option 8 - Exit
-    echo -e "${CYAN}8.${NC} Exit"
-    echo
+    # Options 7 and 8
+    options+=("Uninstall - Remove all installations")
+    options+=("Exit")
 
-    # Show current installations
-    echo -e "${WHITE}Current Status:${NC}"
-    if [[ -f "$LOCAL_BIN/webapp-creator" ]]; then
-      echo -e "${GREEN}  ✓ User installation found${NC}"
+    # Show status
+    show_status
+
+    # Use Gum if available, otherwise fallback to classic menu
+    local choice_index
+    if [[ "$HAS_GUM" == true ]]; then
+      if [[ -t 0 && -c /dev/tty ]]; then
+        local selected
+        selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 12)
+        
+        if [[ -z "$selected" ]]; then
+          echo -e "${BLUE}Operación cancelada${NC}"
+          exit 0
+        fi
+        
+        # Find index of selected option
+        for i in "${!options[@]}"; do
+          if [[ "${options[$i]}" == "$selected" ]]; then
+            choice_index=$((i + 1))
+            break
+          fi
+        done
+      else
+        # Non-interactive mode - default to exit
+        choice_index=8
+      fi
     else
-      echo -e "${YELLOW}  ○ No user installation${NC}"
+      # Classic menu fallback
+      if [[ "$HAS_GUM" == false ]]; then
+        echo -e "${WHITE}Installation Options${NC}"
+        echo -e "${WHITE}───────────────────${NC}"
+        echo
+        
+        for i in "${!options[@]}"; do
+          local option_num=$((i + 1))
+          if [[ "${options[$i]}" =~ ^\[DESHABILITADO\] ]]; then
+            echo -e "${RED}$option_num.${NC} ${RED}${options[$i]#[DESHABILITADO] }${NC}"
+          else
+            echo -e "${CYAN}$option_num.${NC} ${options[$i]}"
+          fi
+        done
+        echo
+      fi
+      
+      printf "${YELLOW}Select option (1-8): ${NC}"
+      read -r choice_index </dev/tty
     fi
 
-    if [[ -d "$HOME/.config/i3" && -d "$HOME/.config/polybar" ]]; then
-      echo -e "${GREEN}  ✓ System configurations installed${NC}"
-    else
-      echo -e "${YELLOW}  ○ No system configurations${NC}"
-    fi
-    echo
-
-    printf "${YELLOW}Select option (1-8): ${NC}"
-    read -r choice </dev/tty
-
-    case $choice in
+    case $choice_index in
     1)
       if [[ "$launcher_available" == true && "$apps_available" == true ]]; then
         install_all
@@ -1065,6 +1201,12 @@ detect_environment
 
 # Clone repository if running standalone
 clone_repository
+
+# Check and install Gum for better UI
+HAS_GUM=false
+if check_install_gum; then
+  HAS_GUM=true
+fi
 
 # Check if required directories exist after potential cloning
 if [[ ! -d "$LAUNCHER_DIR" ]]; then

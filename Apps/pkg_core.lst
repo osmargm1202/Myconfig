@@ -92,4 +92,6 @@ neovim
 nodejs
 pacseek
 jq
+wget
+curl
 plymouth

@@ -18,6 +18,9 @@ CYAN='\033[0;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
+# Rofi theme configuration
+ROFI_THEME="DarkBlue"
+
 # Create necessary directories
 mkdir -p "$APPS_DIR" "$ICONS_DIR" "$SYNC_DIR"
 
@@ -26,7 +29,7 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "[]" >"$CONFIG_FILE"
 fi
 
-# Function to display header
+# Function to display header (not used with rofi interface)
 show_header() {
   clear
   echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
@@ -38,89 +41,106 @@ show_header() {
 
 # Function to select category
 select_category() {
-  echo -e "${WHITE}Select Category:${NC}"
-  echo -e "${WHITE}───────────────${NC}"
-  echo
-  echo -e "${CYAN}1.${NC} AudioVideo (Media applications)"
-  echo -e "${CYAN}2.${NC} Development (Programming tools)"
-  echo -e "${CYAN}3.${NC} Education (Learning applications)"
-  echo -e "${CYAN}4.${NC} Game (Games and entertainment)"
-  echo -e "${CYAN}5.${NC} Graphics (Image/video editing)"
-  echo -e "${CYAN}6.${NC} Network (Web browsers, chat)"
-  echo -e "${CYAN}7.${NC} Office (Productivity applications)"
-  echo -e "${CYAN}8.${NC} Science (Scientific applications)"
-  echo -e "${CYAN}9.${NC} System (System tools)"
-  echo -e "${CYAN}10.${NC} Utility (General utilities)"
-  echo -e "${CYAN}11.${NC} Custom (Enter your own)"
-  echo
+  local categories=(
+    "AudioVideo (Media applications)"
+    "Development (Programming tools)"
+    "Education (Learning applications)"
+    "Game (Games and entertainment)"
+    "Graphics (Image/video editing)"
+    "Network (Web browsers, chat)"
+    "Office (Productivity applications)"
+    "Science (Scientific applications)"
+    "System (System tools)"
+    "Utility (General utilities)"
+    "Custom (Enter your own)"
+  )
 
-  while true; do
-    echo -ne "${YELLOW}Select category (1-11): ${NC}"
-    read -r choice
+  local choice
+  choice=$(printf '%s\n' "${categories[@]}" | rofi -dmenu -p "Select Category" -theme "$ROFI_THEME")
 
-    case $choice in
-    1)
+  # If user cancelled (ESC), return empty
+  if [[ $? -ne 0 ]]; then
+    echo ""
+    return 1
+  fi
+
+  case "$choice" in
+    "AudioVideo (Media applications)")
       echo "AudioVideo;"
       return 0
       ;;
-    2)
+    "Development (Programming tools)")
       echo "Development;"
       return 0
       ;;
-    3)
+    "Education (Learning applications)")
       echo "Education;"
       return 0
       ;;
-    4)
+    "Game (Games and entertainment)")
       echo "Game;"
       return 0
       ;;
-    5)
+    "Graphics (Image/video editing)")
       echo "Graphics;"
       return 0
       ;;
-    6)
+    "Network (Web browsers, chat)")
       echo "Network;WebBrowser;"
       return 0
       ;;
-    7)
+    "Office (Productivity applications)")
       echo "Office;"
       return 0
       ;;
-    8)
+    "Science (Scientific applications)")
       echo "Science;"
       return 0
       ;;
-    9)
+    "System (System tools)")
       echo "System;"
       return 0
       ;;
-    10)
+    "Utility (General utilities)")
       echo "Utility;"
       return 0
       ;;
-    11)
-      echo
+    "Custom (Enter your own)")
       get_input "Enter custom categories (separated by semicolons)" custom_category "Network;WebBrowser;"
-      echo "$custom_category"
-      return 0
+      if [[ $? -eq 0 ]]; then
+        echo "$custom_category"
+        return 0
+      else
+        echo ""
+        return 1
+      fi
       ;;
-    *) echo -e "${RED}Invalid option. Please select 1-11.${NC}" ;;
-    esac
-  done
+    *)
+      echo ""
+      return 1
+      ;;
+  esac
 }
 get_input() {
   local prompt="$1"
   local var_name="$2"
   local default="$3"
 
-  echo -ne "${YELLOW}$prompt${NC}"
+  local rofi_prompt="$prompt"
   if [[ -n "$default" ]]; then
-    echo -ne " ${PURPLE}(default: $default)${NC}"
+    rofi_prompt="$prompt (default: $default)"
   fi
-  echo -ne ": "
-  read -r input
 
+  local input
+  input=$(echo "" | rofi -dmenu -p "$rofi_prompt" -theme "$ROFI_THEME")
+
+  # If user cancelled (ESC), return empty
+  if [[ $? -ne 0 ]]; then
+    eval "$var_name=''"
+    return 1
+  fi
+
+  # If input is empty and default exists, use default
   if [[ -z "$input" && -n "$default" ]]; then
     input="$default"
   fi
@@ -221,100 +241,36 @@ add_to_sync_config() {
 
 # Function to create new webapp
 create_webapp() {
-  show_header
-  echo -e "${WHITE}Create New WebApp${NC}"
-  echo -e "${WHITE}─────────────────${NC}"
-  echo
-
+  # Get app details using rofi
   get_input "App Name" app_name
+  if [[ $? -ne 0 || -z "$app_name" ]]; then
+    return 1
+  fi
+
   get_input "URL (https:// will be added if missing)" app_url
+  if [[ $? -ne 0 || -z "$app_url" ]]; then
+    return 1
+  fi
+
   get_input "Description" app_description "$app_name Web Application"
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
 
-  echo
-  echo -e "${WHITE}Select Category:${NC}"
-  echo -e "${WHITE}───────────────${NC}"
-  echo
-  echo -e "${CYAN}1.${NC} AudioVideo (Media applications)"
-  echo -e "${CYAN}2.${NC} Development (Programming tools)"
-  echo -e "${CYAN}3.${NC} Education (Learning applications)"
-  echo -e "${CYAN}4.${NC} Game (Games and entertainment)"
-  echo -e "${CYAN}5.${NC} Graphics (Image/video editing)"
-  echo -e "${CYAN}6.${NC} Network (Web browsers, chat)"
-  echo -e "${CYAN}7.${NC} Office (Productivity applications)"
-  echo -e "${CYAN}8.${NC} Science (Scientific applications)"
-  echo -e "${CYAN}9.${NC} System (System tools)"
-  echo -e "${CYAN}10.${NC} Utility (General utilities)"
-  echo -e "${CYAN}11.${NC} Custom (Enter your own)"
-  echo
-
-  while true; do
-    echo -ne "${YELLOW}Select category (1-11): ${NC}"
-    read -r cat_choice
-
-    case $cat_choice in
-    1)
-      app_categories="AudioVideo;"
-      break
-      ;;
-    2)
-      app_categories="Development;"
-      break
-      ;;
-    3)
-      app_categories="Education;"
-      break
-      ;;
-    4)
-      app_categories="Game;"
-      break
-      ;;
-    5)
-      app_categories="Graphics;"
-      break
-      ;;
-    6)
-      app_categories="Network;WebBrowser;"
-      break
-      ;;
-    7)
-      app_categories="Office;"
-      break
-      ;;
-    8)
-      app_categories="Science;"
-      break
-      ;;
-    9)
-      app_categories="System;"
-      break
-      ;;
-    10)
-      app_categories="Utility;"
-      break
-      ;;
-    11)
-      echo
-      get_input "Enter custom categories (separated by semicolons)" app_categories "Network;WebBrowser;"
-      break
-      ;;
-    *) echo -e "${RED}Invalid option. Please select 1-11.${NC}" ;;
-    esac
-  done
-
-  if [[ -z "$app_name" || -z "$app_url" ]]; then
-    echo -e "${RED}✗ Name and URL are required!${NC}"
-    read -p "Press Enter to continue..."
+  # Select category using rofi
+  app_categories=$(select_category)
+  if [[ $? -ne 0 || -z "$app_categories" ]]; then
     return 1
   fi
 
   # Auto-add https:// if not present
   if [[ ! "$app_url" =~ ^https?:// ]]; then
     app_url="https://$app_url"
-    echo -e "${BLUE}Added https:// to URL: $app_url${NC}"
+    notify-send "WebApp Creator" "Added https:// to URL: $app_url" -t 3000 2>/dev/null || echo -e "${BLUE}Added https:// to URL: $app_url${NC}"
   fi
 
-  echo
-  echo -e "${BLUE}Creating webapp...${NC}"
+  # Show progress notification
+  notify-send "WebApp Creator" "Creating webapp '$app_name'..." -t 3000 2>/dev/null || echo -e "${BLUE}Creating webapp...${NC}"
 
   # Download icon
   download_favicon "$app_url" "$app_name"
@@ -325,43 +281,36 @@ create_webapp() {
   # Add to sync config
   add_to_sync_config "$app_name" "$app_url" "$app_description" "$app_categories"
 
-  echo
-  echo -e "${GREEN}✓ WebApp '$app_name' created successfully!${NC}"
-  echo -e "${BLUE}You can now find it in your applications menu${NC}"
-
-  read -p "Press Enter to continue..."
+  # Success notification
+  notify-send "WebApp Creator" "✓ WebApp '$app_name' created successfully!" -t 5000 2>/dev/null || {
+    echo -e "${GREEN}✓ WebApp '$app_name' created successfully!${NC}"
+    echo -e "${BLUE}You can now find it in your applications menu${NC}"
+  }
 }
 
 # Function to list existing webapps
 list_webapps() {
-  show_header
-  echo -e "${WHITE}Installed WebApps${NC}"
-  echo -e "${WHITE}─────────────────${NC}"
-  echo
-
   if [[ ! -s "$CONFIG_FILE" ]] || [[ "$(jq length "$CONFIG_FILE")" -eq 0 ]]; then
-    echo -e "${YELLOW}No webapps found.${NC}"
-  else
-    echo -e "${CYAN}Name${NC} | ${CYAN}URL${NC} | ${CYAN}Description${NC}"
-    echo "─────────────────────────────────────────────────"
-    jq -r '.[] | "\(.name) | \(.url) | \(.description)"' "$CONFIG_FILE"
+    notify-send "WebApp Creator" "No webapps found" -t 3000 2>/dev/null
+    echo "" | rofi -dmenu -p "No webapps found" -theme "$ROFI_THEME" >/dev/null
+    return
   fi
 
-  echo
-  read -p "Press Enter to continue..."
+  # Create formatted list for rofi display
+  local webapp_info
+  webapp_info=$(jq -r '.[] | "\(.name) | \(.url) | \(.description)"' "$CONFIG_FILE")
+
+  # Show list in rofi (read-only)
+  echo "$webapp_info" | rofi -dmenu -p "Installed WebApps (Name | URL | Description)" -theme "$ROFI_THEME" >/dev/null
 }
 
 # Function to export webapps
 export_webapps() {
-  show_header
-  echo -e "${WHITE}Export WebApps${NC}"
-  echo -e "${WHITE}──────────────${NC}"
-  echo
-
   local script_dir="$(dirname "$(readlink -f "$0")")"
   local export_file="$script_dir/webapps.tar.gz"
 
-  echo -e "${BLUE}Creating export package...${NC}"
+  # Show progress notification
+  notify-send "WebApp Creator" "Creating export package..." -t 3000 2>/dev/null
 
   # Create temporary directory for export
   local temp_dir=$(mktemp -d)
@@ -391,40 +340,38 @@ export_webapps() {
   tar -czf "$export_file" -C "$temp_dir" .
   rm -rf "$temp_dir"
 
-  echo -e "${GREEN}✓ Export created: $export_file${NC}"
-  echo -e "${BLUE}WebApps exported to: $(basename "$script_dir")/webapps.tar.gz${NC}"
+  # Show success notification with file location
+  local export_msg="✓ Export created: $(basename "$script_dir")/webapps.tar.gz"
+  notify-send "WebApp Creator" "$export_msg" -t 5000 2>/dev/null
 
-  read -p "Press Enter to continue..."
+  # Show confirmation in rofi
+  echo "" | rofi -dmenu -p "$export_msg" -theme "$ROFI_THEME" >/dev/null
 }
 
 # Function to check chromium installation
 check_chromium() {
   if command -v chromium &>/dev/null; then
-    echo -e "${GREEN}✓ Chromium is already installed${NC}"
     return 0
   elif command -v chromium-browser &>/dev/null; then
-    echo -e "${GREEN}✓ Chromium browser is already installed${NC}"
     return 0
   else
-    echo -e "${YELLOW}⚠ Chromium not found${NC}"
-    echo -e "${BLUE}WebApp Creator requires Chromium to create web applications${NC}"
-    echo
-    echo -ne "${YELLOW}Would you like to install Chromium now? (y/N): ${NC}"
-    read -r install_choice
+    # Show installation prompt using rofi
+    local install_options=("Yes, install Chromium" "No, skip installation")
+    local choice
+    choice=$(printf '%s\n' "${install_options[@]}" | rofi -dmenu -p "Chromium not found. Install now?" -theme "$ROFI_THEME")
 
-    if [[ "$install_choice" =~ ^[Yy]$ ]]; then
-      echo -e "${BLUE}Installing Chromium...${NC}"
+    if [[ "$choice" == "Yes, install Chromium" ]]; then
+      notify-send "WebApp Creator" "Installing Chromium..." -t 3000 2>/dev/null
       if sudo pacman -S chromium; then
-        echo -e "${GREEN}✓ Chromium installed successfully${NC}"
+        notify-send "WebApp Creator" "✓ Chromium installed successfully" -t 3000 2>/dev/null
         return 0
       else
-        echo -e "${RED}✗ Failed to install Chromium${NC}"
-        echo -e "${YELLOW}You can install it manually later with: sudo pacman -S chromium${NC}"
+        notify-send "WebApp Creator" "✗ Failed to install Chromium" -t 5000 2>/dev/null
+        echo "" | rofi -dmenu -p "Failed to install Chromium. Install manually: sudo pacman -S chromium" -theme "$ROFI_THEME" >/dev/null
         return 1
       fi
     else
-      echo -e "${YELLOW}Skipping Chromium installation${NC}"
-      echo -e "${BLUE}Note: WebApp Creator won't work properly without Chromium${NC}"
+      notify-send "WebApp Creator" "⚠ WebApp Creator needs Chromium to work properly" -t 5000 2>/dev/null
       return 1
     fi
   fi
@@ -531,7 +478,6 @@ install_app() {
       echo -e "${GREEN}✓ Copied script to: $bin_dir/$script_name${NC}"
     else
       echo -e "${RED}✗ Current script not found: $script_path${NC}"
-      read -p "Press Enter to continue..."
       return 1
     fi
 
@@ -621,103 +567,107 @@ install_app() {
     echo -e "${WHITE}  • Run 'webapp-creator' from terminal${NC}"
     echo -e "${WHITE}  • Find 'WebApp Creator' in your application menu${NC}"
     echo -e "${WHITE}  • Launch from rofi/launcher${NC}"
-
-    read -p "Press Enter to continue..."
   }
 }
 
 # Function to remove webapp
 remove_webapp() {
-  show_header
-  echo -e "${WHITE}Remove WebApp${NC}"
-  echo -e "${WHITE}──────────────${NC}"
-  echo
-
   if [[ ! -s "$CONFIG_FILE" ]] || [[ "$(jq length "$CONFIG_FILE")" -eq 0 ]]; then
-    echo -e "${YELLOW}No webapps found.${NC}"
-    read -p "Press Enter to continue..."
+    notify-send "WebApp Creator" "No webapps found" -t 3000 2>/dev/null || echo -e "${YELLOW}No webapps found.${NC}"
     return
   fi
 
-  echo -e "${CYAN}Available WebApps:${NC}"
-  jq -r 'to_entries | .[] | "\(.key + 1): \(.value.name)"' "$CONFIG_FILE"
-  echo
+  # Create list of webapps for selection
+  local webapp_list
+  webapp_list=$(jq -r '.[] | .name' "$CONFIG_FILE")
 
-  get_input "Select webapp number to remove" selection
+  # Let user select webapp to remove
+  local selected_app
+  selected_app=$(echo "$webapp_list" | rofi -dmenu -p "Select WebApp to Remove" -theme "$ROFI_THEME")
 
-  if [[ ! "$selection" =~ ^[0-9]+$ ]]; then
-    echo -e "${RED}✗ Invalid selection${NC}"
-    read -p "Press Enter to continue..."
+  # If user cancelled (ESC), return
+  if [[ $? -ne 0 || -z "$selected_app" ]]; then
     return
   fi
 
-  local index=$((selection - 1))
-  local app_name=$(jq -r ".[$index].name // empty" "$CONFIG_FILE")
+  # Get index of selected app
+  local index
+  index=$(jq -r --arg name "$selected_app" 'to_entries | .[] | select(.value.name == $name) | .key' "$CONFIG_FILE")
 
-  if [[ -z "$app_name" ]]; then
-    echo -e "${RED}✗ Invalid selection${NC}"
-    read -p "Press Enter to continue..."
+  if [[ -z "$index" ]]; then
+    notify-send "WebApp Creator" "✗ WebApp not found" -t 3000 2>/dev/null || echo -e "${RED}✗ WebApp not found${NC}"
     return
   fi
 
-  echo -e "${YELLOW}Remove webapp '$app_name'? (y/N)${NC}"
-  read -r confirm
+  # Confirm removal using rofi
+  local confirm_options=("Yes, remove it" "No, cancel")
+  local confirm
+  confirm=$(printf '%s\n' "${confirm_options[@]}" | rofi -dmenu -p "Remove webapp '$selected_app'?" -theme "$ROFI_THEME")
 
-  if [[ "$confirm" =~ ^[Yy]$ ]]; then
+  if [[ "$confirm" == "Yes, remove it" ]]; then
     # Remove desktop file
-    rm -f "$APPS_DIR/${app_name}.desktop"
+    rm -f "$APPS_DIR/${selected_app}.desktop"
 
     # Remove icon
-    rm -f "$ICONS_DIR/${app_name}.png"
+    rm -f "$ICONS_DIR/${selected_app}.png"
 
     # Remove from config
     local temp_file=$(mktemp)
     jq "del(.[$index])" "$CONFIG_FILE" >"$temp_file" && mv "$temp_file" "$CONFIG_FILE"
 
-    echo -e "${GREEN}✓ WebApp '$app_name' removed${NC}"
+    notify-send "WebApp Creator" "✓ WebApp '$selected_app' removed" -t 3000 2>/dev/null || echo -e "${GREEN}✓ WebApp '$selected_app' removed${NC}"
   else
-    echo -e "${BLUE}Operation cancelled${NC}"
+    notify-send "WebApp Creator" "Operation cancelled" -t 2000 2>/dev/null || echo -e "${BLUE}Operation cancelled${NC}"
   fi
-
-  read -p "Press Enter to continue..."
 }
 
 # Main menu
 main_menu() {
-  while true; do
-    show_header
-    echo -e "${WHITE}Main Menu${NC}"
-    echo -e "${WHITE}─────────${NC}"
-    echo
-    echo -e "${CYAN}1.${NC} Create New WebApp"
-    echo -e "${CYAN}2.${NC} List WebApps"
-    echo -e "${CYAN}3.${NC} Export WebApps"
-    echo -e "${CYAN}4.${NC} Remove WebApp"
-    echo -e "${CYAN}5.${NC} Exit"
-    echo
-    echo -ne "${YELLOW}Select option (1-5): ${NC}"
-    read -r choice
+  local menu_options=(
+    "Create New WebApp"
+    "List WebApps"
+    "Export WebApps"
+    "Remove WebApp"
+    "Exit"
+  )
 
-    case $choice in
-    1) create_webapp ;;
-    2) list_webapps ;;
-    3) export_webapps ;;
-    4) remove_webapp ;;
-    5)
-      echo -e "${GREEN}Goodbye!${NC}"
+  while true; do
+    local choice
+    choice=$(printf '%s\n' "${menu_options[@]}" | rofi -dmenu -p "WebApp Creator - Main Menu" -theme "$ROFI_THEME")
+
+    # If user cancelled (ESC), exit
+    if [[ $? -ne 0 ]]; then
+      notify-send "WebApp Creator" "Goodbye!" -t 2000 2>/dev/null || echo -e "${GREEN}Goodbye!${NC}"
       exit 0
-      ;;
-    *)
-      echo -e "${RED}Invalid option${NC}"
-      sleep 1
-      ;;
+    fi
+
+    case "$choice" in
+      "Create New WebApp") 
+        create_webapp 
+        ;;
+      "List WebApps") 
+        list_webapps 
+        ;;
+      "Export WebApps") 
+        export_webapps 
+        ;;
+      "Remove WebApp") 
+        remove_webapp 
+        ;;
+      "Exit")
+        notify-send "WebApp Creator" "Goodbye!" -t 2000 2>/dev/null || echo -e "${GREEN}Goodbye!${NC}"
+        exit 0
+        ;;
+      *)
+        notify-send "WebApp Creator" "Invalid option" -t 2000 2>/dev/null || echo -e "${RED}Invalid option${NC}"
+        ;;
     esac
   done
 }
 
 # Check dependencies
 check_dependencies() {
-  local deps=("wget" "jq")
+  local deps=("wget" "jq" "rofi")
   local missing=()
 
   for dep in "${deps[@]}"; do
