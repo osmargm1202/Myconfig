@@ -9,7 +9,8 @@ Algunas de las cosas que este conjunto de dotfiles / scripts permite hacer:
 
 ## Módulo / Componente Qué hace / qué configura
 
-install.sh Script central: clona el repositorio, detecta si ya existe copia, muestra menú de opciones (instalar dependencias, paquetes, configuraciones completas, desinstalar).
+**install.sh** Instalador simple: descarga/actualiza repositorio y ejecuta setup.sh (compatible con curl).
+**setup.sh** Configurador completo: menú interactivo con Gum, instaladores modulares, todas las opciones.
 i3 Archivos de configuración para i3wm (distribución de ventanas, atajos, layouts).
 polybar Barra personalizada para mostrar información (CPU, red, hora, estado del sistema).
 rofi Menús visuales, launcher de aplicaciones, selector de ventanas.
@@ -17,6 +18,7 @@ picom Compositor para sombras, transparencia, efectos visuales.
 kitty Configuración del emulador de terminal.
 dunst Notificaciones visuales y estéticas.
 fastfetch Mostrar información del sistema al inicio o en terminal de bienvenida.
+**Wallpapers** Fondos de pantalla aleatorios para i3WM con sistema de memoria y atajo Super+Alt+Space.
 Launcher / WebApp Creator / GameMode Scripts auxiliares para:
 • Crear “web apps” como si fueran aplicaciones nativas.
 • Activar modo de optimización para juegos.
@@ -38,11 +40,18 @@ curl -fsSL https://raw.githubusercontent.com/osmargm1202/Myconfig/master/install
 curl -fsSL https://custom.or-gm.com/arch.sh | bash
 ```
 
-Este comando descarga y ejecuta automáticamente el instalador, que:
+Este comando ejecuta el instalador en dos fases:
 
-- Clona el repositorio automáticamente
-- Muestra el menú de instalación completo
-- Detecta si ya existe una copia local del repositorio
+**Fase 1 (install.sh):**
+- Descarga/actualiza el repositorio en ~/Myconfig
+- Es simple y compatible con curl | bash  
+- No requiere TTY ni dependencias complejas
+
+**Fase 2 (setup.sh):**
+- Muestra menú interactivo con interfaz moderna (Gum)
+- Instaladores modulares organizados en Apps/
+- Opciones: WebApp Creator, SDDM, Plymouth, Wallpapers, etc.
+- Colores azul cielo y navegación con flechas
 
 ### Instalación Automática (Método tradicional)
 
@@ -94,6 +103,7 @@ cp -r picom ~/.config/
 cp -r kitty ~/.config/
 cp -r dunst ~/.config/
 cp -r fastfetch ~/.config/
+cp -r kvantum ~/.config/
 ```
 
 #### 4. Configurar WebApp Creator y GameMode
@@ -153,6 +163,34 @@ git pull origin master
 cp -r ./* ~/.config/
 # Reiniciar i3: Mod+Shift+R
 ```
+
+## 🚀 Funcionalidades Modernas
+
+### 🎨 Interfaz Visual con Gum
+- **Menús interactivos** con navegación de flechas
+- **Colores azul cielo** personalizados  
+- **Confirmaciones visuales** estilo moderno
+- **Fallback automático** a interfaz clásica
+
+### 🖼️ Sistema de Wallpapers Inteligente
+- **Copia automática** de wallpapers a ~/Wallpapers
+- **Wallpaper aleatorio** al iniciar i3 (recordado entre sesiones)
+- **Atajo Super+Alt+Space** para cambiar wallpaper
+- **Sistema de memoria** mantiene último wallpaper usado
+
+### 🎭 Temas de Arranque y Login
+- **SDDM Theme Corners** con configuración automática de /etc/sddm.conf
+- **Plymouth Themes** con 11 temas curados y logo de Arch Linux
+- **Autologin opcional** para SDDM
+
+### 📦 Instaladores Modulares
+- **install_configs.sh** - Configuraciones del sistema
+- **install_webapp.sh** - WebApp Creator completo
+- **install_sddm.sh** - Tema de login SDDM
+- **install_plymouth.sh** - Temas de arranque Plymouth  
+- **install_wallpapers.sh** - Sistema de fondos de pantalla
+- **install_aur.sh** - AUR helper
+- **install_pkg.sh** - Paquetes del sistema
 
 ### Requisitos del Sistema
 

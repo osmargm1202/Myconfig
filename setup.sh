@@ -36,6 +36,7 @@ is_in_path() {
 # Function to check and install Gum if needed
 check_install_gum() {
   if command -v gum &>/dev/null; then
+    echo -e "${GREEN}✓ Gum está instalado${NC}"
     return 0
   fi
   
@@ -68,72 +69,6 @@ export GUM_INPUT_PROMPT_FOREGROUND="#87CEEB"
 export GUM_FILTER_INDICATOR_FOREGROUND="#00BFFF"
 export GUM_FILTER_MATCH_FOREGROUND="#87CEEB"
 
-# Function to ask for confirmation with Gum support
-ask_confirmation() {
-  local message="$1"
-  local default="${2:-N}"  # Default to N if not specified
-  
-  if [[ "$HAS_GUM" == true ]]; then
-    # Try Gum first
-    if gum confirm "$message" 2>/dev/null; then
-      return 0
-    elif [[ -c /dev/tty ]]; then
-      # Try Gum with TTY
-      gum confirm "$message" </dev/tty 2>/dev/null
-      return $?
-    fi
-  fi
-  
-  # Fallback to traditional prompt
-  echo -e "${YELLOW}$message (y/N):${NC} "
-  local response
-  if [[ -c /dev/tty ]]; then
-    read -r response </dev/tty
-  else
-    read -r response
-  fi
-  [[ "$response" =~ ^[Yy]$ ]]
-  return $?
-}
-
-# Function to get input with Gum support
-get_input() {
-  local prompt="$1"
-  local placeholder="${2:-}"
-  
-  if [[ "$HAS_GUM" == true ]]; then
-    # Try Gum first
-    local result
-    if [[ -n "$placeholder" ]]; then
-      result=$(gum input --prompt "$prompt " --placeholder "$placeholder" 2>/dev/null)
-    else
-      result=$(gum input --prompt "$prompt " 2>/dev/null)
-    fi
-    
-    if [[ -n "$result" ]] || [[ -c /dev/tty ]]; then
-      if [[ -z "$result" && -c /dev/tty ]]; then
-        # Try Gum with TTY
-        if [[ -n "$placeholder" ]]; then
-          result=$(gum input --prompt "$prompt " --placeholder "$placeholder" </dev/tty 2>/dev/null)
-        else
-          result=$(gum input --prompt "$prompt " </dev/tty 2>/dev/null)
-        fi
-      fi
-      echo "$result"
-      return 0
-    fi
-  fi
-  
-  # Fallback to traditional prompt
-  echo -ne "${YELLOW}$prompt${NC} "
-  local input
-  if [[ -c /dev/tty ]]; then
-    read -r input </dev/tty
-  else
-    read -r input
-  fi
-  echo "$input"
-}
 
 # Function to detect if we're in repository or standalone
 detect_environment() {
@@ -243,10 +178,10 @@ clone_repository() {
 # Function to display header
 show_header() {
   clear
-  echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
-  echo -e "${CYAN}║      System & WebApp Installer        ║${NC}"
-  echo -e "${CYAN}║        Complete Setup Tool            ║${NC}"
-  echo -e "${CYAN}╚════════════════════════════════════════╝${NC}"
+  echo "========================================"
+  echo "      System & WebApp Installer         "
+  echo "        Complete Setup Tool             "
+  echo "========================================"
   echo
 }
 
@@ -283,182 +218,7 @@ check_chromium() {
   fi
 }
 
-# Function to create webapp-creator desktop file
-create_webapp_creator_desktop() {
-  local apps_dir="$HOME/.local/share/applications"
-  local icons_dir="$HOME/.local/share/icons/webapp-icons"
-  local desktop_file="$apps_dir/webapp-creator.desktop"
-  local icon_path="$icons_dir/webapp-creator.png"
-  local bin_path="$HOME/.local/bin/webapp-creator"
 
-  mkdir -p "$apps_dir" "$icons_dir"
-
-  echo -e "${BLUE}Creating WebApp Creator desktop entry...${NC}"
-
-  # Create icon for webapp-creator
-  if command -v convert &>/dev/null; then
-    convert -size 128x128 xc:transparent -fill "#4A90E2" -draw "circle 64,64 64,20" \
-      -fill white -font DejaVu-Sans-Bold -pointsize 14 -gravity center \
-      -annotate +0+0 "WEB\nAPP" "$icon_path" 2>/dev/null
-    echo -e "${GREEN}✓ Created WebApp Creator icon${NC}"
-  else
-    echo -e "${YELLOW}ImageMagick not found, using fallback icon creation${NC}"
-    # Try to copy a system icon as fallback
-    for sys_icon in /usr/share/icons/hicolor/*/apps/preferences-system.png \
-      /usr/share/pixmaps/preferences-system.png \
-      /usr/share/icons/*/*/apps/application-default-icon.png; do
-      if [[ -f "$sys_icon" ]]; then
-        cp "$sys_icon" "$icon_path" 2>/dev/null && break
-      fi
-    done
-
-    if [[ ! -f "$icon_path" ]]; then
-      # Create simple text-based icon as last resort
-      if command -v convert &>/dev/null; then
-        echo -e "${YELLOW}Creating simple text icon${NC}"
-        convert -size 128x128 xc:"#4A90E2" -font DejaVu-Sans-Bold -pointsize 16 \
-          -fill white -gravity center -annotate +0+0 "WEBAPP\nCREATOR" \
-          "$icon_path" 2>/dev/null
-      fi
-      
-      # If convert fails or is not available, create a placeholder
-      if [[ ! -f "$icon_path" ]]; then
-        echo -e "${YELLOW}Creating placeholder icon${NC}"
-        touch "$icon_path"
-      fi
-    fi
-  fi
-
-  # Create the desktop file
-  cat >"$desktop_file" <<EOF
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=WebApp Creator
-Comment=Create and manage web applications using Chromium
-Exec=$bin_path
-Icon=$icon_path
-Categories=Development;System;Utility;
-Keywords=webapp;chromium;browser;application;
-NoDisplay=false
-StartupNotify=true
-Terminal=true
-StartupWMClass=webapp-creator
-EOF
-
-  chmod +x "$desktop_file"
-  echo -e "${GREEN}✓ WebApp Creator desktop file created${NC}"
-}
-
-# Function to install webapp creator (moved from webapp-creator.sh)
-install_webapp_creator() {
-  show_header
-  echo -e "${WHITE}Install WebApp Creator${NC}"
-  echo -e "${WHITE}──────────────────────${NC}"
-  echo
-
-  # First check if Chromium is installed
-  echo -e "${BLUE}Checking dependencies...${NC}"
-  check_chromium
-  echo
-
-  local bin_dir="$HOME/.local/bin"
-  local script_name="webapp-creator"
-  local launcher_file="$LAUNCHER_DIR/launcher.sh"
-  local gamemode_file="$LAUNCHER_DIR/game-mode.sh"
-  local webapps_archive="$LAUNCHER_DIR/webapps.tar.gz"
-
-  echo -e "${BLUE}Installing WebApp Creator...${NC}"
-
-  # Create directories
-  mkdir -p "$bin_dir"
-  mkdir -p "$HOME/.local/share/applications"
-  mkdir -p "$HOME/.local/share/icons/webapp-icons"
-  mkdir -p "$HOME/.local/share/webapp-sync"
-  echo -e "${GREEN}✓ Created necessary directories${NC}"
-
-  # Copy webapp-creator script
-  if [[ -f "$WEBAPP_CREATOR" ]]; then
-    cp "$WEBAPP_CREATOR" "$bin_dir/$script_name"
-    chmod +x "$bin_dir/$script_name"
-    echo -e "${GREEN}✓ Copied script to: $bin_dir/$script_name${NC}"
-  else
-    echo -e "${RED}✗ WebApp Creator script not found: $WEBAPP_CREATOR${NC}"
-    read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
-    return 1
-  fi
-
-  # Copy additional scripts
-  if [[ -f "$launcher_file" ]]; then
-    cp "$launcher_file" "$bin_dir/"
-    chmod +x "$bin_dir/launcher.sh"
-    echo -e "${GREEN}✓ Copied launcher.sh${NC}"
-  fi
-
-  if [[ -f "$gamemode_file" ]]; then
-    cp "$gamemode_file" "$bin_dir/"
-    chmod +x "$bin_dir/game-mode.sh"
-    echo -e "${GREEN}✓ Copied game-mode.sh${NC}"
-  fi
-
-  # Create WebApp Creator desktop entry
-  create_webapp_creator_desktop
-
-  # Import default webapps if archive exists
-  if [[ -f "$webapps_archive" ]]; then
-    echo -e "${BLUE}Importing default webapps...${NC}"
-
-    # Create temporary directory with fallback
-    local temp_dir
-    if command -v mktemp &>/dev/null; then
-      temp_dir=$(mktemp -d)
-    else
-      temp_dir="/tmp/webapps_install_$$"
-      mkdir -p "$temp_dir"
-    fi
-    
-    tar -xzf "$webapps_archive" -C "$temp_dir"
-
-    # Import icons
-    if [[ -d "$temp_dir/webapp-icons" ]]; then
-      cp -r "$temp_dir/webapp-icons/"* "$HOME/.local/share/icons/webapp-icons/" 2>/dev/null
-      echo -e "${GREEN}✓ Default icons imported${NC}"
-    fi
-
-    # Import applications
-    if [[ -d "$temp_dir/applications" ]]; then
-      cp "$temp_dir/applications/"*.desktop "$HOME/.local/share/applications/" 2>/dev/null
-      echo -e "${GREEN}✓ Default applications imported${NC}"
-    fi
-
-    # Import config
-    if [[ -f "$temp_dir/webapps.json" ]]; then
-      cp "$temp_dir/webapps.json" "$HOME/.local/share/webapp-sync/"
-      echo -e "${GREEN}✓ Default configuration imported${NC}"
-    fi
-
-    rm -rf "$temp_dir"
-    echo -e "${GREEN}✓ Default webapps installed${NC}"
-  fi
-
-  # Check PATH
-  if ! is_in_path "$bin_dir"; then
-    echo
-    echo -e "${YELLOW}⚠ Warning: $bin_dir is not in your PATH${NC}"
-    echo -e "${BLUE}Add this line to your ~/.bashrc, ~/.zshrc, or ~/.config/fish/config.fish:${NC}"
-    echo -e "${WHITE}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
-    echo -e "${YELLOW}For Fish shell: ${WHITE}fish_add_path ~/.local/bin${NC}"
-  fi
-
-  echo
-  echo -e "${GREEN}✓ WebApp Creator installed successfully!${NC}"
-  echo -e "${BLUE}You can now:${NC}"
-  echo -e "${WHITE}  • Run 'webapp-creator' from terminal${NC}"
-  echo -e "${WHITE}  • Find 'WebApp Creator' in your application menu${NC}"
-  echo -e "${WHITE}  • Launch from rofi/launcher${NC}"
-
-  read -p "Press Enter to continue..." </dev/tty </dev/tty
-}
 
 # Function to install everything automatically
 install_all() {
@@ -575,8 +335,8 @@ install_configs_silent() {
     if [[ -d "$config_dir" ]]; then
       local dir_name=$(basename "$config_dir")
 
-      # Skip Apps and Launcher directories
-      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" ]]; then
+      # Skip Apps, Launcher, and Wallpapers directories
+      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" || "$dir_name" == "Wallpapers" ]]; then
         continue
       fi
 
@@ -625,96 +385,30 @@ install_webapp_creator_silent() {
     chmod +x "$bin_dir/game-mode.sh"
   fi
 
-  # Create desktop entry
-  create_webapp_creator_desktop
+  # Create desktop entry (simplified)
+  local apps_dir="$HOME/.local/share/applications"
+  local desktop_file="$apps_dir/webapp-creator.desktop"
+  local bin_path="$HOME/.local/bin/webapp-creator"
+
+  mkdir -p "$apps_dir"
+  
+  cat >"$desktop_file" <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=WebApp Creator
+Comment=Create and manage web applications using Chromium
+Exec=$bin_path
+Categories=Development;System;Utility;
+NoDisplay=false
+StartupNotify=true
+Terminal=true
+EOF
+
+  chmod +x "$desktop_file"
+  echo -e "${GREEN}✓ WebApp Creator desktop file created${NC}"
 }
 
-# Function to copy to user directories
-install_user() {
-  echo -e "${BLUE}Installing to user directories...${NC}"
-
-  # Create local bin directory
-  mkdir -p "$LOCAL_BIN"
-
-  # Copy webapp-creator to ~/.local/bin
-  if [[ -f "$WEBAPP_CREATOR" ]]; then
-    cp "$WEBAPP_CREATOR" "$LOCAL_BIN/webapp-creator"
-    chmod +x "$LOCAL_BIN/webapp-creator"
-    echo -e "${GREEN}✓ Copied webapp-creator to: $LOCAL_BIN/webapp-creator${NC}"
-  else
-    echo -e "${RED}✗ WebApp Creator script not found: $WEBAPP_CREATOR${NC}"
-    return 1
-  fi
-
-  # Copy launcher if it exists
-  if [[ -f "$LAUNCHER_SCRIPT" ]]; then
-    cp "$LAUNCHER_SCRIPT" "$LOCAL_BIN/webapp-launcher"
-    chmod +x "$LOCAL_BIN/webapp-launcher"
-    echo -e "${GREEN}✓ Copied launcher to: $LOCAL_BIN/webapp-launcher${NC}"
-  else
-    echo -e "${YELLOW}! Launcher script not found, skipping...${NC}"
-  fi
-
-  # Copy game-mode script if it exists
-  if [[ -f "$GAMEMODE_SCRIPT" ]]; then
-    cp "$GAMEMODE_SCRIPT" "$LOCAL_BIN/webapp-gamemode"
-    chmod +x "$LOCAL_BIN/webapp-gamemode"
-    echo -e "${GREEN}✓ Copied game-mode to: $LOCAL_BIN/webapp-gamemode${NC}"
-  else
-    echo -e "${YELLOW}! Game-mode script not found, skipping...${NC}"
-  fi
-
-  # Create symlinks for easier access
-  if [[ ! -L "$LOCAL_BIN/wac" ]]; then
-    ln -s "$LOCAL_BIN/webapp-creator" "$LOCAL_BIN/wac"
-    echo -e "${GREEN}✓ Created symlink: wac -> webapp-creator${NC}"
-  fi
-
-  if [[ -f "$LOCAL_BIN/webapp-gamemode" && ! -L "$LOCAL_BIN/wac-game" ]]; then
-    ln -s "$LOCAL_BIN/webapp-gamemode" "$LOCAL_BIN/wac-game"
-    echo -e "${GREEN}✓ Created symlink: wac-game -> webapp-gamemode${NC}"
-  fi
-
-  # Check PATH
-  if ! is_in_path "$LOCAL_BIN"; then
-    echo -e "${YELLOW}⚠ Warning: $LOCAL_BIN is not in your PATH${NC}"
-    echo -e "${BLUE}Add this line to your ~/.bashrc, ~/.zshrc, or ~/.config/fish/config.fish:${NC}"
-    echo -e "${WHITE}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
-    echo -e "${YELLOW}For Fish shell: ${WHITE}fish_add_path ~/.local/bin${NC}"
-  fi
-
-  echo -e "${GREEN}✓ User installation completed${NC}"
-  return 0
-}
-
-# Function to set up development environment
-setup_dev_environment() {
-  echo -e "${BLUE}Setting up development environment...${NC}"
-
-  # Make scripts executable in launcher directory
-  if [[ -f "$WEBAPP_CREATOR" ]]; then
-    chmod +x "$WEBAPP_CREATOR"
-    echo -e "${GREEN}✓ Made webapp-creator executable${NC}"
-  fi
-
-  if [[ -f "$LAUNCHER_SCRIPT" ]]; then
-    chmod +x "$LAUNCHER_SCRIPT"
-    echo -e "${GREEN}✓ Made launcher.sh executable${NC}"
-  fi
-
-  if [[ -f "$GAMEMODE_SCRIPT" ]]; then
-    chmod +x "$GAMEMODE_SCRIPT"
-    echo -e "${GREEN}✓ Made game-mode.sh executable${NC}"
-  fi
-
-  # Make this script executable
-  chmod +x "$0"
-  echo -e "${GREEN}✓ Made install.sh executable${NC}"
-
-  echo -e "${GREEN}✓ Development environment ready${NC}"
-  echo -e "${BLUE}You can now run: ./Launcher/webapp-creator.sh${NC}"
-  return 0
-}
 
 # Function to install system configurations
 install_configs() {
@@ -756,8 +450,8 @@ install_configs() {
     if [[ -d "$config_dir" ]]; then
       local dir_name=$(basename "$config_dir")
 
-      # Skip Apps and Launcher directories
-      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" ]]; then
+      # Skip Apps, Launcher, and Wallpapers directories
+      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" || "$dir_name" == "Wallpapers" ]]; then
         echo -e "${BLUE}Skipping: $dir_name${NC}"
         continue
       fi
@@ -945,6 +639,16 @@ install_plymouth() {
   fi
 }
 
+# Function to run Wallpapers installer
+install_wallpapers() {
+  if [[ -f "$APPS_DIR/install_wallpapers.sh" ]]; then
+    "$APPS_DIR/install_wallpapers.sh" "$REPO_DIR"
+  else
+    echo -e "${RED}✗ Script install_wallpapers.sh no encontrado${NC}"
+    read -p "Press Enter to continue..." </dev/tty
+  fi
+}
+
 # Function to uninstall everything
 uninstall() {
   echo -e "${YELLOW}Uninstalling WebApp Creator and configurations...${NC}"
@@ -990,41 +694,21 @@ uninstall() {
   echo -e "${BLUE}Note: System configurations in ~/.config/ were not removed${NC}"
 }
 
-# Function to show status with Gum
+# Function to show status (simple, no Gum issues)
 show_status() {
   echo
-  if [[ "$HAS_GUM" == true ]]; then
-    gum style --foreground "#87CEEB" --bold "Estado Actual:"
-  else
-    echo -e "${WHITE}Current Status:${NC}"
-  fi
+  echo "Estado Actual:"
   
   if [[ -f "$LOCAL_BIN/webapp-creator" ]]; then
-    if [[ "$HAS_GUM" == true ]]; then
-      gum style --foreground "#90EE90" "  ✓ User installation found"
-    else
-      echo -e "${GREEN}  ✓ User installation found${NC}"
-    fi
+    echo "  ✓ User installation found"
   else
-    if [[ "$HAS_GUM" == true ]]; then
-      gum style --foreground "#FFD700" "  ○ No user installation"
-    else
-      echo -e "${YELLOW}  ○ No user installation${NC}"
-    fi
+    echo "  ○ No user installation"
   fi
 
   if [[ -d "$HOME/.config/i3" && -d "$HOME/.config/polybar" ]]; then
-    if [[ "$HAS_GUM" == true ]]; then
-      gum style --foreground "#90EE90" "  ✓ System configurations installed"
-    else
-      echo -e "${GREEN}  ✓ System configurations installed${NC}"
-    fi
+    echo "  ✓ System configurations installed"
   else
-    if [[ "$HAS_GUM" == true ]]; then
-      gum style --foreground "#FFD700" "  ○ No system configurations"
-    else
-      echo -e "${YELLOW}  ○ No system configurations${NC}"
-    fi
+    echo "  ○ No system configurations"
   fi
   echo
 }
@@ -1037,6 +721,7 @@ main_menu() {
     # Check availability of options based on directory structure
     local launcher_available=true
     local apps_available=true
+    local wallpapers_available=true
 
     if [[ ! -d "$LAUNCHER_DIR" ]]; then
       launcher_available=false
@@ -1044,6 +729,10 @@ main_menu() {
 
     if [[ ! -d "$APPS_DIR" ]]; then
       apps_available=false
+    fi
+
+    if [[ ! -d "$REPO_DIR/Wallpapers" ]]; then
+      wallpapers_available=false
     fi
 
     # Build menu options array
@@ -1091,7 +780,14 @@ main_menu() {
       options+=("[DESHABILITADO] Install Plymouth Themes - Falta directorio Apps")
     fi
 
-    # Options 7 and 8
+    # Option 7 - Wallpapers
+    if [[ "$wallpapers_available" == true ]]; then
+      options+=("Setup Wallpapers - Configure backgrounds for i3WM")
+    else
+      options+=("[DESHABILITADO] Setup Wallpapers - Falta directorio Wallpapers")
+    fi
+
+    # Options 8 and 9
     options+=("Uninstall - Remove all installations")
     options+=("Exit")
 
@@ -1101,9 +797,9 @@ main_menu() {
     # Use Gum if available, otherwise fallback to classic menu
     local choice_index
     if [[ "$HAS_GUM" == true ]]; then
-      # Try to use Gum - it can work even without TTY in some cases
+      # Use Gum for interactive selection
       local selected
-      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 12 2>/dev/null)
+      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 12)
       
       if [[ -n "$selected" ]]; then
         # Find index of selected option
@@ -1113,59 +809,33 @@ main_menu() {
             break
           fi
         done
-      elif [[ -c /dev/tty ]]; then
-        # If Gum failed but TTY is available, try again with TTY
-        selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 12 </dev/tty)
-        if [[ -n "$selected" ]]; then
-          for i in "${!options[@]}"; do
-            if [[ "${options[$i]}" == "$selected" ]]; then
-              choice_index=$((i + 1))
-              break
-            fi
-          done
-        else
-          echo -e "${BLUE}Operación cancelada${NC}"
-          exit 0
-        fi
       else
-        # No TTY available and Gum failed - fall back to classic menu
-        HAS_GUM=false
+        echo "No se seleccionó ninguna opción"
+        continue
       fi
-    fi
-    
-    # If we still don't have a choice (fallback to classic menu)
-    if [[ -z "$choice_index" ]]; then
-      echo -e "${WHITE}Installation Options${NC}"
-      echo -e "${WHITE}───────────────────${NC}"
+    else
+      # Fallback to classic menu
+      echo
+      echo "Installation Options"
+      echo "==================="
       echo
       
       for i in "${!options[@]}"; do
         local option_num=$((i + 1))
         if [[ "${options[$i]}" =~ ^\[DESHABILITADO\] ]]; then
-          echo -e "${RED}$option_num.${NC} ${RED}${options[$i]#[DESHABILITADO] }${NC}"
+          echo "$option_num. [DISABLED] ${options[$i]#[DESHABILITADO] }"
         else
-          echo -e "${CYAN}$option_num.${NC} ${options[$i]}"
+          echo "$option_num. ${options[$i]}"
         fi
       done
       echo
       
-      # Try to read from TTY if available
-      if [[ -c /dev/tty ]]; then
-        printf "${YELLOW}Select option (1-8): ${NC}"
-        read -r choice_index </dev/tty
-      else
-        # No TTY available - try to read from stdin
-        printf "${YELLOW}Select option (1-8): ${NC}"
-        read -r choice_index
-        
-        # If still no input, show error and exit
-        if [[ -z "$choice_index" ]]; then
-          echo
-          echo -e "${RED}Error: No se puede leer entrada del usuario${NC}"
-          echo -e "${YELLOW}Ejecuta el script en modo interactivo o instala Gum para mejor compatibilidad${NC}"
-          echo -e "${BLUE}Ejemplo: bash <(curl -fsSL tu-url)${NC}"
-          exit 1
-        fi
+      printf "Select option (1-9): "
+      read -r choice_index
+      
+      if [[ -z "$choice_index" ]]; then
+        echo "Error: No se puede leer entrada del usuario"
+        exit 1
       fi
     fi
 
@@ -1173,64 +843,88 @@ main_menu() {
     1)
       if [[ "$launcher_available" == true && "$apps_available" == true ]]; then
         install_all
+        echo
+        read -p "Press Enter to continue..."
       else
         echo
         echo -e "${RED}Esta opción no está disponible. Faltan directorios requeridos.${NC}"
         echo
-        read -p "Press Enter to continue..." </dev/tty
+        read -p "Press Enter to continue..."
       fi
       ;;
     2)
       if [[ "$launcher_available" == true ]]; then
         install_webapp_and_configs
+        echo
+        read -p "Press Enter to continue..."
       else
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Launcher.${NC}"
         echo
-        read -p "Press Enter to continue..." </dev/tty
+        read -p "Press Enter to continue..."
       fi
       ;;
     3)
       if [[ "$apps_available" == true ]]; then
         install_aur
+        echo
+        read -p "Press Enter to continue..."
       else
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
         echo
-        read -p "Press Enter to continue..." </dev/tty
+        read -p "Press Enter to continue..."
       fi
       ;;
     4)
       if [[ "$apps_available" == true ]]; then
         install_packages
+        echo
+        read -p "Press Enter to continue..."
       else
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
         echo
-        read -p "Press Enter to continue..." </dev/tty
+        read -p "Press Enter to continue..."
       fi
       ;;
     5)
       if [[ "$apps_available" == true ]]; then
         install_sddm
+        echo
+        read -p "Press Enter to continue..."
       else
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
         echo
-        read -p "Press Enter to continue..." </dev/tty
+        read -p "Press Enter to continue..."
       fi
       ;;
     6)
       if [[ "$apps_available" == true ]]; then
         install_plymouth
+        echo
+        read -p "Press Enter to continue..."
       else
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
         echo
-        read -p "Press Enter to continue..." </dev/tty
+        read -p "Press Enter to continue..."
       fi
       ;;
     7)
+      if [[ "$wallpapers_available" == true ]]; then
+        install_wallpapers
+        echo
+        read -p "Press Enter to continue..."
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Wallpapers.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
+      ;;
+    8)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
       read -r confirm </dev/tty
@@ -1242,7 +936,7 @@ main_menu() {
       echo
       read -p "Press Enter to continue..." </dev/tty
       ;;
-    8)
+    9)
       echo -e "${GREEN}Goodbye!${NC}"
       exit 0
       ;;
@@ -1259,10 +953,46 @@ detect_environment
 # Clone repository if running standalone
 clone_repository
 
-# Check and install Gum for better UI
+# Check Gum availability and offer to install
 HAS_GUM=false
-if check_install_gum; then
+if command -v gum &>/dev/null; then
   HAS_GUM=true
+  # Set Gum colors
+  export GUM_CHOOSE_SELECTED_FOREGROUND="#87CEEB"  # Sky Blue
+  export GUM_CHOOSE_CURSOR_FOREGROUND="#00BFFF"    # Deep Sky Blue
+  export GUM_CONFIRM_SELECTED_FOREGROUND="#87CEEB"
+  export GUM_INPUT_CURSOR_FOREGROUND="#00BFFF"
+  export GUM_INPUT_PROMPT_FOREGROUND="#87CEEB"
+  export GUM_FILTER_INDICATOR_FOREGROUND="#00BFFF"
+  export GUM_FILTER_MATCH_FOREGROUND="#87CEEB"
+  echo -e "${GREEN}✓ Gum está instalado${NC}"
+else
+  echo -e "${YELLOW}⚠ Gum no está instalado${NC}"
+  echo -e "${BLUE}Gum es necesario para una mejor experiencia de usuario${NC}"
+  echo -e "${YELLOW}¿Instalar Gum ahora? (y/N):${NC} "
+  read -r install_gum </dev/tty
+  
+  if [[ "$install_gum" =~ ^[Yy]$ ]]; then
+    echo -e "${BLUE}Instalando Gum...${NC}"
+    if sudo pacman -S gum --noconfirm; then
+      echo -e "${GREEN}✓ Gum instalado exitosamente${NC}"
+      HAS_GUM=true
+      # Set Gum colors
+      export GUM_CHOOSE_SELECTED_FOREGROUND="#87CEEB"
+      export GUM_CHOOSE_CURSOR_FOREGROUND="#00BFFF"
+      export GUM_CONFIRM_SELECTED_FOREGROUND="#87CEEB"
+      export GUM_INPUT_CURSOR_FOREGROUND="#00BFFF"
+      export GUM_INPUT_PROMPT_FOREGROUND="#87CEEB"
+      export GUM_FILTER_INDICATOR_FOREGROUND="#00BFFF"
+      export GUM_FILTER_MATCH_FOREGROUND="#87CEEB"
+    else
+      echo -e "${RED}✗ Error al instalar Gum${NC}"
+      echo -e "${YELLOW}Continuando sin Gum (funcionalidad básica)${NC}"
+    fi
+  else
+    echo -e "${YELLOW}Continuando sin Gum (funcionalidad básica)${NC}"
+  fi
+  echo
 fi
 
 # Check if required directories exist after potential cloning
@@ -1287,6 +1017,32 @@ if [[ ! -d "$LAUNCHER_DIR" ]]; then
     echo
   fi
 fi
+
+# Show project path verification
+echo -e "${BLUE}📁 Directorio del proyecto: $REPO_DIR${NC}"
+echo -e "${BLUE}🔍 Verificando estructura...${NC}"
+
+if [[ -d "$LAUNCHER_DIR" ]]; then
+  echo -e "${GREEN}  ✓ Launcher/ encontrado${NC}"
+else
+  echo -e "${RED}  ✗ Launcher/ no encontrado${NC}"
+fi
+
+if [[ -d "$APPS_DIR" ]]; then
+  echo -e "${GREEN}  ✓ Apps/ encontrado${NC}"
+else
+  echo -e "${RED}  ✗ Apps/ no encontrado${NC}"
+fi
+
+if [[ -d "$REPO_DIR/Wallpapers" ]]; then
+  echo -e "${GREEN}  ✓ Wallpapers/ encontrado${NC}"
+else
+  echo -e "${RED}  ✗ Wallpapers/ no encontrado${NC}"
+fi
+
+echo
+echo -e "${BLUE}Presiona Enter para continuar al menú principal...${NC}"
+read -r </dev/tty
 
 # Start the application
 main_menu

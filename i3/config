@@ -38,11 +38,13 @@ exec --no-startup-id polybar
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
 #exec --no-startup-id nm-applet
-exec --no-startup-id feh --bg-fill ~/Pictures/wallpaper.png
+#exec --no-startup-id feh --bg-fill ~/Pictures/wallpaper.png
 exec --no-startup-id export CM_LAUNCHER=rofi
 exec --no-startup-id clipmenud
 exec --no-startup-id picom --config ~/.config/picom/picom.conf -b
 exec --no-startup-id setxkbmap -layout "us,latam"
+exec --no-startup-id ~/.config/i3/scripts/change-wallpaper.sh restore
+exec --no-startup-id ~/.config/i3/hotkey.sh --generate
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
@@ -65,7 +67,7 @@ bindsym $mod+Return exec $term
 bindsym $mod+Shift+q kill
 
 # start dmenu (a program launcher)
-bindsym $mod+space exec --no-startup-id rofi -show drun -show-icons
+bindsym $mod+m exec --no-startup-id rofi -show drun -show-icons
 bindsym $mod+e exec --no-startup-id $file-manager
 bindsym $mod+w exec --no-startup-id $browser
 bindsym $mod+Shift+s exec --no-startup-id steam
@@ -77,8 +79,19 @@ bindsym $mod+Shift+o exec systemctl suspend
 bindsym $mod+Mod1+o exec poweroff
 bindsym $mod+k exec --no-startup-id "setxkbmap -query | grep -q 'layout:.*us' && setxkbmap latam || setxkbmap us"
 bindsym $mod+Tab exec --no-startup-id "rofi -show window"
-bindsym $mod+Mod1+space exec --no-startup-id feh --bg-fill "$(find ~/Pictures -type f | shuf -n1)"
 
+
+# Wallpaper configuration
+# Restore last wallpaper on i3 startup/restart
+
+
+
+# Change to random wallpaper keybinding
+# Super+Alt+Space = Random wallpaper
+bindsym $mod+Mod1+space exec --no-startup-id ~/.config/i3/scripts/change-wallpaper.sh random
+
+# For feh
+#bindsym $mod+Mod1+space exec --no-startup-id feh --bg-fill "$(find ~/Pictures -type f | shuf -n1)"
 
 # Modo juego con Mod+Alt+G
 bindsym $mod+Mod1+g exec --no-startup-id game-mode.sh
@@ -239,3 +252,11 @@ client.placeholder      #000000 #1a1b26 #ffffff #000000 #1a1b26
 #bar {
 #        status_command i3status
 #}
+
+# Generate hotkeys list on startup and reload
+exec --no-startup-id ~/.config/i3/hotkey.sh --generate
+
+# Hotkey helper - Show all keybindings
+bindsym $mod+slash exec --no-startup-id ~/.config/i3/hotkey.sh
+bindsym $mod+minus exec --no-startup-id ~/.config/i3/hotkey.sh
+

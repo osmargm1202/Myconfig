@@ -18,9 +18,16 @@ CYAN='\033[0;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
-# Rofi theme configuration
-ROFI_THEME="DarkBlue"
-
+# Gum configuration
+GUM_FOREGROUND="212" # Purple color
+GUM_BOLD="true"
+export GUM_CHOOSE_SELECTED_FOREGROUND="#87CEEB"  # Sky Blue
+export GUM_CHOOSE_CURSOR_FOREGROUND="#00BFFF"    # Deep Sky Blue
+export GUM_CONFIRM_SELECTED_FOREGROUND="#87CEEB"
+export GUM_INPUT_CURSOR_FOREGROUND="#00BFFF"
+export GUM_INPUT_PROMPT_FOREGROUND="#87CEEB"
+export GUM_FILTER_INDICATOR_FOREGROUND="#00BFFF"
+export GUM_FILTER_MATCH_FOREGROUND="#87CEEB"
 # Create necessary directories
 mkdir -p "$APPS_DIR" "$ICONS_DIR" "$SYNC_DIR"
 
@@ -41,22 +48,19 @@ show_header() {
 
 # Function to select category
 select_category() {
-  local categories=(
-    "AudioVideo (Media applications)"
-    "Development (Programming tools)"
-    "Education (Learning applications)"
-    "Game (Games and entertainment)"
-    "Graphics (Image/video editing)"
-    "Network (Web browsers, chat)"
-    "Office (Productivity applications)"
-    "Science (Scientific applications)"
-    "System (System tools)"
-    "Utility (General utilities)"
-    "Custom (Enter your own)"
-  )
-
   local choice
-  choice=$(printf '%s\n' "${categories[@]}" | rofi -dmenu -p "Select Category" -theme "$ROFI_THEME")
+  choice=$(gum choose --header="Select Category:" \
+    "AudioVideo (Media applications)" \
+    "Development (Programming tools)" \
+    "Education (Learning applications)" \
+    "Game (Games and entertainment)" \
+    "Graphics (Image/video editing)" \
+    "Network (Web browsers, chat)" \
+    "Office (Productivity applications)" \
+    "Science (Scientific applications)" \
+    "System (System tools)" \
+    "Utility (General utilities)" \
+    "Custom (Enter your own)")
 
   # If user cancelled (ESC), return empty
   if [[ $? -ne 0 ]]; then
@@ -126,13 +130,13 @@ get_input() {
   local var_name="$2"
   local default="$3"
 
-  local rofi_prompt="$prompt"
+  local gum_prompt="$prompt: "
   if [[ -n "$default" ]]; then
-    rofi_prompt="$prompt (default: $default)"
+    gum_prompt="$prompt (default: $default): "
   fi
 
   local input
-  input=$(echo "" | rofi -dmenu -p "$rofi_prompt" -theme "$ROFI_THEME")
+  input=$(gum input --placeholder="$default" --prompt="$gum_prompt")
 
   # If user cancelled (ESC), return empty
   if [[ $? -ne 0 ]]; then
@@ -242,17 +246,17 @@ add_to_sync_config() {
 # Function to create new webapp
 create_webapp() {
   # Get app details using rofi
-  get_input "App Name" app_name
+  get_input "App Name: " app_name
   if [[ $? -ne 0 || -z "$app_name" ]]; then
     return 1
   fi
 
-  get_input "URL (https:// will be added if missing)" app_url
+  get_input "URL (https:// will be added if missing): " app_url
   if [[ $? -ne 0 || -z "$app_url" ]]; then
     return 1
   fi
 
-  get_input "Description" app_description "$app_name Web Application"
+  get_input "Description: " app_description "$app_name Web Application"
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -266,11 +270,11 @@ create_webapp() {
   # Auto-add https:// if not present
   if [[ ! "$app_url" =~ ^https?:// ]]; then
     app_url="https://$app_url"
-    notify-send "WebApp Creator" "Added https:// to URL: $app_url" -t 3000 2>/dev/null || echo -e "${BLUE}Added https:// to URL: $app_url${NC}"
+    gum style --foreground="$GUM_FOREGROUND" --bold "Added https:// to URL: $app_url"
   fi
 
   # Show progress notification
-  notify-send "WebApp Creator" "Creating webapp '$app_name'..." -t 3000 2>/dev/null || echo -e "${BLUE}Creating webapp...${NC}"
+  gum style --foreground="$GUM_FOREGROUND" --bold "Creating webapp '$app_name'..."
 
   # Download icon
   download_favicon "$app_url" "$app_name"
@@ -282,26 +286,55 @@ create_webapp() {
   add_to_sync_config "$app_name" "$app_url" "$app_description" "$app_categories"
 
   # Success notification
-  notify-send "WebApp Creator" "✓ WebApp '$app_name' created successfully!" -t 5000 2>/dev/null || {
-    echo -e "${GREEN}✓ WebApp '$app_name' created successfully!${NC}"
-    echo -e "${BLUE}You can now find it in your applications menu${NC}"
-  }
+  gum style --foreground="$GUM_FOREGROUND" --bold "✓ WebApp '$app_name' created successfully!"
+  gum style --foreground="$GUM_FOREGROUND" --bold "You can now find it in your applications menu"
 }
 
 # Function to list existing webapps
 list_webapps() {
   if [[ ! -s "$CONFIG_FILE" ]] || [[ "$(jq length "$CONFIG_FILE")" -eq 0 ]]; then
-    notify-send "WebApp Creator" "No webapps found" -t 3000 2>/dev/null
-    echo "" | rofi -dmenu -p "No webapps found" -theme "$ROFI_THEME" >/dev/null
+    gum style --foreground="$GUM_FOREGROUND" --bold "No webapps found"
     return
   fi
 
-  # Create formatted list for rofi display
-  local webapp_info
-  webapp_info=$(jq -r '.[] | "\(.name) | \(.url) | \(.description)"' "$CONFIG_FILE")
+  # Create formatted list for display
+  local webapp_list
+  webapp_list=$(jq -r '.[] | "\(.name) - \(.url) - \(.description)"' "$CONFIG_FILE")
 
-  # Show list in rofi (read-only)
-  echo "$webapp_info" | rofi -dmenu -p "Installed WebApps (Name | URL | Description)" -theme "$ROFI_THEME" >/dev/null
+  # Show list using gum choose and execute selected app
+  local selected_webapp
+  selected_webapp=$(echo "$webapp_list" | gum choose --header="Select WebApp to Launch:" --no-limit)
+
+  # If user cancelled (ESC), return
+  if [[ $? -ne 0 || -z "$selected_webapp" ]]; then
+    return
+  fi
+
+  # Extract the app name (first part before " - ")
+  local app_name
+  app_name=$(echo "$selected_webapp" | cut -d' ' -f1-2 | sed 's/ -$//')
+
+  # Get the URL from the config
+  local app_url
+  app_url=$(jq -r --arg name "$app_name" '.[] | select(.name == $name) | .url' "$CONFIG_FILE")
+
+  if [[ -n "$app_url" ]]; then
+    gum style --foreground="$GUM_FOREGROUND" --bold "Launching $app_name..."
+    
+    # Launch the webapp
+    if command -v chromium &>/dev/null; then
+      chromium --app="$app_url" --new-window --class="$app_name" &
+    elif command -v chromium-browser &>/dev/null; then
+      chromium-browser --app="$app_url" --new-window --class="$app_name" &
+    else
+      gum style --foreground="$GUM_FOREGROUND" --bold "✗ Chromium not found. Cannot launch webapp."
+      return 1
+    fi
+    
+    gum style --foreground="$GUM_FOREGROUND" --bold "✓ $app_name launched successfully!"
+  else
+    gum style --foreground="$GUM_FOREGROUND" --bold "✗ Could not find URL for $app_name"
+  fi
 }
 
 # Function to export webapps
@@ -310,7 +343,7 @@ export_webapps() {
   local export_file="$script_dir/webapps.tar.gz"
 
   # Show progress notification
-  notify-send "WebApp Creator" "Creating export package..." -t 3000 2>/dev/null
+  gum style --foreground="$GUM_FOREGROUND" --bold "Creating export package..."
 
   # Create temporary directory for export
   local temp_dir=$(mktemp -d)
@@ -342,10 +375,9 @@ export_webapps() {
 
   # Show success notification with file location
   local export_msg="✓ Export created: $(basename "$script_dir")/webapps.tar.gz"
-  notify-send "WebApp Creator" "$export_msg" -t 5000 2>/dev/null
 
-  # Show confirmation in rofi
-  echo "" | rofi -dmenu -p "$export_msg" -theme "$ROFI_THEME" >/dev/null
+  # Show confirmation with gum
+  gum style --foreground="$GUM_FOREGROUND" --bold "$export_msg"
 }
 
 # Function to check chromium installation
@@ -355,23 +387,18 @@ check_chromium() {
   elif command -v chromium-browser &>/dev/null; then
     return 0
   else
-    # Show installation prompt using rofi
-    local install_options=("Yes, install Chromium" "No, skip installation")
-    local choice
-    choice=$(printf '%s\n' "${install_options[@]}" | rofi -dmenu -p "Chromium not found. Install now?" -theme "$ROFI_THEME")
-
-    if [[ "$choice" == "Yes, install Chromium" ]]; then
-      notify-send "WebApp Creator" "Installing Chromium..." -t 3000 2>/dev/null
-      if sudo pacman -S chromium; then
-        notify-send "WebApp Creator" "✓ Chromium installed successfully" -t 3000 2>/dev/null
+    # Show installation prompt using gum
+    if gum confirm "Chromium not found. Install now?"; then
+      gum spin --title="Installing Chromium..." -- sudo pacman -S chromium
+      if [[ $? -eq 0 ]]; then
+        gum style --foreground="$GUM_FOREGROUND" --bold "✓ Chromium installed successfully"
         return 0
       else
-        notify-send "WebApp Creator" "✗ Failed to install Chromium" -t 5000 2>/dev/null
-        echo "" | rofi -dmenu -p "Failed to install Chromium. Install manually: sudo pacman -S chromium" -theme "$ROFI_THEME" >/dev/null
+        gum style --foreground="$GUM_FOREGROUND" --bold "✗ Failed to install Chromium. Install manually: sudo pacman -S chromium"
         return 1
       fi
     else
-      notify-send "WebApp Creator" "⚠ WebApp Creator needs Chromium to work properly" -t 5000 2>/dev/null
+      gum style --foreground="$GUM_FOREGROUND" --bold "⚠ WebApp Creator needs Chromium to work properly"
       return 1
     fi
   fi
@@ -573,7 +600,7 @@ install_app() {
 # Function to remove webapp
 remove_webapp() {
   if [[ ! -s "$CONFIG_FILE" ]] || [[ "$(jq length "$CONFIG_FILE")" -eq 0 ]]; then
-    notify-send "WebApp Creator" "No webapps found" -t 3000 2>/dev/null || echo -e "${YELLOW}No webapps found.${NC}"
+    gum style --foreground="$GUM_FOREGROUND" --bold "No webapps found"
     return
   fi
 
@@ -581,9 +608,9 @@ remove_webapp() {
   local webapp_list
   webapp_list=$(jq -r '.[] | .name' "$CONFIG_FILE")
 
-  # Let user select webapp to remove
+  # Let user select webapp to remove using gum choose
   local selected_app
-  selected_app=$(echo "$webapp_list" | rofi -dmenu -p "Select WebApp to Remove" -theme "$ROFI_THEME")
+  selected_app=$(echo "$webapp_list" | gum choose --header="Select WebApp to Remove:")
 
   # If user cancelled (ESC), return
   if [[ $? -ne 0 || -z "$selected_app" ]]; then
@@ -595,16 +622,12 @@ remove_webapp() {
   index=$(jq -r --arg name "$selected_app" 'to_entries | .[] | select(.value.name == $name) | .key' "$CONFIG_FILE")
 
   if [[ -z "$index" ]]; then
-    notify-send "WebApp Creator" "✗ WebApp not found" -t 3000 2>/dev/null || echo -e "${RED}✗ WebApp not found${NC}"
+    gum style --foreground="$GUM_FOREGROUND" --bold "✗ WebApp not found"
     return
   fi
 
-  # Confirm removal using rofi
-  local confirm_options=("Yes, remove it" "No, cancel")
-  local confirm
-  confirm=$(printf '%s\n' "${confirm_options[@]}" | rofi -dmenu -p "Remove webapp '$selected_app'?" -theme "$ROFI_THEME")
-
-  if [[ "$confirm" == "Yes, remove it" ]]; then
+  # Confirm removal using gum confirm
+  if gum confirm "Remove webapp '$selected_app'?"; then
     # Remove desktop file
     rm -f "$APPS_DIR/${selected_app}.desktop"
 
@@ -615,29 +638,26 @@ remove_webapp() {
     local temp_file=$(mktemp)
     jq "del(.[$index])" "$CONFIG_FILE" >"$temp_file" && mv "$temp_file" "$CONFIG_FILE"
 
-    notify-send "WebApp Creator" "✓ WebApp '$selected_app' removed" -t 3000 2>/dev/null || echo -e "${GREEN}✓ WebApp '$selected_app' removed${NC}"
+    gum style --foreground="$GUM_FOREGROUND" --bold "✓ WebApp '$selected_app' removed"
   else
-    notify-send "WebApp Creator" "Operation cancelled" -t 2000 2>/dev/null || echo -e "${BLUE}Operation cancelled${NC}"
+    gum style --foreground="$GUM_FOREGROUND" --bold "Operation cancelled"
   fi
 }
 
 # Main menu
 main_menu() {
-  local menu_options=(
-    "Create New WebApp"
-    "List WebApps"
-    "Export WebApps"
-    "Remove WebApp"
-    "Exit"
-  )
-
   while true; do
     local choice
-    choice=$(printf '%s\n' "${menu_options[@]}" | rofi -dmenu -p "WebApp Creator - Main Menu" -theme "$ROFI_THEME")
+    choice=$(gum choose --header="WebApp Creator - Main Menu:" \
+      "Create New WebApp" \
+      "List WebApps" \
+      "Export WebApps" \
+      "Remove WebApp" \
+      "Exit")
 
     # If user cancelled (ESC), exit
     if [[ $? -ne 0 ]]; then
-      notify-send "WebApp Creator" "Goodbye!" -t 2000 2>/dev/null || echo -e "${GREEN}Goodbye!${NC}"
+      gum style --foreground="$GUM_FOREGROUND" --bold "Goodbye!"
       exit 0
     fi
 
@@ -655,11 +675,11 @@ main_menu() {
         remove_webapp 
         ;;
       "Exit")
-        notify-send "WebApp Creator" "Goodbye!" -t 2000 2>/dev/null || echo -e "${GREEN}Goodbye!${NC}"
+        gum style --foreground="$GUM_FOREGROUND" --bold "Goodbye!"
         exit 0
         ;;
       *)
-        notify-send "WebApp Creator" "Invalid option" -t 2000 2>/dev/null || echo -e "${RED}Invalid option${NC}"
+        gum style --foreground="$GUM_FOREGROUND" --bold "Invalid option"
         ;;
     esac
   done
@@ -667,7 +687,7 @@ main_menu() {
 
 # Check dependencies
 check_dependencies() {
-  local deps=("wget" "jq" "rofi")
+  local deps=("wget" "jq" "gum")
   local missing=()
 
   for dep in "${deps[@]}"; do
@@ -677,8 +697,8 @@ check_dependencies() {
   done
 
   if [[ ${#missing[@]} -gt 0 ]]; then
-    echo -e "${RED}Missing dependencies: ${missing[*]}${NC}"
-    echo -e "${BLUE}Install with: sudo pacman -S ${missing[*]}${NC}"
+    gum style --foreground="$GUM_FOREGROUND" --bold "Missing dependencies: ${missing[*]}"
+    gum style --foreground="$GUM_FOREGROUND" --bold "Install with: sudo pacman -S ${missing[*]}"
     exit 1
   fi
 }
