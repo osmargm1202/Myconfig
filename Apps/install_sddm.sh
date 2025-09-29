@@ -3,6 +3,37 @@
 # SDDM Theme Corners Installer
 # Installs and configures SDDM with corners theme
 
+# Support for non-interactive mode
+FORCE_YES=false
+ENABLE_AUTOLOGIN=false
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -y|--yes|--force)
+      FORCE_YES=true
+      shift
+      ;;
+    --autologin)
+      ENABLE_AUTOLOGIN=true
+      shift
+      ;;
+    -h|--help)
+      echo "Uso: $0 [opciones]"
+      echo "Opciones:"
+      echo "  -y, --yes, --force    Instalar sin confirmaciones"
+      echo "  --autologin          Activar autologin automáticamente"
+      echo "  -h, --help           Mostrar esta ayuda"
+      exit 0
+      ;;
+    *)
+      echo "Opción desconocida: $1"
+      echo "Usa $0 --help para ver las opciones disponibles"
+      exit 1
+      ;;
+  esac
+done
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -27,6 +58,12 @@ fi
 # Function to ask for confirmation with Gum support
 ask_confirmation() {
   local message="$1"
+  
+  # If force mode is enabled, always return true
+  if [[ "$FORCE_YES" == true ]]; then
+    echo -e "${GREEN}✓ $message (forzado con -y)${NC}"
+    return 0
+  fi
   
   if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
     gum confirm "$message"
@@ -113,7 +150,11 @@ configure_sddm() {
   # Ask about autologin
   echo
   local enable_autologin="n"
-  if ask_confirmation "¿Deseas activar autologin (inicio automático sin contraseña)?"; then
+  
+  if [[ "$ENABLE_AUTOLOGIN" == true ]]; then
+    enable_autologin="y"
+    echo -e "${GREEN}✓ Autologin activado automáticamente (parámetro --autologin)${NC}"
+  elif ask_confirmation "¿Deseas activar autologin (inicio automático sin contraseña)?"; then
     enable_autologin="y"
   fi
   
@@ -172,9 +213,26 @@ enable_sddm_service() {
   
   # Disable other display managers first
   echo -e "${YELLOW}Deshabilitando otros display managers...${NC}"
-  sudo systemctl disable gdm lightdm lxdm 2>/dev/null || true
+  local other_dms=(gdm gdm3 lightdm lxdm xdm kdm nodm slim entrance)
+  
+  for dm in "${other_dms[@]}"; do
+    if systemctl is-enabled "$dm" &>/dev/null; then
+      echo -e "${YELLOW}  • Deshabilitando $dm...${NC}"
+      sudo systemctl disable "$dm" 2>/dev/null || true
+    fi
+  done
+  
+  # Stop any running display managers
+  echo -e "${YELLOW}Deteniendo display managers en ejecución...${NC}"
+  for dm in "${other_dms[@]}"; do
+    if systemctl is-active "$dm" &>/dev/null; then
+      echo -e "${YELLOW}  • Deteniendo $dm...${NC}"
+      sudo systemctl stop "$dm" 2>/dev/null || true
+    fi
+  done
   
   # Enable SDDM
+  echo -e "${BLUE}Habilitando SDDM...${NC}"
   if sudo systemctl enable sddm; then
     echo -e "${GREEN}✓ Servicio SDDM habilitado${NC}"
   else
@@ -185,21 +243,92 @@ enable_sddm_service() {
   return 0
 }
 
+# Function to validate SDDM is default display manager
+validate_sddm_default() {
+  echo -e "${BLUE}Validando configuración de SDDM...${NC}"
+  
+  local validation_failed=false
+  
+  # Check if SDDM is enabled
+  if systemctl is-enabled sddm &>/dev/null; then
+    echo -e "${GREEN}✓ SDDM está habilitado${NC}"
+  else
+    echo -e "${RED}✗ SDDM no está habilitado${NC}"
+    validation_failed=true
+  fi
+  
+  # Check for conflicting display managers
+  local other_dms=(gdm gdm3 lightdm lxdm xdm kdm nodm slim entrance)
+  local conflicts_found=false
+  
+  for dm in "${other_dms[@]}"; do
+    if systemctl is-enabled "$dm" &>/dev/null; then
+      echo -e "${RED}✗ Display manager en conflicto encontrado: $dm está habilitado${NC}"
+      conflicts_found=true
+      validation_failed=true
+    fi
+  done
+  
+  if [[ "$conflicts_found" == false ]]; then
+    echo -e "${GREEN}✓ No se encontraron display managers en conflicto${NC}"
+  fi
+  
+  # Check SDDM configuration file
+  if [[ -f "/etc/sddm.conf" ]]; then
+    echo -e "${GREEN}✓ Archivo de configuración SDDM existe${NC}"
+    
+    # Check if corners theme is configured
+    if grep -q "Current=corners" "/etc/sddm.conf"; then
+      echo -e "${GREEN}✓ Theme corners configurado${NC}"
+    else
+      echo -e "${YELLOW}⚠ Theme corners no encontrado en configuración${NC}"
+    fi
+  else
+    echo -e "${RED}✗ Archivo de configuración SDDM no encontrado${NC}"
+    validation_failed=true
+  fi
+  
+  # Check if corners theme is installed
+  if [[ -d "/usr/share/sddm/themes/corners" ]]; then
+    echo -e "${GREEN}✓ Theme corners instalado${NC}"
+  else
+    echo -e "${RED}✗ Theme corners no encontrado${NC}"
+    validation_failed=true
+  fi
+  
+  # Final validation
+  if [[ "$validation_failed" == true ]]; then
+    echo -e "${RED}✗ Validación fallida: SDDM no está configurado correctamente${NC}"
+    return 1
+  else
+    echo -e "${GREEN}✓ SDDM está configurado correctamente como display manager por defecto${NC}"
+    return 0
+  fi
+}
+
 # Function to show completion message
 show_completion() {
   echo
   echo -e "${GREEN}✓ ¡SDDM con theme corners instalado y configurado!${NC}"
   echo
   echo -e "${WHITE}Configuración aplicada:${NC}"
+  echo -e "${BLUE}  • Display Manager: SDDM${NC}"
   echo -e "${BLUE}  • Theme: corners${NC}"
+  echo -e "${BLUE}  • Estado: Validado como display manager por defecto${NC}"
   if [[ -n "$1" ]]; then
     echo -e "${BLUE}  • Autologin: activado para $1${NC}"
   else
     echo -e "${BLUE}  • Autologin: desactivado${NC}"
   fi
   echo
+  echo -e "${WHITE}Comandos disponibles para uso futuro:${NC}"
+  echo -e "${CYAN}  • Instalación automática: $0 -y${NC}"
+  echo -e "${CYAN}  • Con autologin: $0 -y --autologin${NC}"
+  echo -e "${CYAN}  • Ver ayuda: $0 --help${NC}"
+  echo
   echo -e "${YELLOW}Nota: Reinicia tu sistema para que los cambios tomen efecto${NC}"
   echo -e "${BLUE}El nuevo login manager se activará en el próximo inicio${NC}"
+  echo -e "${GREEN}Todos los display managers conflictivos han sido deshabilitados${NC}"
   echo
 }
 
@@ -212,7 +341,19 @@ main() {
   echo -e "${BLUE}  1. SDDM (Simple Desktop Display Manager)${NC}"
   echo -e "${BLUE}  2. Theme corners desde AUR${NC}"
   echo -e "${BLUE}  3. Configuración automática${NC}"
-  echo -e "${BLUE}  4. Opción de autologin${NC}"
+  echo -e "${BLUE}  4. Deshabilitación de otros display managers${NC}"
+  echo -e "${BLUE}  5. Validación como display manager por defecto${NC}"
+  echo -e "${BLUE}  6. Opción de autologin${NC}"
+  echo
+  
+  if [[ "$FORCE_YES" == true ]]; then
+    echo -e "${GREEN}✓ Modo automático activado (sin confirmaciones)${NC}"
+  fi
+  
+  if [[ "$ENABLE_AUTOLOGIN" == true ]]; then
+    echo -e "${GREEN}✓ Autologin se activará automáticamente${NC}"
+  fi
+  
   echo
   
   if ! ask_confirmation "¿Continuar con la instalación de SDDM?"; then
@@ -246,9 +387,19 @@ main() {
     exit 1
   fi
   
+  echo
+  
+  # Validate SDDM configuration
+  if ! validate_sddm_default; then
+    echo -e "${RED}✗ Error en la validación final${NC}"
+    echo -e "${YELLOW}⚠ SDDM puede no estar configurado correctamente como display manager por defecto${NC}"
+    echo -e "${BLUE}Revisa manualmente la configuración si experimentas problemas${NC}"
+    exit 1
+  fi
+  
   # Show completion
   local autologin_status=""
-  if [[ "$enable_autologin" =~ ^[Yy]$ ]]; then
+  if [[ "$ENABLE_AUTOLOGIN" == true ]] || [[ "$enable_autologin" =~ ^[Yy]$ ]]; then
     autologin_status="$USER"
   fi
   show_completion "$autologin_status"

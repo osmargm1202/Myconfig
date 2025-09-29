@@ -73,16 +73,27 @@ ask_confirmation() {
   local message="$1"
   local default="${2:-N}"  # Default to N if not specified
   
-  if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
-    gum confirm "$message"
-    return $?
-  else
-    # Fallback to traditional prompt
-    echo -e "${YELLOW}$message (y/N):${NC} "
-    read -r response </dev/tty
-    [[ "$response" =~ ^[Yy]$ ]]
-    return $?
+  if [[ "$HAS_GUM" == true ]]; then
+    # Try Gum first
+    if gum confirm "$message" 2>/dev/null; then
+      return 0
+    elif [[ -c /dev/tty ]]; then
+      # Try Gum with TTY
+      gum confirm "$message" </dev/tty 2>/dev/null
+      return $?
+    fi
   fi
+  
+  # Fallback to traditional prompt
+  echo -e "${YELLOW}$message (y/N):${NC} "
+  local response
+  if [[ -c /dev/tty ]]; then
+    read -r response </dev/tty
+  else
+    read -r response
+  fi
+  [[ "$response" =~ ^[Yy]$ ]]
+  return $?
 }
 
 # Function to get input with Gum support
@@ -90,18 +101,38 @@ get_input() {
   local prompt="$1"
   local placeholder="${2:-}"
   
-  if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
+  if [[ "$HAS_GUM" == true ]]; then
+    # Try Gum first
+    local result
     if [[ -n "$placeholder" ]]; then
-      gum input --prompt "$prompt " --placeholder "$placeholder"
+      result=$(gum input --prompt "$prompt " --placeholder "$placeholder" 2>/dev/null)
     else
-      gum input --prompt "$prompt "
+      result=$(gum input --prompt "$prompt " 2>/dev/null)
     fi
-  else
-    # Fallback to traditional prompt
-    echo -ne "${YELLOW}$prompt${NC} "
-    read -r input </dev/tty
-    echo "$input"
+    
+    if [[ -n "$result" ]] || [[ -c /dev/tty ]]; then
+      if [[ -z "$result" && -c /dev/tty ]]; then
+        # Try Gum with TTY
+        if [[ -n "$placeholder" ]]; then
+          result=$(gum input --prompt "$prompt " --placeholder "$placeholder" </dev/tty 2>/dev/null)
+        else
+          result=$(gum input --prompt "$prompt " </dev/tty 2>/dev/null)
+        fi
+      fi
+      echo "$result"
+      return 0
+    fi
   fi
+  
+  # Fallback to traditional prompt
+  echo -ne "${YELLOW}$prompt${NC} "
+  local input
+  if [[ -c /dev/tty ]]; then
+    read -r input </dev/tty
+  else
+    read -r input
+  fi
+  echo "$input"
 }
 
 # Function to detect if we're in repository or standalone
@@ -1070,15 +1101,11 @@ main_menu() {
     # Use Gum if available, otherwise fallback to classic menu
     local choice_index
     if [[ "$HAS_GUM" == true ]]; then
-      if [[ -t 0 && -c /dev/tty ]]; then
-        local selected
-        selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 12)
-        
-        if [[ -z "$selected" ]]; then
-          echo -e "${BLUE}Operación cancelada${NC}"
-          exit 0
-        fi
-        
+      # Try to use Gum - it can work even without TTY in some cases
+      local selected
+      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 12 2>/dev/null)
+      
+      if [[ -n "$selected" ]]; then
         # Find index of selected option
         for i in "${!options[@]}"; do
           if [[ "${options[$i]}" == "$selected" ]]; then
@@ -1086,30 +1113,60 @@ main_menu() {
             break
           fi
         done
+      elif [[ -c /dev/tty ]]; then
+        # If Gum failed but TTY is available, try again with TTY
+        selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 12 </dev/tty)
+        if [[ -n "$selected" ]]; then
+          for i in "${!options[@]}"; do
+            if [[ "${options[$i]}" == "$selected" ]]; then
+              choice_index=$((i + 1))
+              break
+            fi
+          done
+        else
+          echo -e "${BLUE}Operación cancelada${NC}"
+          exit 0
+        fi
       else
-        # Non-interactive mode - default to exit
-        choice_index=8
+        # No TTY available and Gum failed - fall back to classic menu
+        HAS_GUM=false
       fi
-    else
-      # Classic menu fallback
-      if [[ "$HAS_GUM" == false ]]; then
-        echo -e "${WHITE}Installation Options${NC}"
-        echo -e "${WHITE}───────────────────${NC}"
-        echo
-        
-        for i in "${!options[@]}"; do
-          local option_num=$((i + 1))
-          if [[ "${options[$i]}" =~ ^\[DESHABILITADO\] ]]; then
-            echo -e "${RED}$option_num.${NC} ${RED}${options[$i]#[DESHABILITADO] }${NC}"
-          else
-            echo -e "${CYAN}$option_num.${NC} ${options[$i]}"
-          fi
-        done
-        echo
-      fi
+    fi
+    
+    # If we still don't have a choice (fallback to classic menu)
+    if [[ -z "$choice_index" ]]; then
+      echo -e "${WHITE}Installation Options${NC}"
+      echo -e "${WHITE}───────────────────${NC}"
+      echo
       
-      printf "${YELLOW}Select option (1-8): ${NC}"
-      read -r choice_index </dev/tty
+      for i in "${!options[@]}"; do
+        local option_num=$((i + 1))
+        if [[ "${options[$i]}" =~ ^\[DESHABILITADO\] ]]; then
+          echo -e "${RED}$option_num.${NC} ${RED}${options[$i]#[DESHABILITADO] }${NC}"
+        else
+          echo -e "${CYAN}$option_num.${NC} ${options[$i]}"
+        fi
+      done
+      echo
+      
+      # Try to read from TTY if available
+      if [[ -c /dev/tty ]]; then
+        printf "${YELLOW}Select option (1-8): ${NC}"
+        read -r choice_index </dev/tty
+      else
+        # No TTY available - try to read from stdin
+        printf "${YELLOW}Select option (1-8): ${NC}"
+        read -r choice_index
+        
+        # If still no input, show error and exit
+        if [[ -z "$choice_index" ]]; then
+          echo
+          echo -e "${RED}Error: No se puede leer entrada del usuario${NC}"
+          echo -e "${YELLOW}Ejecuta el script en modo interactivo o instala Gum para mejor compatibilidad${NC}"
+          echo -e "${BLUE}Ejemplo: bash <(curl -fsSL tu-url)${NC}"
+          exit 1
+        fi
+      fi
     fi
 
     case $choice_index in

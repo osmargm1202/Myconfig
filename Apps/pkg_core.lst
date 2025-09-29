@@ -1,97 +1,143 @@
-# --------------------------------------------------- // System
-pipewire                                               # audio/video server
-pavucontrol                                            # pulseaudio volume control
-pamixer                                                # pulseaudio cli mixer
-networkmanager                                         # network manager
-network-manager-applet                                 # network manager system tray utility
-bluez                                                  # bluetooth protocol stack
-bluez-utils                                            # bluetooth utility cli
-blueman                                                # bluetooth manager gui
-brightnessctl                                          # screen brightness control
-playerctl                                              # media controls
-udiskie                                                # manage removable media
+# ====================================================================================================
+# SISTEMA BASE Y CRÍTICO
+# ====================================================================================================
 
-# --------------------------------------------------- // Display Manager
-sddm                                                   # display manager for KDE plasma
-qt5-quickcontrols                                      # for sddm theme ui elements
-qt5-quickcontrols2                                     # for sddm theme ui elements
-qt5-graphicaleffects                                   # for sddm theme effects
-sddm-theme-corners-git
+# --------------------------------------------------- // Sistema Base
+xorg-server                                            # servidor X11
+xorg-xinit                                             # inicializar X11
+mesa                                                   # drivers gráficos open source
+sudo                                                   # ejecutar comandos como root
+git                                                    # control de versiones
+openssh                                                # cliente/servidor SSH
+reflector                                              # actualizar mirrors de pacman
+rsync                                                  # sincronización de archivos
 
-# --------------------------------------------------- // Window Manager
-i3-wm                                                     # window manager
-dunst                                                  # notification daemon
-rofi                                                   # application launcher
-polybar                                                 # system bar
-feh                                                   # wallpaper
-i3lock-color                                           # enhanced lock screen with blur and transparency
-scrot                                                      # screenshot utility for lock screen
-flameshot                                                  # screenshot tool
-xclip                                               # clipboard manager
-clipmenu
-picom
-# --------------------------------------------------- // Dependencies
-pacman-contrib                                         # for system update check
-imagemagick                                            # for image processing
-qt5-imageformats                                       # for dolphin image thumbnails
-ffmpegthumbs                                           # for dolphin video thumbnails
-kde-cli-tools                                          # for dolphin file type defaults
-libnotify                                              # for notifications
-noto-fonts-emoji                                       # emoji font
-ttf-jetbrains-mono-nerd
-ttf-jetbrains-mono
-ttf-roboto
-# --------------------------------------------------- // Theming
-nwg-look                                               # gtk configuration tool
-qt5ct                                                  # qt5 configuration tool
-qt6ct                                                  # qt6 configuration tool
-kvantum                                                # svg based qt6 theme engine
-kvantum-qt5                                            # svg based qt5 theme engine
+# --------------------------------------------------- // Filesystems
+ntfs-3g                                                # soporte NTFS
+dosfstools                                             # herramientas FAT32
+exfatprogs                                             # soporte exFAT
 
-# --------------------------------------------------- // Applications
-chromium                                               # web browser
-kitty                                                  # terminal
-dolphin                                                # kde file manager
-ark                                                    # file archiver
-unzip                                                  # extracting zip files
-vim                                                    # terminal text editor
-cursor-bin                                             # ide text editor
-nwg-displays                                           # monitor management utility
-fzf                                                    # Command-line fuzzy finder
-localsend
-mpv
-bat
+# --------------------------------------------------- // Documentación y Herramientas Base
+man-db                                                 # páginas de manual
+man-pages                                              # páginas de manual del sistema
+base-devel                                             # herramientas de desarrollo básicas
+pacman-contrib                                         # utilidades adicionales pacman
 
-# --------------------------------------------------- // Shell
-starship                                           # customizable shell prompt written in Rust
-eza                                               # file lister for fish
-duf                                               # prettier version of df for fish
-fastfetch                                              # system information fetch tool
-zoxide                                                  # cd command
-ripgrep
-fd
-fish
-lazygit
-lazydocker
-docker
-btop
-impala
-inkscape
-gimp
-gnome-calculator
-okular
-kate
-dysk
+# ====================================================================================================
+# AUDIO Y MULTIMEDIA
+# ====================================================================================================
+pipewire                                               # servidor de audio/video
+pavucontrol                                            # control de volumen GUI
+pamixer                                                # control de volumen CLI
+playerctl                                              # controles multimedia
+mpv                                                    # reproductor multimedia
 
-# --------------------------------------------------- // programming
-go
-uv
-vim
-nano
-neovim
-nodejs
-pacseek
-jq
-wget
-curl
-plymouth
+# ====================================================================================================
+# CONECTIVIDAD
+# ====================================================================================================
+networkmanager                                         # gestor de red
+network-manager-applet                                 # applet de red para systray
+bluez                                                  # stack bluetooth
+bluez-utils                                            # utilidades bluetooth CLI
+blueman                                                # gestor bluetooth GUI
+
+# ====================================================================================================
+# DISPLAY MANAGER
+# ====================================================================================================
+sddm                                                   # display manager
+qt5-quickcontrols                                      # elementos UI para sddm
+qt5-quickcontrols2                                     # elementos UI para sddm
+qt5-graphicaleffects                                   # efectos para sddm
+sddm-theme-corners-git                                 # tema sddm
+plymouth                                               # splash screen boot
+
+# ====================================================================================================
+# WINDOW MANAGER Y ENTORNO
+# ====================================================================================================
+i3-wm                                                  # window manager
+dunst                                                  # daemon de notificaciones
+rofi                                                   # lanzador de aplicaciones
+polybar                                                # barra del sistema
+picom                                                  # compositor para transparencias
+feh                                                    # gestor de wallpapers
+i3lock-color                                           # pantalla de bloqueo mejorada
+brightnessctl                                          # control de brillo
+udiskie                                                # montaje automático de medios
+
+# ====================================================================================================
+# HERRAMIENTAS DEL SISTEMA
+# ====================================================================================================
+scrot                                                  # capturas para lock screen
+flameshot                                              # herramienta de capturas
+xclip                                                  # gestor de portapapeles
+clipmenu                                               # menú de portapapeles
+btop                                                   # monitor del sistema
+fastfetch                                              # información del sistema
+nwg-displays                                           # gestión de monitores
+
+# ====================================================================================================
+# TERMINAL Y SHELL
+# ====================================================================================================
+fish                                                   # shell moderno
+kitty                                                  # emulador de terminal
+starship                                               # prompt personalizable
+eza                                                    # listado de archivos mejorado
+duf                                                    # información de discos mejorada
+zoxide                                                 # navegación de directorios inteligente
+fzf                                                    # buscador difuso
+ripgrep                                                # búsqueda en texto
+fd                                                     # búsqueda de archivos
+bat                                                    # cat mejorado
+dysk                                                   # información de discos
+
+# ====================================================================================================
+# EDITORES Y DESARROLLO
+# ====================================================================================================
+neovim                                                 # editor de texto avanzado
+nano                                                   # editor simple
+cursor-bin                                             # IDE moderno
+lazygit                                                # interfaz git
+lazydocker                                             # interfaz docker
+
+# ====================================================================================================
+# LENGUAJES Y RUNTIME
+# ====================================================================================================
+go                                                     # lenguaje Go
+nodejs                                                 # runtime JavaScript
+uv                                                     # gestor de paquetes Python
+
+# ====================================================================================================
+# APLICACIONES GRÁFICAS
+# ====================================================================================================
+chromium                                               # navegador web
+dolphin                                                # gestor de archivos
+kate                                                   # editor de texto KDE
+okular                                                 # visor de documentos
+gnome-calculator                                       # calculadora
+inkscape                                               # editor gráfico vectorial
+gimp                                                   # editor de imágenes
+
+# ====================================================================================================
+# HERRAMIENTAS Y UTILIDADES
+# ====================================================================================================
+ark                                                    # archivador
+unzip                                                  # extractor zip
+docker                                                 # contenedores
+localsend                                              # transferencia de archivos local
+pacseek                                                # explorador de paquetes
+jq                                                     # procesador JSON
+wget                                                   # descargador web
+curl                                                   # cliente web
+
+# ====================================================================================================
+# THEMING Y CONFIGURACIÓN
+# ====================================================================================================
+nwg-look                                               # configuración GTK
+qt5ct                                                  # configuración Qt5
+qt6ct                                                  # configuración Qt6
+kvantum                                                # motor de temas Qt6
+kvantum-qt5                                            # motor de temas Qt5
+noto-fonts-emoji                                       # fuente emoji
+ttf-jetbrains-mono-nerd                                # fuente nerdfont
+ttf-jetbrains-mono                                     # fuente monospace
+ttf-roboto                                             # fuente sans-serif
