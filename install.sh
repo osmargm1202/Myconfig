@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Install Script for WebApp Creator and System Configuration
 # This script installs webapp-creator and system configurations
