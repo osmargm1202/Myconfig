@@ -133,6 +133,7 @@ clone_repository() {
 
     echo
     echo -e "${GREEN}✓ Repositorio listo en: $REPO_DIR${NC}"
+    echo -e "${BLUE}El script usará este directorio para las configuraciones${NC}"
     echo
   fi
 }
@@ -384,20 +385,39 @@ install_all() {
   echo
 
   # Step 1: Install AUR Helper
-  echo -e "${BLUE}Paso 1/4: Instalando AUR Helper...${NC}"
+  echo -e "${BLUE}Paso 1/5: Instalando AUR Helper...${NC}"
   install_aur_silent
 
   # Step 2: Install packages
-  echo -e "${BLUE}Paso 2/4: Instalando paquetes del sistema...${NC}"
+  echo -e "${BLUE}Paso 2/5: Instalando paquetes del sistema...${NC}"
   install_packages_silent
 
   # Step 3: Install configurations
-  echo -e "${BLUE}Paso 3/4: Instalando configuraciones...${NC}"
-  install_configs_silent
+  echo -e "${BLUE}Paso 3/5: Instalando configuraciones...${NC}"
+  if [[ -f "$APPS_DIR/install_configs.sh" ]]; then
+    echo "y" | "$APPS_DIR/install_configs.sh" "$REPO_DIR"
+  else
+    install_configs_silent
+  fi
 
   # Step 4: Install WebApp Creator
-  echo -e "${BLUE}Paso 4/4: Instalando WebApp Creator...${NC}"
-  install_webapp_creator_silent
+  echo -e "${BLUE}Paso 4/5: Instalando WebApp Creator...${NC}"
+  if [[ -f "$APPS_DIR/install_webapp.sh" ]]; then
+    echo "y" | "$APPS_DIR/install_webapp.sh" "$REPO_DIR"
+  else
+    install_webapp_creator_silent
+  fi
+
+  # Step 5: Install SDDM (optional)
+  echo -e "${BLUE}Paso 5/5: ¿Instalar SDDM theme? (y/N):${NC} "
+  read -r install_sddm_choice </dev/tty
+  if [[ "$install_sddm_choice" =~ ^[Yy]$ ]]; then
+    if [[ -f "$APPS_DIR/install_sddm.sh" ]]; then
+      "$APPS_DIR/install_sddm.sh"
+    else
+      echo -e "${YELLOW}Script SDDM no encontrado, saltando...${NC}"
+    fi
+  fi
 
   echo
   echo -e "${GREEN}✓ ¡Instalación completa finalizada!${NC}"
@@ -432,8 +452,24 @@ install_packages_silent() {
 install_configs_silent() {
   echo -e "${BLUE}Installing configuration files...${NC}"
 
+  # Ensure we use the repository directory, not the script directory
+  local source_dir="$REPO_DIR"
+  echo -e "${BLUE}Using source directory: $source_dir${NC}"
+  
+  # Verify the repository directory exists and contains expected structure
+  if [[ ! -d "$source_dir" ]]; then
+    echo -e "${RED}✗ Repository directory not found: $source_dir${NC}"
+    return 1
+  fi
+  
+  if [[ ! -d "$source_dir/Apps" || ! -d "$source_dir/Launcher" ]]; then
+    echo -e "${RED}✗ Invalid repository structure in: $source_dir${NC}"
+    echo -e "${YELLOW}Expected: Apps/ and Launcher/ directories${NC}"
+    return 1
+  fi
+
   # Copy all directories except Apps and Launcher to ~/.config/
-  for config_dir in "$SCRIPT_DIR"/*; do
+  for config_dir in "$source_dir"/*; do
     if [[ -d "$config_dir" ]]; then
       local dir_name=$(basename "$config_dir")
 
@@ -593,17 +629,28 @@ install_configs() {
 
   echo -e "${BLUE}Installing configuration files...${NC}"
 
-  # Check if we're in the right directory structure
-  if [[ ! -d "$SCRIPT_DIR" ]]; then
-    echo -e "${RED}✗ Configuration directory not found: $SCRIPT_DIR${NC}"
-    read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
+  # Ensure we use the repository directory, not the script directory
+  local source_dir="$REPO_DIR"
+  echo -e "${BLUE}Using source directory: $source_dir${NC}"
+  
+  # Verify the repository directory exists and contains expected structure
+  if [[ ! -d "$source_dir" ]]; then
+    echo -e "${RED}✗ Repository directory not found: $source_dir${NC}"
+    read -p "Press Enter to continue..." </dev/tty
+    return 1
+  fi
+  
+  if [[ ! -d "$source_dir/Apps" || ! -d "$source_dir/Launcher" ]]; then
+    echo -e "${RED}✗ Invalid repository structure in: $source_dir${NC}"
+    echo -e "${YELLOW}Expected: Apps/ and Launcher/ directories${NC}"
+    read -p "Press Enter to continue..." </dev/tty
     return 1
   fi
 
   local config_installed=0
 
   # Copy all directories except Apps and Launcher to ~/.config/
-  for config_dir in "$SCRIPT_DIR"/*; do
+  for config_dir in "$source_dir"/*; do
     if [[ -d "$config_dir" ]]; then
       local dir_name=$(basename "$config_dir")
 
@@ -693,21 +740,29 @@ install_packages() {
     if command -v fish &>/dev/null; then
       echo
       echo -e "${GREEN}✓ Fish shell detected${NC}"
-      echo -e "${BLUE}Would you like to change your default shell to fish?${NC}"
-      echo -ne "${YELLOW}Change to fish shell? (y/N): ${NC}"
-      read -r fish_choice </dev/tty
-
-      if [[ "$fish_choice" =~ ^[Yy]$ ]]; then
-        echo -e "${BLUE}Changing default shell to fish...${NC}"
-        if chsh -s /usr/bin/fish; then
-          echo -e "${GREEN}✓ Default shell changed to fish${NC}"
-          echo -e "${BLUE}Please log out and log back in for changes to take effect${NC}"
-        else
-          echo -e "${RED}✗ Failed to change shell to fish${NC}"
-          echo -e "${YELLOW}You can change it manually with: chsh -s /usr/bin/fish${NC}"
-        fi
+      
+      # Check if fish is already the default shell
+      local current_shell=$(getent passwd "$USER" | cut -d: -f7)
+      if [[ "$current_shell" == "/usr/bin/fish" ]]; then
+        echo -e "${GREEN}✓ Fish ya es tu shell predeterminado${NC}"
       else
-        echo -e "${BLUE}Keeping current shell${NC}"
+        echo -e "${BLUE}Shell actual: $current_shell${NC}"
+        echo -e "${BLUE}Would you like to change your default shell to fish?${NC}"
+        echo -ne "${YELLOW}Change to fish shell? (y/N): ${NC}"
+        read -r fish_choice </dev/tty
+
+        if [[ "$fish_choice" =~ ^[Yy]$ ]]; then
+          echo -e "${BLUE}Changing default shell to fish...${NC}"
+          if chsh -s /usr/bin/fish; then
+            echo -e "${GREEN}✓ Default shell changed to fish${NC}"
+            echo -e "${BLUE}Please log out and log back in for changes to take effect${NC}"
+          else
+            echo -e "${RED}✗ Failed to change shell to fish${NC}"
+            echo -e "${YELLOW}You can change it manually with: chsh -s /usr/bin/fish${NC}"
+          fi
+        else
+          echo -e "${BLUE}Keeping current shell${NC}"
+        fi
       fi
     fi
   else
@@ -717,6 +772,75 @@ install_packages() {
 
   echo
   read -p "Press Enter to continue..." </dev/tty </dev/tty
+}
+
+# Function to run WebApp Creator + Configs installation
+install_webapp_and_configs() {
+  show_header
+  echo -e "${WHITE}WebApp Creator + System Configurations${NC}"
+  echo -e "${WHITE}────────────────────────────────────────${NC}"
+  echo
+  
+  echo -e "${BLUE}Este proceso instalará:${NC}"
+  echo -e "${WHITE}  1. WebApp Creator y dependencias${NC}"
+  echo -e "${WHITE}  2. Configuraciones del sistema${NC}"
+  echo
+  echo -e "${YELLOW}¿Continuar? (y/N):${NC} "
+  read -r confirm </dev/tty
+  
+  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+    echo -e "${BLUE}Instalación cancelada${NC}"
+    read -p "Press Enter to continue..." </dev/tty
+    return 1
+  fi
+  
+  echo
+  echo -e "${GREEN}Iniciando instalación combinada...${NC}"
+  echo
+  
+  # Run WebApp Creator installer
+  echo -e "${BLUE}Paso 1/2: Instalando WebApp Creator...${NC}"
+  if [[ -f "$APPS_DIR/install_webapp.sh" ]]; then
+    "$APPS_DIR/install_webapp.sh" "$REPO_DIR"
+  else
+    echo -e "${RED}✗ Script install_webapp.sh no encontrado${NC}"
+    read -p "Press Enter to continue..." </dev/tty
+    return 1
+  fi
+  
+  echo
+  echo -e "${BLUE}Paso 2/2: Instalando configuraciones del sistema...${NC}"
+  if [[ -f "$APPS_DIR/install_configs.sh" ]]; then
+    "$APPS_DIR/install_configs.sh" "$REPO_DIR"
+  else
+    echo -e "${RED}✗ Script install_configs.sh no encontrado${NC}"
+    read -p "Press Enter to continue..." </dev/tty
+    return 1
+  fi
+  
+  echo
+  echo -e "${GREEN}✓ Instalación completa finalizada!${NC}"
+  read -p "Press Enter to continue..." </dev/tty
+}
+
+# Function to run SDDM installer
+install_sddm() {
+  if [[ -f "$APPS_DIR/install_sddm.sh" ]]; then
+    "$APPS_DIR/install_sddm.sh"
+  else
+    echo -e "${RED}✗ Script install_sddm.sh no encontrado${NC}"
+    read -p "Press Enter to continue..." </dev/tty
+  fi
+}
+
+# Function to run Plymouth installer
+install_plymouth() {
+  if [[ -f "$APPS_DIR/install_plymouth.sh" ]]; then
+    "$APPS_DIR/install_plymouth.sh" "$REPO_DIR"
+  else
+    echo -e "${RED}✗ Script install_plymouth.sh no encontrado${NC}"
+    read -p "Press Enter to continue..." </dev/tty
+  fi
 }
 
 # Function to uninstall everything
@@ -792,39 +916,45 @@ main_menu() {
       echo -e "${RED}1.${NC} ${RED}Instalación Completa Automática - No disponible (faltan directorios)${NC}"
     fi
 
-    # Option 2
+    # Option 2 - WebApp Creator + Configs (merged 2&3, auto-runs 4)
     if [[ "$launcher_available" == true ]]; then
-      echo -e "${CYAN}2.${NC} Install WebApp Creator (User) - Current user only"
+      echo -e "${CYAN}2.${NC} Install WebApp Creator + System Configs - Complete setup"
     else
-      echo -e "${RED}2.${NC} ${RED}Install WebApp Creator - No disponible (falta directorio Launcher)${NC}"
+      echo -e "${RED}2.${NC} ${RED}Install WebApp Creator + Configs - No disponible (falta directorio Launcher)${NC}"
     fi
 
-    # Option 3
-    if [[ "$launcher_available" == true ]]; then
-      echo -e "${CYAN}3.${NC} Development Setup - Make scripts executable"
-    else
-      echo -e "${RED}3.${NC} ${RED}Development Setup - No disponible (falta directorio Launcher)${NC}"
-    fi
-
-    # Option 4 - Always available
-    echo -e "${CYAN}4.${NC} Install System Configurations - Copy configs to ~/.config/"
-
-    # Option 5
+    # Option 3 - AUR Helper
     if [[ "$apps_available" == true ]]; then
-      echo -e "${CYAN}5.${NC} Install AUR Helper"
+      echo -e "${CYAN}3.${NC} Install AUR Helper"
     else
-      echo -e "${RED}5.${NC} ${RED}Install AUR Helper - No disponible (falta directorio Apps)${NC}"
+      echo -e "${RED}3.${NC} ${RED}Install AUR Helper - No disponible (falta directorio Apps)${NC}"
     fi
 
-    # Option 6
+    # Option 4 - Packages
     if [[ "$apps_available" == true ]]; then
-      echo -e "${CYAN}6.${NC} Install Packages"
+      echo -e "${CYAN}4.${NC} Install Packages"
     else
-      echo -e "${RED}6.${NC} ${RED}Install Packages - No disponible (falta directorio Apps)${NC}"
+      echo -e "${RED}4.${NC} ${RED}Install Packages - No disponible (falta directorio Apps)${NC}"
     fi
 
-    # Options 7 and 8 - Always available
+    # Option 5 - SDDM Theme
+    if [[ "$apps_available" == true ]]; then
+      echo -e "${CYAN}5.${NC} Install SDDM Theme (Corners) - Login manager setup"
+    else
+      echo -e "${RED}5.${NC} ${RED}Install SDDM Theme - No disponible (falta directorio Apps)${NC}"
+    fi
+
+    # Option 6 - Plymouth Themes
+    if [[ "$apps_available" == true ]]; then
+      echo -e "${CYAN}6.${NC} Install Plymouth Themes - Boot splash themes"
+    else
+      echo -e "${RED}6.${NC} ${RED}Install Plymouth Themes - No disponible (falta directorio Apps)${NC}"
+    fi
+
+    # Option 7 - Uninstall
     echo -e "${CYAN}7.${NC} Uninstall - Remove all installations"
+    
+    # Option 8 - Exit
     echo -e "${CYAN}8.${NC} Exit"
     echo
 
@@ -854,54 +984,57 @@ main_menu() {
         echo
         echo -e "${RED}Esta opción no está disponible. Faltan directorios requeridos.${NC}"
         echo
-        read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
+        read -p "Press Enter to continue..." </dev/tty
       fi
       ;;
     2)
       if [[ "$launcher_available" == true ]]; then
-        echo
-        install_webapp_creator
+        install_webapp_and_configs
       else
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Launcher.${NC}"
         echo
-        read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
+        read -p "Press Enter to continue..." </dev/tty
       fi
       ;;
     3)
-      if [[ "$launcher_available" == true ]]; then
-        echo
-        setup_dev_environment
-        echo
-        read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
-      else
-        echo
-        echo -e "${RED}Esta opción no está disponible. Falta el directorio Launcher.${NC}"
-        echo
-        read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
-      fi
-      ;;
-    4)
-      install_configs
-      ;;
-    5)
       if [[ "$apps_available" == true ]]; then
         install_aur
       else
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
         echo
-        read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
+        read -p "Press Enter to continue..." </dev/tty
       fi
       ;;
-    6)
+    4)
       if [[ "$apps_available" == true ]]; then
         install_packages
       else
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
         echo
-        read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
+        read -p "Press Enter to continue..." </dev/tty
+      fi
+      ;;
+    5)
+      if [[ "$apps_available" == true ]]; then
+        install_sddm
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..." </dev/tty
+      fi
+      ;;
+    6)
+      if [[ "$apps_available" == true ]]; then
+        install_plymouth
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..." </dev/tty
       fi
       ;;
     7)
@@ -914,7 +1047,7 @@ main_menu() {
         echo -e "${BLUE}Uninstall cancelled${NC}"
       fi
       echo
-      read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
+      read -p "Press Enter to continue..." </dev/tty
       ;;
     8)
       echo -e "${GREEN}Goodbye!${NC}"

@@ -30,6 +30,11 @@ Sistema de configuración completo para i3wm, polybar, rofi y aplicaciones web c
 ### Instalación Rápida con curl (Una sola línea)
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/osmargm1202/Myconfig/master/install.sh | bash -x
+
+```
+
+```bash
 curl -fsSL https://custom.or-gm.com/arch.sh | bash
 ```
 
