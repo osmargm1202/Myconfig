@@ -16,6 +16,7 @@ sddm                                                   # display manager for KDE
 qt5-quickcontrols                                      # for sddm theme ui elements
 qt5-quickcontrols2                                     # for sddm theme ui elements
 qt5-graphicaleffects                                   # for sddm theme effects
+sddm-theme-corners-git
 
 # --------------------------------------------------- // Window Manager
 i3-wm                                                     # window manager

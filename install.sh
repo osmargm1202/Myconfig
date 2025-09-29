@@ -4,6 +4,12 @@
 # This script installs webapp-creator and system configurations
 # Can be run directly via curl or from cloned repository
 
+# Ensure we're running with bash for better compatibility
+if [ -z "$BASH_VERSION" ]; then
+  echo "This script requires bash. Please run with: bash <(curl -fsSL your-url)"
+  exit 1
+fi
+
 # Repository information
 REPO_URL="https://github.com/osmargm1202/Myconfig.git"
 REPO_NAME="Myconfig"
@@ -18,9 +24,25 @@ CYAN='\033[0;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
+# Function to check if directory is in PATH
+is_in_path() {
+  local dir="$1"
+  case ":$PATH:" in
+    *":$dir:"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 # Function to detect if we're in repository or standalone
 detect_environment() {
-  SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+  # Use readlink if available, fallback to realpath or plain dirname
+  if command -v readlink &>/dev/null; then
+    SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+  elif command -v realpath &>/dev/null; then
+    SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+  else
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+  fi
 
   # Check if we're in the repository structure
   if [[ -d "$SCRIPT_DIR/Launcher" && -d "$SCRIPT_DIR/Apps" ]]; then
@@ -138,7 +160,7 @@ check_chromium() {
     echo -e "${BLUE}WebApp Creator requires Chromium to create web applications${NC}"
     echo
     echo -ne "${YELLOW}Would you like to install Chromium now? (y/N): ${NC}"
-    read -r install_choice
+    read -r install_choice </dev/tty
 
     if [[ "$install_choice" =~ ^[Yy]$ ]]; then
       echo -e "${BLUE}Installing Chromium...${NC}"
@@ -177,6 +199,7 @@ create_webapp_creator_desktop() {
       -annotate +0+0 "WEB\nAPP" "$icon_path" 2>/dev/null
     echo -e "${GREEN}✓ Created WebApp Creator icon${NC}"
   else
+    echo -e "${YELLOW}ImageMagick not found, using fallback icon creation${NC}"
     # Try to copy a system icon as fallback
     for sys_icon in /usr/share/icons/hicolor/*/apps/preferences-system.png \
       /usr/share/pixmaps/preferences-system.png \
@@ -188,13 +211,18 @@ create_webapp_creator_desktop() {
 
     if [[ ! -f "$icon_path" ]]; then
       # Create simple text-based icon as last resort
-      echo -e "${YELLOW}Creating simple text icon${NC}"
-      convert -size 128x128 xc:"#4A90E2" -font DejaVu-Sans-Bold -pointsize 16 \
-        -fill white -gravity center -annotate +0+0 "WEBAPP\nCREATOR" \
-        "$icon_path" 2>/dev/null || {
-        # If convert fails completely, create a placeholder
+      if command -v convert &>/dev/null; then
+        echo -e "${YELLOW}Creating simple text icon${NC}"
+        convert -size 128x128 xc:"#4A90E2" -font DejaVu-Sans-Bold -pointsize 16 \
+          -fill white -gravity center -annotate +0+0 "WEBAPP\nCREATOR" \
+          "$icon_path" 2>/dev/null
+      fi
+      
+      # If convert fails or is not available, create a placeholder
+      if [[ ! -f "$icon_path" ]]; then
+        echo -e "${YELLOW}Creating placeholder icon${NC}"
         touch "$icon_path"
-      }
+      fi
     fi
   fi
 
@@ -253,7 +281,7 @@ install_webapp_creator() {
     echo -e "${GREEN}✓ Copied script to: $bin_dir/$script_name${NC}"
   else
     echo -e "${RED}✗ WebApp Creator script not found: $WEBAPP_CREATOR${NC}"
-    read -p "Press Enter to continue..."
+    read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
     return 1
   fi
 
@@ -277,7 +305,15 @@ install_webapp_creator() {
   if [[ -f "$webapps_archive" ]]; then
     echo -e "${BLUE}Importing default webapps...${NC}"
 
-    local temp_dir=$(mktemp -d)
+    # Create temporary directory with fallback
+    local temp_dir
+    if command -v mktemp &>/dev/null; then
+      temp_dir=$(mktemp -d)
+    else
+      temp_dir="/tmp/webapps_install_$$"
+      mkdir -p "$temp_dir"
+    fi
+    
     tar -xzf "$webapps_archive" -C "$temp_dir"
 
     # Import icons
@@ -303,11 +339,12 @@ install_webapp_creator() {
   fi
 
   # Check PATH
-  if [[ ":$PATH:" != *":$bin_dir:"* ]]; then
+  if ! is_in_path "$bin_dir"; then
     echo
     echo -e "${YELLOW}⚠ Warning: $bin_dir is not in your PATH${NC}"
-    echo -e "${BLUE}Add this line to your ~/.bashrc or ~/.zshrc:${NC}"
+    echo -e "${BLUE}Add this line to your ~/.bashrc, ~/.zshrc, or ~/.config/fish/config.fish:${NC}"
     echo -e "${WHITE}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
+    echo -e "${YELLOW}For Fish shell: ${WHITE}fish_add_path ~/.local/bin${NC}"
   fi
 
   echo
@@ -317,7 +354,7 @@ install_webapp_creator() {
   echo -e "${WHITE}  • Find 'WebApp Creator' in your application menu${NC}"
   echo -e "${WHITE}  • Launch from rofi/launcher${NC}"
 
-  read -p "Press Enter to continue..."
+  read -p "Press Enter to continue..." </dev/tty </dev/tty
 }
 
 # Function to install everything automatically
@@ -334,11 +371,11 @@ install_all() {
   echo -e "${WHITE}  4. WebApp Creator${NC}"
   echo
   echo -e "${YELLOW}¿Continuar con la instalación completa? (y/N):${NC} "
-  read -r confirm_all
+  read -r confirm_all </dev/tty
 
   if [[ ! "$confirm_all" =~ ^[Yy]$ ]]; then
     echo -e "${BLUE}Instalación cancelada${NC}"
-    read -p "Press Enter to continue..."
+    read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
     return 1
   fi
 
@@ -366,7 +403,7 @@ install_all() {
   echo -e "${GREEN}✓ ¡Instalación completa finalizada!${NC}"
   echo -e "${BLUE}Debes reiniciar tu sesión para que todos los cambios tomen efecto${NC}"
   echo
-  read -p "Press Enter to continue..."
+  read -p "Press Enter to continue..." </dev/tty </dev/tty
 }
 
 # Silent installation functions for automated install
@@ -501,10 +538,11 @@ install_user() {
   fi
 
   # Check PATH
-  if [[ ":$PATH:" != *":$LOCAL_BIN:"* ]]; then
+  if ! is_in_path "$LOCAL_BIN"; then
     echo -e "${YELLOW}⚠ Warning: $LOCAL_BIN is not in your PATH${NC}"
-    echo -e "${BLUE}Add this line to your ~/.bashrc or ~/.zshrc:${NC}"
+    echo -e "${BLUE}Add this line to your ~/.bashrc, ~/.zshrc, or ~/.config/fish/config.fish:${NC}"
     echo -e "${WHITE}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
+    echo -e "${YELLOW}For Fish shell: ${WHITE}fish_add_path ~/.local/bin${NC}"
   fi
 
   echo -e "${GREEN}✓ User installation completed${NC}"
@@ -550,7 +588,7 @@ install_configs() {
   # Ask if user wants backups
   echo -e "${BLUE}This will copy all configuration directories to ~/.config/${NC}"
   echo -e "${YELLOW}Make backups of existing configurations? (y/N):${NC} "
-  read -r make_backups
+  read -r make_backups </dev/tty
   echo
 
   echo -e "${BLUE}Installing configuration files...${NC}"
@@ -558,7 +596,7 @@ install_configs() {
   # Check if we're in the right directory structure
   if [[ ! -d "$SCRIPT_DIR" ]]; then
     echo -e "${RED}✗ Configuration directory not found: $SCRIPT_DIR${NC}"
-    read -p "Press Enter to continue..."
+    read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
     return 1
   fi
 
@@ -610,7 +648,7 @@ install_configs() {
   fi
 
   echo
-  read -p "Press Enter to continue..."
+  read -p "Press Enter to continue..." </dev/tty </dev/tty
 }
 
 # Function to install AUR helper
@@ -633,7 +671,7 @@ install_aur() {
   fi
 
   echo
-  read -p "Press Enter to continue..."
+  read -p "Press Enter to continue..." </dev/tty </dev/tty
 }
 
 # Function to install packages
@@ -657,7 +695,7 @@ install_packages() {
       echo -e "${GREEN}✓ Fish shell detected${NC}"
       echo -e "${BLUE}Would you like to change your default shell to fish?${NC}"
       echo -ne "${YELLOW}Change to fish shell? (y/N): ${NC}"
-      read -r fish_choice
+      read -r fish_choice </dev/tty
 
       if [[ "$fish_choice" =~ ^[Yy]$ ]]; then
         echo -e "${BLUE}Changing default shell to fish...${NC}"
@@ -678,7 +716,7 @@ install_packages() {
   fi
 
   echo
-  read -p "Press Enter to continue..."
+  read -p "Press Enter to continue..." </dev/tty </dev/tty
 }
 
 # Function to uninstall everything
@@ -806,7 +844,7 @@ main_menu() {
     echo
 
     printf "${YELLOW}Select option (1-8): ${NC}"
-    read -r choice
+    read -r choice </dev/tty
 
     case $choice in
     1)
@@ -816,7 +854,7 @@ main_menu() {
         echo
         echo -e "${RED}Esta opción no está disponible. Faltan directorios requeridos.${NC}"
         echo
-        read -p "Press Enter to continue..."
+        read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
       fi
       ;;
     2)
@@ -827,7 +865,7 @@ main_menu() {
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Launcher.${NC}"
         echo
-        read -p "Press Enter to continue..."
+        read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
       fi
       ;;
     3)
@@ -835,12 +873,12 @@ main_menu() {
         echo
         setup_dev_environment
         echo
-        read -p "Press Enter to continue..."
+        read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
       else
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Launcher.${NC}"
         echo
-        read -p "Press Enter to continue..."
+        read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
       fi
       ;;
     4)
@@ -853,7 +891,7 @@ main_menu() {
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
         echo
-        read -p "Press Enter to continue..."
+        read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
       fi
       ;;
     6)
@@ -863,20 +901,20 @@ main_menu() {
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
         echo
-        read -p "Press Enter to continue..."
+        read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
       fi
       ;;
     7)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
-      read -r confirm
+      read -r confirm </dev/tty
       if [[ "$confirm" =~ ^[Yy]$ ]]; then
         uninstall
       else
         echo -e "${BLUE}Uninstall cancelled${NC}"
       fi
       echo
-      read -p "Press Enter to continue..."
+      read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
       ;;
     8)
       echo -e "${GREEN}Goodbye!${NC}"
@@ -884,7 +922,6 @@ main_menu() {
       ;;
     *)
       echo -e "${RED}Invalid option${NC}"
-      sleep 1
       ;;
     esac
   done
@@ -917,9 +954,6 @@ if [[ ! -d "$LAUNCHER_DIR" ]]; then
     echo -e "${BLUE}URL actual: $REPO_URL${NC}"
     echo
   fi
-
-  # Wait a moment for user to read the message
-  sleep 2
 fi
 
 # Start the application
