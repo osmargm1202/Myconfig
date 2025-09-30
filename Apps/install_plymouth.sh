@@ -12,32 +12,28 @@ CYAN='\033[0;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
-# Check if Gum is available and set colors
-HAS_GUM=false
-if command -v gum &>/dev/null; then
-  HAS_GUM=true
-  # Gum color configuration
-  export GUM_CHOOSE_SELECTED_FOREGROUND="#87CEEB"  # Sky Blue
-  export GUM_CHOOSE_CURSOR_FOREGROUND="#00BFFF"    # Deep Sky Blue
-  export GUM_CONFIRM_SELECTED_FOREGROUND="#87CEEB"
-  export GUM_INPUT_CURSOR_FOREGROUND="#00BFFF"
-  export GUM_INPUT_PROMPT_FOREGROUND="#87CEEB"
+# Check if Gum is available (REQUIRED)
+if ! command -v gum &>/dev/null; then
+  echo -e "${RED}✗ Este script requiere 'gum' para funcionar${NC}"
+  echo -e "${YELLOW}Instala gum primero:${NC}"
+  echo -e "${BLUE}  yay -S gum${NC}"
+  echo -e "${BLUE}  # o${NC}"
+  echo -e "${BLUE}  paru -S gum${NC}"
+  exit 1
 fi
 
-# Function to ask for confirmation with Gum support
+# Gum color configuration
+export GUM_CHOOSE_SELECTED_FOREGROUND="#87CEEB"  # Sky Blue
+export GUM_CHOOSE_CURSOR_FOREGROUND="#00BFFF"    # Deep Sky Blue
+export GUM_CONFIRM_SELECTED_FOREGROUND="#87CEEB"
+export GUM_INPUT_CURSOR_FOREGROUND="#00BFFF"
+export GUM_INPUT_PROMPT_FOREGROUND="#87CEEB"
+
+# Function to ask for confirmation (uses gum)
 ask_confirmation() {
   local message="$1"
-  
-  if [[ "$HAS_GUM" == true ]] && [[ -c /dev/tty ]]; then
-    gum confirm "$message" < /dev/tty
-    return $?
-  else
-    # Fallback to traditional prompt
-    echo -e "${YELLOW}$message (y/N):${NC} "
-    read -r response </dev/tty
-    [[ "$response" =~ ^[Yy]$ ]]
-    return $?
-  fi
+  gum confirm "$message" < /dev/tty
+  return $?
 }
 
 # Function to display header
@@ -80,49 +76,18 @@ get_plymouth_themes() {
   return 0
 }
 
-# Function to show theme selection menu with Gum support
+# Function to show theme selection menu (uses gum)
 show_theme_menu() {
   local themes=("$@")
+  local selected
   
-  if [[ "$HAS_GUM" == true ]] && [[ -c /dev/tty ]]; then
-    # Use Gum for beautiful theme selection
-    local selected
-    selected=$(printf '%s\n' "${themes[@]}" | gum choose --header "🎨 Selecciona un tema de Plymouth" --height 15 < /dev/tty)
-    
-    if [[ -n "$selected" ]]; then
-      echo "$selected"
-      return 0
-    else
-      return 1
-    fi
+  selected=$(printf '%s\n' "${themes[@]}" | gum choose --header "🎨 Selecciona un tema de Plymouth" --height 15 < /dev/tty)
+  
+  if [[ -n "$selected" ]]; then
+    echo "$selected"
+    return 0
   else
-    # Fallback to traditional menu
-    echo -e "${WHITE}Temas de Plymouth disponibles:${NC}" >&2
-    echo >&2
-    
-    for i in "${!themes[@]}"; do
-      local theme_name="${themes[$i]}"
-      echo -e "${CYAN}$((i+1)).${NC} $theme_name" >&2
-    done
-    
-    echo >&2
-    echo -e "${CYAN}$((${#themes[@]}+1)).${NC} Cancelar" >&2
-    echo >&2
-    
-    while true; do
-      echo -ne "${YELLOW}Selecciona un tema (1-$((${#themes[@]}+1))): ${NC}" >&2
-      read -r choice </dev/tty
-      
-      if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#themes[@]} )); then
-        # Only output the theme name to stdout
-        echo "${themes[$((choice-1))]}"
-        return 0
-      elif [[ "$choice" == "$((${#themes[@]}+1))" ]]; then
-        return 1
-      else
-        echo -e "${RED}Opción inválida. Intenta de nuevo.${NC}" >&2
-      fi
-    done
+    return 1
   fi
 }
 
