@@ -20,9 +20,13 @@ dunst Notificaciones visuales y estéticas.
 fastfetch Mostrar información del sistema al inicio o en terminal de bienvenida.
 **Wallpapers** Fondos de pantalla aleatorios para i3WM con sistema de memoria y atajo Super+Alt+Space.
 Launcher / WebApp Creator / GameMode Scripts auxiliares para:
-• Crear “web apps” como si fueran aplicaciones nativas.
+• Crear "web apps" como si fueran aplicaciones nativas.
 • Activar modo de optimización para juegos.
 • Un lanzador personalizado de scripts/aplicaciones.
+**System76 Power** Gestión avanzada de energía con:
+• Daemon de optimización de batería.
+• Interfaz gráfica para perfiles de energía.
+• Click en icono de batería en polybar para acceso rápido.
 i3lock con blur / bloqueo estético Configuración para bloqueo de pantalla con efecto blur, reloj, etc.
 
 # Myconfig
@@ -64,13 +68,16 @@ chmod +x install.sh
 
 El instalador incluye las siguientes opciones:
 
-- **Opción 1**: Instalar WebApp Creator (solo usuario actual)
-- **Opción 2**: Instalar para todo el sistema (requiere sudo)
-- **Opción 3**: Configuración de desarrollo
-- **Opción 4**: Instalar configuraciones del sistema
-- **Opción 5**: Instalar AUR Helper
-- **Opción 6**: Instalar paquetes necesarios
-- **Opción 7**: Desinstalar todo
+- **Opción 1**: Instalación Completa Automática
+- **Opción 2**: Instalar WebApp Creator + System Configs
+- **Opción 3**: Instalar AUR Helper
+- **Opción 4**: Instalar Paquetes
+- **Opción 5**: Instalar SDDM Theme (Corners)
+- **Opción 6**: Instalar Plymouth Themes
+- **Opción 7**: Setup Wallpapers
+- **Opción 8**: Instalar System76 Power - Gestión de energía
+- **Opción 9**: Desinstalar todo
+- **Opción 10**: Salir
 
 ### Instalación Manual
 
@@ -141,6 +148,30 @@ yay -S i3lock-color
 # Usar comando de bloqueo
 i3lock --blur 5 --clock --date-str "%A, %B %d" --time-str "%I:%M %p"
 ```
+
+#### System76 Power
+
+```bash
+# Instalar System76 Power
+./Apps/install_system76.sh
+
+# Abrir interfaz gráfica
+system76-power-gui-x11
+
+# Ver estado actual de energía
+system76-power profile
+
+# Cambiar perfil de energía (battery/balanced/performance)
+system76-power profile battery
+system76-power profile balanced
+system76-power profile performance
+```
+
+**Características:**
+- Click en el icono de batería en polybar para abrir la GUI
+- Daemon se inicia automáticamente con i3
+- Gestión inteligente de energía para laptops
+- Perfiles optimizados para batería/rendimiento
 
 #### WebApp Creator
 

@@ -25,7 +25,7 @@ is_running() {
 start_picom() {
   if [[ -f "$PICOM_CONFIG" ]]; then
     picom --config "$PICOM_CONFIG" -b &
-    sleep 1
+    sleep 0.2
     if is_running picom; then
       echo "✅ Picom iniciado"
       return 0
@@ -35,7 +35,7 @@ start_picom() {
     fi
   else
     picom -b &
-    sleep 1
+    sleep 0.2
     if is_running picom; then
       echo "✅ Picom iniciado (config por defecto)"
       return 0
@@ -50,7 +50,7 @@ start_picom() {
 start_polybar() {
   if [[ -f "$POLYBAR_CONFIG" ]]; then
     polybar --config="$POLYBAR_CONFIG" modern &
-    sleep 1
+    sleep 0.2
     if is_running polybar; then
       echo "✅ Polybar iniciado"
       return 0
@@ -60,7 +60,7 @@ start_polybar() {
     fi
   else
     polybar &
-    sleep 1
+    sleep 0.2
     if is_running polybar; then
       echo "✅ Polybar iniciado (config por defecto)"
       return 0
@@ -76,11 +76,11 @@ stop_process() {
   local process_name="$1"
   if is_running "$process_name"; then
     killall -q "$process_name"
-    sleep 1
+    sleep 0.2
     # Verificación de que se detuvo
     local count=0
-    while is_running "$process_name" && [ $count -lt 5 ]; do
-      sleep 1
+    while is_running "$process_name" && [ $count -lt 3 ]; do
+      sleep 0.2
       ((count++))
     done
 
@@ -157,7 +157,6 @@ main() {
     echo "🔄 Modo RELOAD: Reiniciando servicios..."
     stop_process picom
     stop_process polybar
-    sleep 2
     start_picom
     start_polybar
     notify "Servicios reiniciados 🔄"

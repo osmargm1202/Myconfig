@@ -74,6 +74,7 @@ clipmenu                                               # menú de portapapeles
 btop                                                   # monitor del sistema
 fastfetch                                              # información del sistema
 nwg-displays                                           # gestión de monitores
+ncdu                                                   # visor de uso de disco en terminal
 
 # ====================================================================================================
 # TERMINAL Y SHELL

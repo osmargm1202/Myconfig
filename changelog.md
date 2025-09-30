@@ -1,0 +1,81 @@
+# Changelog - Myconfig
+
+## Objetivo General del Proyecto
+Configuración completa y automatizada para i3wm en Arch Linux con temas Tokyo Night, herramientas de gestión de energía, aplicaciones web nativas, y scripts de productividad.
+
+---
+
+## [2025-09-30] - Integración de System76 Power Management
+
+### Añadido
+- **Script de instalación** (`Apps/install_system76.sh`):
+  - Instala `system76-power` (daemon de gestión de energía)
+  - Instala `system76-power-gui-x11` (interfaz gráfica)
+  - Habilita e inicia el servicio systemd automáticamente
+  - Verifica dependencias (yay/paru)
+  - Proporciona feedback detallado durante la instalación
+
+- **Integración con i3** (`i3/config`):
+  - Agregado autostart del daemon `system76-power` al iniciar i3
+  - Línea: `exec --no-startup-id system76-power daemon`
+
+- **Módulo de batería en Polybar** (`polybar/config.ini`):
+  - Nuevo módulo `[module/battery]` con:
+    - Soporte para estados: charging, discharging, full, low
+    - Iconos animados para carga
+    - Iconos de capacidad de batería (5 niveles)
+    - Colores Tokyo Night integrados
+    - **Click izquierdo**: abre `system76-power-gui-x11`
+  - Agregado a la barra: `modules-right = ... battery ...`
+
+- **Opción en Setup** (`setup.sh`):
+  - Nueva opción 8: "Install System76 Power - Power management tools"
+  - Función `install_system76()` para ejecutar el instalador
+  - Menú actualizado de 9 a 10 opciones
+
+- **Documentación** (`README.md`):
+  - Sección de System76 Power con ejemplos de uso
+  - Comandos para cambiar perfiles de energía
+  - Características principales del sistema
+
+### Propósito
+Mejorar la gestión de energía en laptops, especialmente para usuarios que necesitan optimizar el uso de batería o rendimiento según el contexto (batería, balanceado, rendimiento máximo).
+
+### Detalles Técnicos
+- **Batería detectada**: BAT0 (configurable en polybar)
+- **Adaptador**: AC
+- **Polling interval**: 5 segundos
+- **Umbral low battery**: 15%
+- **Umbral full**: 98%
+
+### Comandos Útiles
+```bash
+# Instalar
+./Apps/install_system76.sh
+
+# Ver perfil actual
+system76-power profile
+
+# Cambiar perfil
+system76-power profile battery
+system76-power profile balanced
+system76-power profile performance
+
+# Abrir GUI (o click en batería de polybar)
+system76-power-gui-x11
+```
+
+---
+
+## Historial Previo
+
+### Funcionalidades existentes antes de este cambio:
+- i3wm configurado con tema Tokyo Night
+- Polybar con múltiples módulos (CPU, memoria, temperatura, red, etc.)
+- WebApp Creator para crear aplicaciones web nativas
+- GameMode para optimización de juegos
+- Sistema de wallpapers aleatorios
+- SDDM theme (Corners)
+- Plymouth boot splash
+- Instalador automático con menú interactivo (Gum)
+- Scripts de instalación modulares en `Apps/`

@@ -649,6 +649,16 @@ install_wallpapers() {
   fi
 }
 
+# Function to run System76 Power installer
+install_system76() {
+  if [[ -f "$APPS_DIR/install_system76.sh" ]]; then
+    "$APPS_DIR/install_system76.sh"
+  else
+    echo -e "${RED}✗ Script install_system76.sh no encontrado${NC}"
+    read -p "Press Enter to continue..." </dev/tty
+  fi
+}
+
 # Function to uninstall everything
 uninstall() {
   echo -e "${YELLOW}Uninstalling WebApp Creator and configurations...${NC}"
@@ -787,7 +797,14 @@ main_menu() {
       options+=("[DESHABILITADO] Setup Wallpapers - Falta directorio Wallpapers")
     fi
 
-    # Options 8 and 9
+    # Option 8 - System76 Power
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install System76 Power - Power management tools")
+    else
+      options+=("[DESHABILITADO] Install System76 Power - Falta directorio Apps")
+    fi
+
+    # Options 9 and 10
     options+=("Uninstall - Remove all installations")
     options+=("Exit")
 
@@ -830,7 +847,7 @@ main_menu() {
       done
       echo
       
-      printf "Select option (1-9): "
+      printf "Select option (1-10): "
       read -r choice_index
       
       if [[ -z "$choice_index" ]]; then
@@ -925,6 +942,18 @@ main_menu() {
       fi
       ;;
     8)
+      if [[ "$apps_available" == true ]]; then
+        install_system76
+        echo
+        read -p "Press Enter to continue..."
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
+      ;;
+    9)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
       read -r confirm </dev/tty
@@ -936,7 +965,7 @@ main_menu() {
       echo
       read -p "Press Enter to continue..." </dev/tty
       ;;
-    9)
+    10)
       echo -e "${GREEN}Goodbye!${NC}"
       exit 0
       ;;
