@@ -65,8 +65,8 @@ ask_confirmation() {
     return 0
   fi
   
-  if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
-    gum confirm "$message"
+  if [[ "$HAS_GUM" == true ]] && [[ -c /dev/tty ]]; then
+    gum confirm "$message" < /dev/tty
     return $?
   else
     # Fallback to traditional prompt
@@ -410,7 +410,7 @@ main "$@"
 
 # Wait for user input before returning to menu
 echo
-if [[ -t 0 && -c /dev/tty ]]; then
+if [[ -c /dev/tty ]]; then
   read -p "Presiona Enter para volver al menú principal..." </dev/tty
 else
   read -p "Presiona Enter para volver al menú principal..."

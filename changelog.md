@@ -5,6 +5,74 @@ Configuración completa y automatizada para i3wm en Arch Linux con temas Tokyo N
 
 ---
 
+## [2025-09-30] - Fix: Gum no funcionaba con instalación remota (curl)
+
+### Problema Identificado
+Cuando se ejecutaba el instalador con `curl -fsSL | bash`:
+- Los scripts de instalación detectaban que Gum estaba instalado
+- PERO fallaban en usarlo debido a verificación incorrecta de TTY
+- Resultado: menús fallback simples en lugar de la interfaz bonita de Gum
+
+### Causa Raíz
+Scripts verificaban `[[ -t 0 && -c /dev/tty ]]` antes de usar Gum:
+- **`-t 0`** verifica si stdin (fd 0) es una terminal
+- Con `curl | bash`, stdin viene del pipe, NO de terminal
+- Aunque `/dev/tty` existía y Gum estaba instalado, la condición fallaba
+
+### Archivos Corregidos
+- ✅ `Apps/install_plymouth.sh`:
+  - Función `ask_confirmation()` (línea 31)
+  - Función `show_theme_menu()` (línea 87)
+  - Wait prompt final (línea 416)
+  
+- ✅ `Apps/install_sddm.sh`:
+  - Función `ask_confirmation()` (línea 68)
+  - Wait prompt final (línea 413)
+  
+- ✅ `Apps/install_wallpapers.sh`:
+  - Función `ask_confirmation()` (línea 34)
+  
+- ✅ `Apps/install_system76.sh`:
+  - Wait prompt final (línea 124)
+
+### Cambios Realizados
+**ANTES:**
+```bash
+if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
+  gum confirm "$message"
+```
+
+**DESPUÉS:**
+```bash
+if [[ "$HAS_GUM" == true ]] && [[ -c /dev/tty ]]; then
+  gum confirm "$message" < /dev/tty
+```
+
+### Mejoras Implementadas
+1. ❌ Eliminada verificación de `stdin` (`-t 0`)
+2. ✅ Mantenida verificación de `/dev/tty` existe
+3. ✅ Agregado redirect explícito `< /dev/tty` a Gum
+4. ✅ Scripts ahora leen correctamente desde terminal aunque stdin venga de pipe
+
+### Resultado
+Ahora **SIEMPRE** se usa Gum (si está instalado), sin importar cómo se ejecute:
+- ✅ Local: `./setup.sh` → Gum funciona
+- ✅ Remoto: `curl -fsSL ... | bash` → Gum funciona  
+- ✅ Fallback: Si Gum no está → menú tradicional
+
+### Testing
+```bash
+# Método 1: Local (ya funcionaba)
+git clone https://github.com/osmargm1202/Myconfig.git
+cd Myconfig
+./setup.sh
+
+# Método 2: Remoto (ahora también funciona con Gum!)
+bash <(curl -fsSL https://raw.githubusercontent.com/osmargm1202/Myconfig/master/install.sh)
+```
+
+---
+
 ## [2025-09-30] - Mejoras en Flujo de Instalación
 
 ### Corregido

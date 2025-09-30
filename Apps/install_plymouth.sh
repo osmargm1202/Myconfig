@@ -28,8 +28,8 @@ fi
 ask_confirmation() {
   local message="$1"
   
-  if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
-    gum confirm "$message"
+  if [[ "$HAS_GUM" == true ]] && [[ -c /dev/tty ]]; then
+    gum confirm "$message" < /dev/tty
     return $?
   else
     # Fallback to traditional prompt
@@ -84,10 +84,10 @@ get_plymouth_themes() {
 show_theme_menu() {
   local themes=("$@")
   
-  if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
+  if [[ "$HAS_GUM" == true ]] && [[ -c /dev/tty ]]; then
     # Use Gum for beautiful theme selection
     local selected
-    selected=$(printf '%s\n' "${themes[@]}" | gum choose --header "🎨 Selecciona un tema de Plymouth" --height 15)
+    selected=$(printf '%s\n' "${themes[@]}" | gum choose --header "🎨 Selecciona un tema de Plymouth" --height 15 < /dev/tty)
     
     if [[ -n "$selected" ]]; then
       echo "$selected"
@@ -413,7 +413,7 @@ main "$@"
 
 # Wait for user input before returning to menu
 echo
-if [[ -t 0 && -c /dev/tty ]]; then
+if [[ -c /dev/tty ]]; then
   read -p "Presiona Enter para volver al menú principal..." </dev/tty
 else
   read -p "Presiona Enter para volver al menú principal..."

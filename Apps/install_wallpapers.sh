@@ -31,8 +31,8 @@ fi
 ask_confirmation() {
   local message="$1"
   
-  if [[ "$HAS_GUM" == true ]] && [[ -t 0 && -c /dev/tty ]]; then
-    gum confirm "$message"
+  if [[ "$HAS_GUM" == true ]] && [[ -c /dev/tty ]]; then
+    gum confirm "$message" < /dev/tty
     return $?
   else
     echo -e "${YELLOW}$message (y/N):${NC} "
