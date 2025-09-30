@@ -114,8 +114,15 @@ install_system76_power() {
   echo -e "${WHITE}  • El icono de batería en polybar abrirá la GUI al hacer click${NC}"
   echo -e "${WHITE}  • Reinicia tu sesión de i3 para aplicar todos los cambios${NC}"
   echo
-  read -p "Presiona Enter para continuar..."
 }
 
 # Run installation
 install_system76_power
+
+# Wait for user input before returning to menu
+echo
+if [[ -t 0 && -c /dev/tty ]]; then
+  read -p "Presiona Enter para volver al menú principal..." </dev/tty
+else
+  read -p "Presiona Enter para volver al menú principal..."
+fi

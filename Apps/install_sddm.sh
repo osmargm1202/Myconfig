@@ -407,3 +407,11 @@ main() {
 
 # Run main function
 main "$@"
+
+# Wait for user input before returning to menu
+echo
+if [[ -t 0 && -c /dev/tty ]]; then
+  read -p "Presiona Enter para volver al menú principal..." </dev/tty
+else
+  read -p "Presiona Enter para volver al menú principal..."
+fi

@@ -5,6 +5,30 @@ Configuración completa y automatizada para i3wm en Arch Linux con temas Tokyo N
 
 ---
 
+## [2025-09-30] - Fix: Pausas en Scripts de Instalación
+
+### Corregido
+- **Scripts de instalación que cerraban prematuramente**:
+  - `Apps/install_plymouth.sh`: Agregada pausa al final del script
+  - `Apps/install_sddm.sh`: Agregada pausa al final del script  
+  - `Apps/install_system76.sh`: Mejorada pausa al final del script
+  
+### Problema Resuelto
+Los scripts de instalación volvían inmediatamente al menú principal sin dar tiempo al usuario para leer los resultados o mensajes de finalización.
+
+### Solución Implementada
+- Agregado `read -p "Presiona Enter para volver al menú principal..."` al final de cada script
+- Implementada verificación de TTY disponible con fallback (`</dev/tty` si está disponible)
+- Comportamiento consistente en todos los scripts de instalación
+
+### Impacto
+Ahora los usuarios pueden:
+- Ver los mensajes de éxito/error antes de volver al menú
+- Leer las notas importantes y comandos útiles
+- Tener control sobre cuándo volver al menú principal
+
+---
+
 ## [2025-09-30] - Integración de System76 Power Management
 
 ### Añadido
