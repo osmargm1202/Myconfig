@@ -101,6 +101,28 @@ setup_repository() {
   fi
   
   echo -e "${GREEN}✓ Repositorio listo en: $REPO_DIR${NC}"
+  
+  # Give execution permissions to all scripts in Apps directory
+  if [[ -d "$REPO_DIR/Apps" ]]; then
+    echo -e "${BLUE}Otorgando permisos de ejecución a scripts en Apps/...${NC}"
+    chmod +x "$REPO_DIR/Apps"/*.sh 2>/dev/null
+    if [[ $? -eq 0 ]]; then
+      echo -e "${GREEN}✓ Permisos otorgados a scripts en Apps/${NC}"
+    else
+      echo -e "${YELLOW}⚠ No se encontraron scripts .sh en Apps/ o ya tienen permisos${NC}"
+    fi
+  fi
+  
+  # Give execution permissions to all scripts in Launcher directory
+  if [[ -d "$REPO_DIR/Launcher" ]]; then
+    echo -e "${BLUE}Otorgando permisos de ejecución a scripts en Launcher/...${NC}"
+    chmod +x "$REPO_DIR/Launcher"/*.sh 2>/dev/null
+    if [[ $? -eq 0 ]]; then
+      echo -e "${GREEN}✓ Permisos otorgados a scripts en Launcher/${NC}"
+    else
+      echo -e "${YELLOW}⚠ No se encontraron scripts .sh en Launcher/ o ya tienen permisos${NC}"
+    fi
+  fi
 }
 
 # Function to run setup script

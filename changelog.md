@@ -5,7 +5,7 @@ Configuración completa y automatizada para i3wm en Arch Linux con temas Tokyo N
 
 ---
 
-## [2025-09-30] - Fix: Pausas en Scripts de Instalación
+## [2025-09-30] - Mejoras en Flujo de Instalación
 
 ### Corregido
 - **Scripts de instalación que cerraban prematuramente**:
@@ -13,19 +13,36 @@ Configuración completa y automatizada para i3wm en Arch Linux con temas Tokyo N
   - `Apps/install_sddm.sh`: Agregada pausa al final del script  
   - `Apps/install_system76.sh`: Mejorada pausa al final del script
   
+- **Modo automático eliminado**:
+  - `Apps/install_plymouth.sh`: Removida ejecución automática sin confirmación
+  - Ahora siempre requiere interacción del usuario para seleccionar tema
+  - Eliminadas verificaciones de TTY que permitían omitir confirmaciones
+
+### Añadido
+- **Permisos de ejecución automáticos** (`install.sh`):
+  - Al clonar o actualizar el repositorio, se otorgan permisos `+x` a:
+    - Todos los scripts `.sh` en `Apps/`
+    - Todos los scripts `.sh` en `Launcher/`
+  - Feedback visual del proceso de permisos
+  - Manejo de errores si no existen archivos
+
 ### Problema Resuelto
-Los scripts de instalación volvían inmediatamente al menú principal sin dar tiempo al usuario para leer los resultados o mensajes de finalización.
+1. Los scripts de instalación volvían inmediatamente al menú principal sin dar tiempo al usuario para leer los resultados
+2. Plymouth ejecutaba en modo automático sin permitir selección manual del tema
+3. Los scripts descargados no tenían permisos de ejecución, causando errores
 
 ### Solución Implementada
 - Agregado `read -p "Presiona Enter para volver al menú principal..."` al final de cada script
-- Implementada verificación de TTY disponible con fallback (`</dev/tty` si está disponible)
-- Comportamiento consistente en todos los scripts de instalación
+- Removidas todas las verificaciones de modo no-interactivo en plymouth
+- Agregado `chmod +x` automático en `install.sh` después de clonar/actualizar
+- Comportamiento consistente y siempre interactivo
 
 ### Impacto
 Ahora los usuarios pueden:
 - Ver los mensajes de éxito/error antes de volver al menú
 - Leer las notas importantes y comandos útiles
-- Tener control sobre cuándo volver al menú principal
+- Tener control total sobre la selección de temas
+- Ejecutar scripts sin necesidad de dar permisos manualmente
 
 ---
 

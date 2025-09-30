@@ -111,15 +111,7 @@ show_theme_menu() {
     
     while true; do
       echo -ne "${YELLOW}Selecciona un tema (1-$((${#themes[@]}+1))): ${NC}" >&2
-      
-      # Check if TTY is available for interactive input
-      if [[ -t 0 && -c /dev/tty ]]; then
-        read -r choice </dev/tty
-      else
-        # Default to first theme in non-interactive mode
-        echo -e "${GREEN}Modo automático: seleccionando primer tema disponible${NC}" >&2
-        choice=1
-      fi
+      read -r choice </dev/tty
       
       if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#themes[@]} )); then
         # Only output the theme name to stdout
@@ -129,12 +121,6 @@ show_theme_menu() {
         return 1
       else
         echo -e "${RED}Opción inválida. Intenta de nuevo.${NC}" >&2
-        # In non-interactive mode, don't loop forever
-        if [[ ! -t 0 || ! -c /dev/tty ]]; then
-          echo -e "${YELLOW}Seleccionando primer tema por defecto...${NC}" >&2
-          echo "${themes[0]}"
-          return 0
-        fi
       fi
     done
   fi
@@ -350,13 +336,9 @@ main() {
   echo
   
   # Ask for confirmation to continue
-  if [[ -t 0 && -c /dev/tty ]]; then
-    if ! ask_confirmation "¿Continuar con la instalación de Plymouth?"; then
-      echo -e "${BLUE}Operación cancelada${NC}"
-      exit 0
-    fi
-  else
-    echo -e "${GREEN}Modo automático activado - continuando...${NC}"
+  if ! ask_confirmation "¿Continuar con la instalación de Plymouth?"; then
+    echo -e "${BLUE}Operación cancelada${NC}"
+    exit 0
   fi
   
   echo
