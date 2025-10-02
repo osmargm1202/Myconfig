@@ -129,6 +129,7 @@ pacseek                                                # explorador de paquetes
 jq                                                     # procesador JSON
 wget                                                   # descargador web
 curl                                                   # cliente web
+mailutils                                              # conexiones de transferencia
 
 # ====================================================================================================
 # THEMING Y CONFIGURACIÓN
@@ -142,3 +143,4 @@ noto-fonts-emoji                                       # fuente emoji
 ttf-jetbrains-mono-nerd                                # fuente nerdfont
 ttf-jetbrains-mono                                     # fuente monospace
 ttf-roboto                                             # fuente sans-serif
+yad                                                    # diálogos gráficos (GTK)
