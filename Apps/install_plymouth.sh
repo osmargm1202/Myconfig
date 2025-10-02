@@ -266,6 +266,105 @@ set_default_theme() {
   return 0
 }
 
+# Function to show manual configuration instructions
+show_manual_instructions() {
+  clear
+  echo -e "${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
+  echo -e "${CYAN}║     Instrucciones de Configuración Manual de Plymouth    ║${NC}"
+  echo -e "${CYAN}╚═══════════════════════════════════════════════════════════╝${NC}"
+  echo
+  
+  echo -e "${WHITE}Sigue estos pasos para configurar Plymouth manualmente:${NC}"
+  echo
+  
+  # Step 1
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${YELLOW}Paso 1: Editar /etc/mkinitcpio.conf${NC}"
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${BLUE}Comando:${NC}"
+  echo -e "${WHITE}  sudo vim /etc/mkinitcpio.conf${NC}"
+  echo
+  echo -e "${BLUE}Modificación:${NC}"
+  echo -e "${WHITE}  Busca la línea que empieza con 'HOOKS=' y agrega 'plymouth' DESPUÉS de 'base udev'${NC}"
+  echo
+  echo -e "${CYAN}  Ejemplo:${NC}"
+  echo -e "${WHITE}  HOOKS=(base udev plymouth autodetect modconf kms keyboard keymap consolefont block filesystems fsck)${NC}"
+  echo
+  
+  # Step 2
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${YELLOW}Paso 2: Regenerar initramfs${NC}"
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${BLUE}Comando:${NC}"
+  echo -e "${WHITE}  sudo mkinitcpio -p linux${NC}"
+  echo
+  echo -e "${CYAN}  Esto regenerará la imagen initramfs con Plymouth incluido${NC}"
+  echo
+  
+  # Step 3
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${YELLOW}Paso 3: Editar /etc/default/grub${NC}"
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${BLUE}Comando:${NC}"
+  echo -e "${WHITE}  sudo vim /etc/default/grub${NC}"
+  echo
+  echo -e "${BLUE}Modificación:${NC}"
+  echo -e "${WHITE}  Busca 'GRUB_CMDLINE_LINUX_DEFAULT=' y agrega 'quiet splash'${NC}"
+  echo
+  echo -e "${CYAN}  Ejemplo:${NC}"
+  echo -e "${WHITE}  GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash loglevel=3\"${NC}"
+  echo
+  
+  # Step 4
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${YELLOW}Paso 4: Regenerar configuración de GRUB${NC}"
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${BLUE}Comando:${NC}"
+  echo -e "${WHITE}  sudo grub-mkconfig -o /boot/grub/grub.cfg${NC}"
+  echo
+  
+  # Step 5 (Optional)
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${YELLOW}Paso 5: (Opcional) Configurar Plymouth${NC}"
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${BLUE}Comando:${NC}"
+  echo -e "${WHITE}  sudo vim /etc/plymouth/plymouthd.conf${NC}"
+  echo
+  echo -e "${CYAN}  Aquí puedes ajustar configuraciones avanzadas como:${NC}"
+  echo -e "${WHITE}  • Theme= (nombre del tema)${NC}"
+  echo -e "${WHITE}  • ShowDelay= (retraso antes de mostrar el splash)${NC}"
+  echo -e "${WHITE}  • DeviceTimeout= (timeout de dispositivos)${NC}"
+  echo
+  
+  # Final step
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${YELLOW}Paso 6: Reiniciar${NC}"
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${WHITE}  sudo reboot${NC}"
+  echo
+  
+  # Additional commands
+  echo -e "${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
+  echo -e "${CYAN}║              Comandos Útiles Adicionales                  ║${NC}"
+  echo -e "${CYAN}╚═══════════════════════════════════════════════════════════╝${NC}"
+  echo
+  echo -e "${BLUE}Ver temas instalados:${NC}"
+  echo -e "${WHITE}  plymouth-set-default-theme --list${NC}"
+  echo
+  echo -e "${BLUE}Cambiar tema activo:${NC}"
+  echo -e "${WHITE}  sudo plymouth-set-default-theme -R [nombre_tema]${NC}"
+  echo
+  echo -e "${BLUE}Probar Plymouth sin reiniciar:${NC}"
+  echo -e "${WHITE}  sudo plymouthd; sudo plymouth --show-splash; sleep 5; sudo plymouth quit${NC}"
+  echo
+  echo -e "${BLUE}Ver tema actual:${NC}"
+  echo -e "${WHITE}  plymouth-set-default-theme${NC}"
+  echo
+  
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo
+}
+
 # Function to show completion message
 show_completion() {
   local theme_name="$1"
@@ -300,11 +399,33 @@ main() {
   echo -e "${BLUE}  5. Regenerar initramfs automáticamente${NC}"
   echo
   
-  # Ask for confirmation to continue
-  if ! ask_confirmation "¿Continuar con la instalación de Plymouth?"; then
-    echo -e "${BLUE}Operación cancelada${NC}"
-    exit 0
-  fi
+  # Ask what the user wants to do
+  echo -e "${YELLOW}¿Qué deseas hacer?${NC}"
+  echo
+  
+  local choice
+  choice=$(gum choose --header "Selecciona una opción" \
+    "Instalación automática" \
+    "Ver instrucciones de configuración manual" \
+    "Salir" < /dev/tty)
+  
+  case "$choice" in
+    "Ver instrucciones de configuración manual")
+      show_manual_instructions
+      exit 0
+      ;;
+    "Salir")
+      echo -e "${BLUE}Operación cancelada${NC}"
+      exit 0
+      ;;
+    "Instalación automática")
+      # Continue with automatic installation
+      ;;
+    *)
+      echo -e "${BLUE}Operación cancelada${NC}"
+      exit 0
+      ;;
+  esac
   
   echo
   
