@@ -713,6 +713,27 @@ install_flatpak() {
   read -p "Press Enter to continue..." </dev/tty
 }
 
+# Function to run npm installer
+install_npm() {
+  show_header
+  echo -e "${WHITE}Install npm Packages${NC}"
+  echo -e "${WHITE}────────────────────${NC}"
+  echo
+  
+  if [[ -f "$APPS_DIR/install_npm.sh" ]]; then
+    echo -e "${BLUE}Running npm installer...${NC}"
+    echo
+    chmod +x "$APPS_DIR/install_npm.sh"
+    "$APPS_DIR/install_npm.sh"
+  else
+    echo -e "${RED}✗ npm installer not found: $APPS_DIR/install_npm.sh${NC}"
+    echo -e "${BLUE}Make sure the file exists in the Apps directory${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
 # Function to uninstall everything
 uninstall() {
   echo -e "${YELLOW}Uninstalling WebApp Creator and configurations...${NC}"
@@ -832,40 +853,47 @@ main_menu() {
 
     # Option 5
     if [[ "$apps_available" == true ]]; then
+      options+=("Install npm Packages - Claude CLI y herramientas npm")
+    else
+      options+=("[DESHABILITADO] Install npm Packages - Falta directorio Apps")
+    fi
+
+    # Option 6
+    if [[ "$apps_available" == true ]]; then
       options+=("Install Flatpak Apps - Aplicaciones desde Flathub")
     else
       options+=("[DESHABILITADO] Install Flatpak Apps - Falta directorio Apps")
     fi
 
-    # Option 6
+    # Option 7
     if [[ "$apps_available" == true ]]; then
       options+=("Install SDDM Theme (Corners) - Login manager setup")
     else
       options+=("[DESHABILITADO] Install SDDM Theme - Falta directorio Apps")
     fi
 
-    # Option 7
+    # Option 8
     if [[ "$apps_available" == true ]]; then
       options+=("Install Plymouth Themes - Boot splash themes")
     else
       options+=("[DESHABILITADO] Install Plymouth Themes - Falta directorio Apps")
     fi
 
-    # Option 8 - Wallpapers
+    # Option 9 - Wallpapers
     if [[ "$wallpapers_available" == true ]]; then
       options+=("Setup Wallpapers - Configure backgrounds for i3WM")
     else
       options+=("[DESHABILITADO] Setup Wallpapers - Falta directorio Wallpapers")
     fi
 
-    # Option 9 - System76 Power
+    # Option 10 - System76 Power
     if [[ "$apps_available" == true ]]; then
       options+=("Install System76 Power - Power management tools")
     else
       options+=("[DESHABILITADO] Install System76 Power - Falta directorio Apps")
     fi
 
-    # Options 10 and 11
+    # Options 11 and 12
     options+=("Uninstall - Remove all installations")
     options+=("Exit")
 
@@ -877,7 +905,7 @@ main_menu() {
     if [[ "$HAS_GUM" == true ]]; then
       # Use Gum for interactive selection
       local selected
-      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 13)
+      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 14)
       
       if [[ -n "$selected" ]]; then
         # Find index of selected option
@@ -908,7 +936,7 @@ main_menu() {
       done
       echo
       
-      printf "Select option (1-11): "
+      printf "Select option (1-12): "
       read -r choice_index
       
       if [[ -z "$choice_index" ]]; then
@@ -968,7 +996,7 @@ main_menu() {
       ;;
     5)
       if [[ "$apps_available" == true ]]; then
-        install_flatpak
+        install_npm
         echo
         read -p "Press Enter to continue..."
       else
@@ -980,7 +1008,7 @@ main_menu() {
       ;;
     6)
       if [[ "$apps_available" == true ]]; then
-        install_sddm
+        install_flatpak
         echo
         read -p "Press Enter to continue..."
       else
@@ -992,7 +1020,7 @@ main_menu() {
       ;;
     7)
       if [[ "$apps_available" == true ]]; then
-        install_plymouth
+        install_sddm
         echo
         read -p "Press Enter to continue..."
       else
@@ -1003,6 +1031,18 @@ main_menu() {
       fi
       ;;
     8)
+      if [[ "$apps_available" == true ]]; then
+        install_plymouth
+        echo
+        read -p "Press Enter to continue..."
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
+      ;;
+    9)
       if [[ "$wallpapers_available" == true ]]; then
         install_wallpapers
         echo
@@ -1014,7 +1054,7 @@ main_menu() {
         read -p "Press Enter to continue..."
       fi
       ;;
-    9)
+    10)
       if [[ "$apps_available" == true ]]; then
         install_system76
         echo
@@ -1027,7 +1067,7 @@ main_menu() {
         read -p "Press Enter to continue..."
       fi
       ;;
-    10)
+    11)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
       read -r confirm </dev/tty
@@ -1039,7 +1079,7 @@ main_menu() {
       echo
       read -p "Press Enter to continue..." </dev/tty
       ;;
-    11)
+    12)
       echo -e "${GREEN}Goodbye!${NC}"
       exit 0
       ;;
