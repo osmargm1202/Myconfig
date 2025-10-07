@@ -5,6 +5,105 @@ Configuración completa y automatizada para i3wm en Arch Linux con temas Tokyo N
 
 ---
 
+## [2025-10-07] - Integración de Instalador de Flatpak
+
+### Añadido
+- **Script de instalación de Flatpak** (`Apps/install_flatpak.sh`):
+  - Verifica e instala Flatpak si no está disponible
+  - Agrega repositorio Flathub automáticamente
+  - Lee lista de aplicaciones desde `Apps/pkg_flatpak.lst`
+  - **Instala aplicaciones nuevas** desde Flathub
+  - **Actualiza aplicaciones ya instaladas** automáticamente
+  - Proporciona resumen detallado de instalación
+  - Contador de aplicaciones: procesadas, instaladas, actualizadas y errores
+  - Colores informativos en la salida (verde, amarillo, rojo)
+  - Manejo individual de errores sin interrumpir el proceso
+
+- **Lista de aplicaciones Flatpak** (`Apps/pkg_flatpak.lst`):
+  - **Multimedia**: Clapper, VideoDownloader, OBS Studio
+  - **Utilidades**: Flatseal, Warehouse, Impression, MissionCenter
+  - **Comunicación**: Webcord (Discord client)
+  - **Diseño**: Blender, GIMP, Inkscape, Krita, Upscaler
+  - **Visualizadores**: Eye of GNOME
+  - **Virtualización**: GNOME Boxes
+  - Formato: ID de aplicación por línea, comentarios con #
+
+- **Integración en menú principal** (`setup.sh`):
+  - Nueva opción 5: "Install Flatpak Apps - Aplicaciones desde Flathub"
+  - Función `install_flatpak()` para ejecución interactiva
+  - Función `install_flatpak_silent()` para instalación automática
+  - Integrado en instalación completa (paso 3/6)
+  - Menú actualizado de 10 a 11 opciones totales
+
+### Modificado
+- **Script install_flatpak.sh**:
+  - Corregido path del archivo de lista para detectar automáticamente `pkg_flatpak.lst`
+  - Agregado `SCRIPT_DIR` para resolver paths relativos correctamente
+  - Lista predeterminada ahora es `$SCRIPT_DIR/pkg_flatpak.lst`
+  
+- **Flujo de instalación automática** (`setup.sh`):
+  - Paso 1: AUR Helper
+  - Paso 2: Paquetes del sistema
+  - **Paso 3: Aplicaciones Flatpak** ← NUEVO
+  - Paso 4: Configuraciones del sistema
+  - Paso 5: WebApp Creator
+  - Paso 6: SDDM (opcional)
+
+### Características del Instalador
+- ✅ Verificación de Flatpak instalado
+- ✅ Configuración automática de repositorio Flathub
+- ✅ **Instalación de apps nuevas** desde Flathub
+- ✅ **Actualización de apps ya instaladas** (mantiene todo actualizado)
+- ✅ Instalación no interactiva con flag `-y`
+- ✅ Manejo individual de errores (no interrumpe el proceso)
+- ✅ Resumen final con estadísticas detalladas
+- ✅ Soporte para comentarios en lista
+- ✅ Colores informativos en terminal
+
+### Uso
+
+**Individual:**
+```bash
+# Desde el directorio Apps/
+./install_flatpak.sh
+
+# Con lista personalizada
+./install_flatpak.sh mi_lista.lst
+```
+
+**Desde menú:**
+```bash
+./setup.sh
+# Seleccionar opción 5: Install Flatpak Apps
+```
+
+**Instalación completa:**
+```bash
+./setup.sh
+# Seleccionar opción 1: Instalación Completa Automática
+# Flatpak apps se instalarán automáticamente en el paso 3
+```
+
+### Formato de pkg_flatpak.lst
+```txt
+# === CATEGORÍA ===
+com.example.App1
+org.example.App2
+
+# Comentarios permitidos
+# Líneas vacías ignoradas
+```
+
+### Propósito
+Centralizar la gestión de aplicaciones Flatpak con instalación y actualización automática, mantener una lista reproducible de apps siempre actualizadas, y facilitar la configuración y mantenimiento del sistema con un solo comando.
+
+### Correcciones Aplicadas
+- **Fix inicial**: Removido `set -e` que causaba cierre prematuro del script
+- **Mejora**: Cambiado de "omitir" a "actualizar" aplicaciones existentes
+- **Estabilidad**: Manejo robusto de errores individuales por aplicación
+
+---
+
 ## [2025-09-30] - Fix: Gum no funcionaba con instalación remota (curl)
 
 ### Problema Identificado

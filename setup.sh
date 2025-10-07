@@ -230,8 +230,9 @@ install_all() {
   echo -e "${BLUE}Este proceso instalará todo automáticamente:${NC}"
   echo -e "${WHITE}  1. AUR Helper${NC}"
   echo -e "${WHITE}  2. Paquetes del sistema${NC}"
-  echo -e "${WHITE}  3. Configuraciones del sistema${NC}"
-  echo -e "${WHITE}  4. WebApp Creator${NC}"
+  echo -e "${WHITE}  3. Aplicaciones Flatpak${NC}"
+  echo -e "${WHITE}  4. Configuraciones del sistema${NC}"
+  echo -e "${WHITE}  5. WebApp Creator${NC}"
   echo
   echo -e "${YELLOW}¿Continuar con la instalación completa? (y/N):${NC} "
   read -r confirm_all </dev/tty
@@ -247,31 +248,35 @@ install_all() {
   echo
 
   # Step 1: Install AUR Helper
-  echo -e "${BLUE}Paso 1/5: Instalando AUR Helper...${NC}"
+  echo -e "${BLUE}Paso 1/6: Instalando AUR Helper...${NC}"
   install_aur_silent
 
   # Step 2: Install packages
-  echo -e "${BLUE}Paso 2/5: Instalando paquetes del sistema...${NC}"
+  echo -e "${BLUE}Paso 2/6: Instalando paquetes del sistema...${NC}"
   install_packages_silent
 
-  # Step 3: Install configurations
-  echo -e "${BLUE}Paso 3/5: Instalando configuraciones...${NC}"
+  # Step 3: Install Flatpak apps
+  echo -e "${BLUE}Paso 3/6: Instalando aplicaciones Flatpak...${NC}"
+  install_flatpak_silent
+
+  # Step 4: Install configurations
+  echo -e "${BLUE}Paso 4/6: Instalando configuraciones...${NC}"
   if [[ -f "$APPS_DIR/install_configs.sh" ]]; then
     echo "y" | "$APPS_DIR/install_configs.sh" "$REPO_DIR"
   else
     install_configs_silent
   fi
 
-  # Step 4: Install WebApp Creator
-  echo -e "${BLUE}Paso 4/5: Instalando WebApp Creator...${NC}"
+  # Step 5: Install WebApp Creator
+  echo -e "${BLUE}Paso 5/6: Instalando WebApp Creator...${NC}"
   if [[ -f "$APPS_DIR/install_webapp.sh" ]]; then
     echo "y" | "$APPS_DIR/install_webapp.sh" "$REPO_DIR"
   else
     install_webapp_creator_silent
   fi
 
-  # Step 5: Install SDDM (optional)
-  echo -e "${BLUE}Paso 5/5: ¿Instalar SDDM theme? (y/N):${NC} "
+  # Step 6: Install SDDM (optional)
+  echo -e "${BLUE}Paso 6/6: ¿Instalar SDDM theme? (y/N):${NC} "
   read -r install_sddm_choice </dev/tty
   if [[ "$install_sddm_choice" =~ ^[Yy]$ ]]; then
     if [[ -f "$APPS_DIR/install_sddm.sh" ]]; then
@@ -307,6 +312,17 @@ install_packages_silent() {
     "$pkg_script"
   else
     echo -e "${RED}✗ Package installer not found: $pkg_script${NC}"
+    return 1
+  fi
+}
+
+install_flatpak_silent() {
+  local flatpak_script="$APPS_DIR/install_flatpak.sh"
+  if [[ -f "$flatpak_script" ]]; then
+    chmod +x "$flatpak_script"
+    "$flatpak_script"
+  else
+    echo -e "${RED}✗ Flatpak installer not found: $flatpak_script${NC}"
     return 1
   fi
 }
@@ -659,6 +675,27 @@ install_system76() {
   fi
 }
 
+# Function to run Flatpak installer
+install_flatpak() {
+  show_header
+  echo -e "${WHITE}Install Flatpak Applications${NC}"
+  echo -e "${WHITE}────────────────────────────${NC}"
+  echo
+  
+  if [[ -f "$APPS_DIR/install_flatpak.sh" ]]; then
+    echo -e "${BLUE}Running Flatpak installer...${NC}"
+    echo
+    chmod +x "$APPS_DIR/install_flatpak.sh"
+    "$APPS_DIR/install_flatpak.sh"
+  else
+    echo -e "${RED}✗ Flatpak installer not found: $APPS_DIR/install_flatpak.sh${NC}"
+    echo -e "${BLUE}Make sure the file exists in the Apps directory${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
 # Function to uninstall everything
 uninstall() {
   echo -e "${YELLOW}Uninstalling WebApp Creator and configurations...${NC}"
@@ -778,33 +815,40 @@ main_menu() {
 
     # Option 5
     if [[ "$apps_available" == true ]]; then
+      options+=("Install Flatpak Apps - Aplicaciones desde Flathub")
+    else
+      options+=("[DESHABILITADO] Install Flatpak Apps - Falta directorio Apps")
+    fi
+
+    # Option 6
+    if [[ "$apps_available" == true ]]; then
       options+=("Install SDDM Theme (Corners) - Login manager setup")
     else
       options+=("[DESHABILITADO] Install SDDM Theme - Falta directorio Apps")
     fi
 
-    # Option 6
+    # Option 7
     if [[ "$apps_available" == true ]]; then
       options+=("Install Plymouth Themes - Boot splash themes")
     else
       options+=("[DESHABILITADO] Install Plymouth Themes - Falta directorio Apps")
     fi
 
-    # Option 7 - Wallpapers
+    # Option 8 - Wallpapers
     if [[ "$wallpapers_available" == true ]]; then
       options+=("Setup Wallpapers - Configure backgrounds for i3WM")
     else
       options+=("[DESHABILITADO] Setup Wallpapers - Falta directorio Wallpapers")
     fi
 
-    # Option 8 - System76 Power
+    # Option 9 - System76 Power
     if [[ "$apps_available" == true ]]; then
       options+=("Install System76 Power - Power management tools")
     else
       options+=("[DESHABILITADO] Install System76 Power - Falta directorio Apps")
     fi
 
-    # Options 9 and 10
+    # Options 10 and 11
     options+=("Uninstall - Remove all installations")
     options+=("Exit")
 
@@ -816,7 +860,7 @@ main_menu() {
     if [[ "$HAS_GUM" == true ]]; then
       # Use Gum for interactive selection
       local selected
-      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 12)
+      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 13)
       
       if [[ -n "$selected" ]]; then
         # Find index of selected option
@@ -847,7 +891,7 @@ main_menu() {
       done
       echo
       
-      printf "Select option (1-10): "
+      printf "Select option (1-11): "
       read -r choice_index
       
       if [[ -z "$choice_index" ]]; then
@@ -907,7 +951,7 @@ main_menu() {
       ;;
     5)
       if [[ "$apps_available" == true ]]; then
-        install_sddm
+        install_flatpak
         echo
         read -p "Press Enter to continue..."
       else
@@ -919,7 +963,7 @@ main_menu() {
       ;;
     6)
       if [[ "$apps_available" == true ]]; then
-        install_plymouth
+        install_sddm
         echo
         read -p "Press Enter to continue..."
       else
@@ -930,6 +974,18 @@ main_menu() {
       fi
       ;;
     7)
+      if [[ "$apps_available" == true ]]; then
+        install_plymouth
+        echo
+        read -p "Press Enter to continue..."
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
+      ;;
+    8)
       if [[ "$wallpapers_available" == true ]]; then
         install_wallpapers
         echo
@@ -941,19 +997,20 @@ main_menu() {
         read -p "Press Enter to continue..."
       fi
       ;;
-    8)
+    9)
       if [[ "$apps_available" == true ]]; then
         install_system76
         echo
         read -p "Press Enter to continue..."
       else
         echo
+        echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
         echo
         read -p "Press Enter to continue..."
       fi
       ;;
-    9)
+    10)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
       read -r confirm </dev/tty
@@ -965,7 +1022,7 @@ main_menu() {
       echo
       read -p "Press Enter to continue..." </dev/tty
       ;;
-    10)
+    11)
       echo -e "${GREEN}Goodbye!${NC}"
       exit 0
       ;;
