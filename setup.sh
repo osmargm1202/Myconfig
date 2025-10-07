@@ -230,9 +230,10 @@ install_all() {
   echo -e "${BLUE}Este proceso instalará todo automáticamente:${NC}"
   echo -e "${WHITE}  1. AUR Helper${NC}"
   echo -e "${WHITE}  2. Paquetes del sistema${NC}"
-  echo -e "${WHITE}  3. Aplicaciones Flatpak${NC}"
-  echo -e "${WHITE}  4. Configuraciones del sistema${NC}"
-  echo -e "${WHITE}  5. WebApp Creator${NC}"
+  echo -e "${WHITE}  3. Paquetes npm (Claude CLI, etc.)${NC}"
+  echo -e "${WHITE}  4. Aplicaciones Flatpak${NC}"
+  echo -e "${WHITE}  5. Configuraciones del sistema${NC}"
+  echo -e "${WHITE}  6. WebApp Creator${NC}"
   echo
   echo -e "${YELLOW}¿Continuar con la instalación completa? (y/N):${NC} "
   read -r confirm_all </dev/tty
@@ -248,35 +249,39 @@ install_all() {
   echo
 
   # Step 1: Install AUR Helper
-  echo -e "${BLUE}Paso 1/6: Instalando AUR Helper...${NC}"
+  echo -e "${BLUE}Paso 1/7: Instalando AUR Helper...${NC}"
   install_aur_silent
 
   # Step 2: Install packages
-  echo -e "${BLUE}Paso 2/6: Instalando paquetes del sistema...${NC}"
+  echo -e "${BLUE}Paso 2/7: Instalando paquetes del sistema...${NC}"
   install_packages_silent
 
-  # Step 3: Install Flatpak apps
-  echo -e "${BLUE}Paso 3/6: Instalando aplicaciones Flatpak...${NC}"
+  # Step 3: Install npm packages
+  echo -e "${BLUE}Paso 3/7: Instalando paquetes npm...${NC}"
+  install_npm_silent
+
+  # Step 4: Install Flatpak apps
+  echo -e "${BLUE}Paso 4/7: Instalando aplicaciones Flatpak...${NC}"
   install_flatpak_silent
 
-  # Step 4: Install configurations
-  echo -e "${BLUE}Paso 4/6: Instalando configuraciones...${NC}"
+  # Step 5: Install configurations
+  echo -e "${BLUE}Paso 5/7: Instalando configuraciones...${NC}"
   if [[ -f "$APPS_DIR/install_configs.sh" ]]; then
     echo "y" | "$APPS_DIR/install_configs.sh" "$REPO_DIR"
   else
     install_configs_silent
   fi
 
-  # Step 5: Install WebApp Creator
-  echo -e "${BLUE}Paso 5/6: Instalando WebApp Creator...${NC}"
+  # Step 6: Install WebApp Creator
+  echo -e "${BLUE}Paso 6/7: Instalando WebApp Creator...${NC}"
   if [[ -f "$APPS_DIR/install_webapp.sh" ]]; then
     echo "y" | "$APPS_DIR/install_webapp.sh" "$REPO_DIR"
   else
     install_webapp_creator_silent
   fi
 
-  # Step 6: Install SDDM (optional)
-  echo -e "${BLUE}Paso 6/6: ¿Instalar SDDM theme? (y/N):${NC} "
+  # Step 7: Install SDDM (optional)
+  echo -e "${BLUE}Paso 7/7: ¿Instalar SDDM theme? (y/N):${NC} "
   read -r install_sddm_choice </dev/tty
   if [[ "$install_sddm_choice" =~ ^[Yy]$ ]]; then
     if [[ -f "$APPS_DIR/install_sddm.sh" ]]; then
@@ -324,6 +329,18 @@ install_flatpak_silent() {
   else
     echo -e "${RED}✗ Flatpak installer not found: $flatpak_script${NC}"
     return 1
+  fi
+}
+
+install_npm_silent() {
+  local npm_script="$APPS_DIR/install_npm.sh"
+  if [[ -f "$npm_script" ]]; then
+    chmod +x "$npm_script"
+    "$npm_script"
+  else
+    echo -e "${YELLOW}⚠ npm installer not found: $npm_script${NC}"
+    echo -e "${BLUE}Skipping npm packages installation...${NC}"
+    return 0
   fi
 }
 

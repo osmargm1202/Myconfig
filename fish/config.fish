@@ -36,3 +36,6 @@ if type -q fzf
 end
 
 fastfetch
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/home/osmar/google-cloud-sdk/path.fish.inc' ]; . '/home/osmar/google-cloud-sdk/path.fish.inc'; end

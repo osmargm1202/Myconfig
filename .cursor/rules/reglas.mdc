@@ -1,0 +1,8 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+Uso de gum para inreactuar con el CLI.
+Uso de colores en la terminal.

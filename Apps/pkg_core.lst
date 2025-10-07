@@ -105,6 +105,7 @@ lazydocker                                             # interfaz docker
 # ====================================================================================================
 go                                                     # lenguaje Go
 nodejs                                                 # runtime JavaScript
+npm                                                    # gestor de paquetes Node.js
 uv                                                     # gestor de paquetes Python
 
 # ====================================================================================================

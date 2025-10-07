@@ -222,6 +222,21 @@ cp -r ./* ~/.config/
 - **install_wallpapers.sh** - Sistema de fondos de pantalla
 - **install_aur.sh** - AUR helper
 - **install_pkg.sh** - Paquetes del sistema
+- **install_npm.sh** - Paquetes npm globales (Claude CLI, etc.)
+
+### 🤖 Herramientas de IA y Desarrollo
+
+El sistema incluye **Claude CLI** (@anthropic-ai/claude-code) instalado globalmente vía npm.
+
+#### Instalación Manual de Paquetes npm
+
+```bash
+# Ejecutar el instalador de npm (requiere nodejs y npm)
+chmod +x Apps/install_npm.sh
+./Apps/install_npm.sh
+```
+
+Los paquetes npm están listados en `Apps/pkg_npm.lst` y se instalan automáticamente con la opción de instalación completa.
 
 ### Requisitos del Sistema
 
