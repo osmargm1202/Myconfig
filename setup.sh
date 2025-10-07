@@ -94,7 +94,7 @@ detect_environment() {
   APPS_DIR="$REPO_DIR/Apps"
   WEBAPP_CREATOR="$LAUNCHER_DIR/webapp-creator.sh"
   LAUNCHER_SCRIPT="$LAUNCHER_DIR/launcher.sh"
-  GAMEMODE_SCRIPT="$LAUNCHER_DIR/game-mode.sh"
+  GAMEMODE_SCRIPT="$REPO_DIR/i3/scripts/game-mode.sh"
   SYSTEM_BIN="/usr/local/bin"
   LOCAL_BIN="$HOME/.local/bin"
 }
@@ -416,6 +416,10 @@ install_webapp_creator_silent() {
   if [[ -f "$GAMEMODE_SCRIPT" ]]; then
     cp "$GAMEMODE_SCRIPT" "$bin_dir/"
     chmod +x "$bin_dir/game-mode.sh"
+    # Also give permissions to i3 scripts
+    if [[ -d "$REPO_DIR/i3/scripts" ]]; then
+      chmod +x "$REPO_DIR/i3/scripts"/*.sh 2>/dev/null
+    fi
   fi
 
   # Create desktop entry (simplified)
@@ -830,70 +834,77 @@ main_menu() {
       options+=("[DESHABILITADO] Instalación Completa Automática - Faltan directorios")
     fi
 
-    # Option 2
-    if [[ "$launcher_available" == true ]]; then
-      options+=("Install WebApp Creator + System Configs - Complete setup")
+    # Option 2 - System Configurations only
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install System Configurations - i3, polybar, fish, etc.")
     else
-      options+=("[DESHABILITADO] Install WebApp Creator + Configs - Falta directorio Launcher")
+      options+=("[DESHABILITADO] Install System Configurations - Falta directorio Apps")
     fi
 
-    # Option 3
+    # Option 3 - WebApp Creator only
+    if [[ "$launcher_available" == true ]]; then
+      options+=("Install WebApp Creator - Create web applications")
+    else
+      options+=("[DESHABILITADO] Install WebApp Creator - Falta directorio Launcher")
+    fi
+
+    # Option 4
     if [[ "$apps_available" == true ]]; then
       options+=("Install AUR Helper")
     else
       options+=("[DESHABILITADO] Install AUR Helper - Falta directorio Apps")
     fi
 
-    # Option 4
+    # Option 5
     if [[ "$apps_available" == true ]]; then
       options+=("Install Packages")
     else
       options+=("[DESHABILITADO] Install Packages - Falta directorio Apps")
     fi
 
-    # Option 5
+    # Option 6
     if [[ "$apps_available" == true ]]; then
       options+=("Install npm Packages - Claude CLI y herramientas npm")
     else
       options+=("[DESHABILITADO] Install npm Packages - Falta directorio Apps")
     fi
 
-    # Option 6
+    # Option 7
     if [[ "$apps_available" == true ]]; then
       options+=("Install Flatpak Apps - Aplicaciones desde Flathub")
     else
       options+=("[DESHABILITADO] Install Flatpak Apps - Falta directorio Apps")
     fi
 
-    # Option 7
+    # Option 8
     if [[ "$apps_available" == true ]]; then
       options+=("Install SDDM Theme (Corners) - Login manager setup")
     else
       options+=("[DESHABILITADO] Install SDDM Theme - Falta directorio Apps")
     fi
 
-    # Option 8
+    # Option 9
     if [[ "$apps_available" == true ]]; then
       options+=("Install Plymouth Themes - Boot splash themes")
     else
       options+=("[DESHABILITADO] Install Plymouth Themes - Falta directorio Apps")
     fi
 
-    # Option 9 - Wallpapers
+    # Option 10 - Wallpapers
     if [[ "$wallpapers_available" == true ]]; then
       options+=("Setup Wallpapers - Configure backgrounds for i3WM")
     else
       options+=("[DESHABILITADO] Setup Wallpapers - Falta directorio Wallpapers")
     fi
 
-    # Option 10 - System76 Power
+    # Option 11 - System76 Power
     if [[ "$apps_available" == true ]]; then
       options+=("Install System76 Power - Power management tools")
     else
       options+=("[DESHABILITADO] Install System76 Power - Falta directorio Apps")
     fi
 
-    # Options 11 and 12
+    # Options 12 and 13
     options+=("Uninstall - Remove all installations")
     options+=("Exit")
 
@@ -936,7 +947,7 @@ main_menu() {
       done
       echo
       
-      printf "Select option (1-12): "
+      printf "Select option (1-13): "
       read -r choice_index
       
       if [[ -z "$choice_index" ]]; then
@@ -959,8 +970,20 @@ main_menu() {
       fi
       ;;
     2)
+      if [[ "$apps_available" == true ]]; then
+        install_configs_auto
+        echo
+        read -p "Press Enter to continue..."
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
+      ;;
+    3)
       if [[ "$launcher_available" == true ]]; then
-        install_webapp_and_configs
+        install_webapp_auto
         echo
         read -p "Press Enter to continue..."
       else
@@ -970,7 +993,7 @@ main_menu() {
         read -p "Press Enter to continue..."
       fi
       ;;
-    3)
+    4)
       if [[ "$apps_available" == true ]]; then
         install_aur
         echo
@@ -982,7 +1005,7 @@ main_menu() {
         read -p "Press Enter to continue..."
       fi
       ;;
-    4)
+    5)
       if [[ "$apps_available" == true ]]; then
         install_packages
         echo
@@ -994,7 +1017,7 @@ main_menu() {
         read -p "Press Enter to continue..."
       fi
       ;;
-    5)
+    6)
       if [[ "$apps_available" == true ]]; then
         install_npm
         echo
@@ -1006,7 +1029,7 @@ main_menu() {
         read -p "Press Enter to continue..."
       fi
       ;;
-    6)
+    7)
       if [[ "$apps_available" == true ]]; then
         install_flatpak
         echo
@@ -1018,7 +1041,7 @@ main_menu() {
         read -p "Press Enter to continue..."
       fi
       ;;
-    7)
+    8)
       if [[ "$apps_available" == true ]]; then
         install_sddm
         echo
@@ -1030,7 +1053,7 @@ main_menu() {
         read -p "Press Enter to continue..."
       fi
       ;;
-    8)
+    9)
       if [[ "$apps_available" == true ]]; then
         install_plymouth
         echo
@@ -1042,7 +1065,7 @@ main_menu() {
         read -p "Press Enter to continue..."
       fi
       ;;
-    9)
+    10)
       if [[ "$wallpapers_available" == true ]]; then
         install_wallpapers
         echo
@@ -1054,7 +1077,7 @@ main_menu() {
         read -p "Press Enter to continue..."
       fi
       ;;
-    10)
+    11)
       if [[ "$apps_available" == true ]]; then
         install_system76
         echo
@@ -1067,7 +1090,7 @@ main_menu() {
         read -p "Press Enter to continue..."
       fi
       ;;
-    11)
+    12)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
       read -r confirm </dev/tty
@@ -1079,7 +1102,7 @@ main_menu() {
       echo
       read -p "Press Enter to continue..." </dev/tty
       ;;
-    12)
+    13)
       echo -e "${GREEN}Goodbye!${NC}"
       exit 0
       ;;
@@ -1182,6 +1205,64 @@ if [[ -d "$REPO_DIR/Wallpapers" ]]; then
 else
   echo -e "${RED}  ✗ Wallpapers/ no encontrado${NC}"
 fi
+
+# Function to install system configurations automatically (no confirmations)
+install_configs_auto() {
+  show_header
+  echo -e "${WHITE}Instalando Configuraciones del Sistema${NC}"
+  echo -e "${WHITE}─────────────────────────────────────${NC}"
+  echo
+
+  echo -e "${BLUE}Instalando configuraciones automáticamente...${NC}"
+  echo -e "${YELLOW}Las configuraciones existentes serán reemplazadas sin backup${NC}"
+  echo
+
+  # Use the install_configs.sh script with automatic mode
+  if [[ -f "$APPS_DIR/install_configs.sh" ]]; then
+    echo "n" | "$APPS_DIR/install_configs.sh" "$REPO_DIR"
+    if [[ $? -eq 0 ]]; then
+      echo -e "${GREEN}✓ Configuraciones instaladas exitosamente${NC}"
+    else
+      echo -e "${RED}✗ Error en la instalación de configuraciones${NC}"
+      return 1
+    fi
+  else
+    echo -e "${RED}✗ Script install_configs.sh no encontrado${NC}"
+    return 1
+  fi
+
+  echo
+  echo -e "${GREEN}✓ Instalación de configuraciones completada${NC}"
+}
+
+# Function to install webapp creator automatically (no confirmations)
+install_webapp_auto() {
+  show_header
+  echo -e "${WHITE}Instalando WebApp Creator${NC}"
+  echo -e "${WHITE}─────────────────────────${NC}"
+  echo
+
+  echo -e "${BLUE}Instalando WebApp Creator automáticamente...${NC}"
+  echo -e "${YELLOW}Las instalaciones existentes serán reemplazadas sin backup${NC}"
+  echo
+
+  # Use the new install_webapp.sh script from Launcher
+  if [[ -f "$LAUNCHER_DIR/install_webapp.sh" ]]; then
+    "$LAUNCHER_DIR/install_webapp.sh" "$REPO_DIR"
+    if [[ $? -eq 0 ]]; then
+      echo -e "${GREEN}✓ WebApp Creator instalado exitosamente${NC}"
+    else
+      echo -e "${RED}✗ Error en la instalación de WebApp Creator${NC}"
+      return 1
+    fi
+  else
+    echo -e "${RED}✗ Script install_webapp.sh no encontrado en Launcher/${NC}"
+    return 1
+  fi
+
+  echo
+  echo -e "${GREEN}✓ Instalación de WebApp Creator completada${NC}"
+}
 
 echo
 echo -e "${BLUE}Presiona Enter para continuar al menú principal...${NC}"

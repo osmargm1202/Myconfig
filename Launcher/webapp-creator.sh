@@ -471,7 +471,7 @@ install_app() {
   local script_path="$0"
   local launcher_file="./launcher.sh"
   local installer_file="./install.sh"
-  local gamemode_file="./game-mode.sh"
+  local gamemode_file="$REPO_DIR/i3/scripts/game-mode.sh"
   local webapps_archive="./webapps.tar.gz"
 
   # Function to install app (self-install)

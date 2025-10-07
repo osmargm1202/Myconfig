@@ -205,7 +205,7 @@ install_webapp_creator() {
   local launcher_dir="$REPO_DIR/Launcher"
   local webapp_script="$launcher_dir/webapp-creator.sh"
   local launcher_script="$launcher_dir/launcher.sh"
-  local gamemode_script="$launcher_dir/game-mode.sh"
+  local gamemode_script="$repo_dir/i3/scripts/game-mode.sh"
 
   # Create directories
   mkdir -p "$LOCAL_BIN"

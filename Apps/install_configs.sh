@@ -133,7 +133,12 @@ install_single_config() {
   # Copy new configuration
   if cp -r "$source_path" "$target_path"; then
     local file_count=$(find "$target_path" -type f | wc -l)
+    
+    # Give execute permissions to scripts
+    find "$target_path" -name "*.sh" -type f -exec chmod +x {} \; 2>/dev/null
+    
     echo -e "${GREEN}  ✓ Instalado $config_name ($file_count archivos)${NC}"
+    echo -e "${BLUE}  ✓ Permisos de ejecución otorgados a scripts .sh${NC}"
     return 0
   else
     echo -e "${RED}  ✗ Error al instalar $config_name${NC}"

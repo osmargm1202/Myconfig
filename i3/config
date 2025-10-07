@@ -38,7 +38,7 @@ exec --no-startup-id system76-power daemon
 
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
-#exec --no-startup-id nm-applet
+exec --no-startup-id nm-applet
 #exec --no-startup-id feh --bg-fill ~/Pictures/wallpaper.png
 exec --no-startup-id export CM_LAUNCHER=rofi
 exec --no-startup-id clipmenud
@@ -99,13 +99,17 @@ bindsym $mod+Mod1+space exec --no-startup-id ~/.config/i3/scripts/change-wallpap
 #bindsym $mod+Mod1+space exec --no-startup-id feh --bg-fill "$(find ~/Pictures -type f | shuf -n1)"
 
 # Modo juego con Mod+Alt+G
-bindsym $mod+Mod1+g exec --no-startup-id game-mode.sh
+bindsym $mod+Mod1+g exec --no-startup-id ~/.config/i3/scripts/game-mode.sh
 
 # Reload servicios con Mod+Alt+R (opcional)
-bindsym $mod+Mod1+r exec --no-startup-id game-mode.sh reload
+bindsym $mod+Mod1+r exec --no-startup-id ~/.config/i3/scripts/game-mode.sh reload
 
 # Bloquear pantalla con Mod+Ctrl+L
 bindsym $mod+Ctrl+l exec --no-startup-id ~/.config/i3/scripts/lock.sh
+
+
+# Listado de Hotkeys
+
 
 # bindcode $mod+40 exec "rofi -modi drun,run -show drun"
 # There also is i3-dmenu-desktop which only displays applications shipping a
