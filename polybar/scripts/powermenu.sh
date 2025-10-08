@@ -1,19 +1,18 @@
 #!/bin/bash
 #
 # Power Menu for Polybar
-# Uses rofi for the menu interface with system default theme
+# Usa rofi con el tema por defecto
 #
 
-# Power menu options
+# Opciones del menú de energía
 shutdown=" Apagar"
 reboot=" Reiniciar"
 lock=" Bloquear"
 suspend=" Suspender"
 logout=" Cerrar Sesión"
 
-# Show menu with default or DarkBlue theme
-chosen=$(printf '%s\n' "$shutdown" "$reboot" "$lock" "$suspend" "$logout" | rofi -dmenu -i -p "Opciones de Energía" -theme DarkBlue 2>/dev/null || \
-         printf '%s\n' "$shutdown" "$reboot" "$lock" "$suspend" "$logout" | rofi -dmenu -i -p "Opciones de Energía")
+# Mostrar menú con rofi usando el tema por defecto
+chosen=$(printf '%s\n' "$shutdown" "$reboot" "$lock" "$suspend" "$logout" | rofi -dmenu -i -p "Opciones de Energía")
 
 case $chosen in
     $shutdown)
@@ -23,7 +22,7 @@ case $chosen in
         systemctl reboot
         ;;
     $lock)
-        # Check if i3lock-color is available, fallback to regular i3lock
+        # Verifica si i3lock-color está disponible, si no usa i3lock normal
         if command -v i3lock-color &> /dev/null; then
             ~/.config/i3/scripts/lock.sh
         elif command -v i3lock &> /dev/null; then
