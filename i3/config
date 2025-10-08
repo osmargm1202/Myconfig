@@ -263,6 +263,7 @@ for_window [class="Zathura"] floating enable
 for_window [class="Okular"] floating enable
 for_window [class="Evince"] floating enable
 for_window [class="Xreader"] floating enable
+for_window [class="pavucontrol"] floating enable
 #for_window [tiling] border pixel 2
 for_window [all] border pixel 2
 for_window [class="Cursor"] layout tabbed
