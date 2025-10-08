@@ -5,6 +5,8 @@ end
 # PATH
 set -gx PATH $HOME/.local/bin $PATH
 
+set -gx PATH $HOME/go/bin $PATH
+
 # Prompt más vistoso (starship opcional)
 if type -q starship
     starship init fish | source
