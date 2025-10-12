@@ -264,6 +264,8 @@ for_window [class="Okular"] floating enable
 for_window [class="Evince"] floating enable
 for_window [class="Xreader"] floating enable
 for_window [class="pavucontrol"] floating enable
+for_window [class="admapp"] floating enable
+for_window [class="admapp-dev-linux-amd64"] floating enable
 for_window [class="Gestor de Propuestas"] floating enable
 #for_window [tiling] border pixel 2
 for_window [all] border pixel 2
