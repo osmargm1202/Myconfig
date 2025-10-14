@@ -134,6 +134,17 @@ setup_repository() {
       echo -e "${YELLOW}⚠ No se encontraron scripts .sh en i3/scripts/ o ya tienen permisos${NC}"
     fi
   fi
+  
+  # Give execution permissions to all scripts in polybar/scripts directory
+  if [[ -d "$REPO_DIR/polybar/scripts" ]]; then
+    echo -e "${BLUE}Otorgando permisos de ejecución a scripts en polybar/scripts/...${NC}"
+    chmod +x "$REPO_DIR/polybar/scripts"/*.sh 2>/dev/null
+    if [[ $? -eq 0 ]]; then
+      echo -e "${GREEN}✓ Permisos otorgados a scripts en polybar/scripts/${NC}"
+    else
+      echo -e "${YELLOW}⚠ No se encontraron scripts .sh en polybar/scripts/ o ya tienen permisos${NC}"
+    fi
+  fi
 }
 
 # Function to run setup script

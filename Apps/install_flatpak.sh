@@ -15,10 +15,40 @@ NC='\033[0m' # Sin color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LISTA="${1:-$SCRIPT_DIR/pkg_flatpak.lst}"
 
-# Verificar si flatpak está instalado
+# Verificar si flatpak está instalado, si no, instalarlo
 if ! command -v flatpak &> /dev/null; then
-    echo -e "${RED}Error: Flatpak no está instalado${NC}"
-    exit 1
+    echo -e "${YELLOW}Flatpak no está instalado. Instalando...${NC}"
+    
+    # Detectar el gestor de paquetes del sistema
+    if command -v pacman &> /dev/null; then
+        # Arch Linux
+        echo "Instalando flatpak desde pacman..."
+        sudo pacman -S --noconfirm flatpak
+    elif command -v apt &> /dev/null; then
+        # Ubuntu/Debian
+        echo "Instalando flatpak desde apt..."
+        sudo apt update && sudo apt install -y flatpak
+    elif command -v dnf &> /dev/null; then
+        # Fedora
+        echo "Instalando flatpak desde dnf..."
+        sudo dnf install -y flatpak
+    elif command -v zypper &> /dev/null; then
+        # openSUSE
+        echo "Instalando flatpak desde zypper..."
+        sudo zypper install -y flatpak
+    else
+        echo -e "${RED}Error: No se pudo detectar el gestor de paquetes del sistema${NC}"
+        echo -e "${RED}Por favor instala flatpak manualmente y ejecuta este script nuevamente${NC}"
+        exit 1
+    fi
+    
+    # Verificar que la instalación fue exitosa
+    if ! command -v flatpak &> /dev/null; then
+        echo -e "${RED}Error: No se pudo instalar flatpak${NC}"
+        exit 1
+    fi
+    
+    echo -e "${GREEN}✓ Flatpak instalado exitosamente${NC}"
 fi
 
 # Verificar si existe el archivo de lista
