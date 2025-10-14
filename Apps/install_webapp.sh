@@ -357,4 +357,8 @@ main() {
 # Run main function if script is executed directly
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   main "$@"
+  
+  # Wait for user input before returning to menu (if running from menu)
+  echo
+  read -p "Presiona Enter para volver al menú principal..." </dev/tty
 fi

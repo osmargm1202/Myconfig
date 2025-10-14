@@ -703,6 +703,13 @@ check_dependencies() {
   fi
 }
 
+# Check if we have a TTY available
+if [[ ! -t 0 ]] || [[ ! -c /dev/tty ]]; then
+  echo "Error: This script requires an interactive terminal"
+  echo "Please run it from a terminal or menu system"
+  exit 1
+fi
+
 # Start the application
 check_dependencies
 main_menu

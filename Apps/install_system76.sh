@@ -33,7 +33,7 @@ install_system76_power() {
   echo -e "${WHITE}  • system76-power-gui-x11 (interfaz gráfica)${NC}"
   echo
   echo -e "${YELLOW}¿Continuar con la instalación? (y/N):${NC} "
-  read -r confirm
+  read -r confirm </dev/tty
   
   if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
     echo -e "${BLUE}Instalación cancelada${NC}"
@@ -121,8 +121,4 @@ install_system76_power
 
 # Wait for user input before returning to menu
 echo
-if [[ -c /dev/tty ]]; then
-  read -p "Presiona Enter para volver al menú principal..." </dev/tty
-else
-  read -p "Presiona Enter para volver al menú principal..."
-fi
+read -p "Presiona Enter para volver al menú principal..." </dev/tty
