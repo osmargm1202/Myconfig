@@ -696,6 +696,27 @@ install_system76() {
   fi
 }
 
+# Function to run Printer installer
+install_printer() {
+  show_header
+  echo -e "${WHITE}Install Printer System${NC}"
+  echo -e "${WHITE}─────────────────────${NC}"
+  echo
+  
+  if [[ -f "$APPS_DIR/install_printer.sh" ]]; then
+    echo -e "${BLUE}Running printer installer...${NC}"
+    echo
+    chmod +x "$APPS_DIR/install_printer.sh"
+    "$APPS_DIR/install_printer.sh"
+  else
+    echo -e "${RED}✗ Printer installer not found: $APPS_DIR/install_printer.sh${NC}"
+    echo -e "${BLUE}Make sure the file exists in the Apps directory${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
 # Function to run Flatpak installer
 install_flatpak() {
   show_header
@@ -904,7 +925,14 @@ main_menu() {
       options+=("[DESHABILITADO] Install System76 Power - Falta directorio Apps")
     fi
 
-    # Options 12 and 13
+    # Option 12 - Printer System
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install Printer System - CUPS, drivers and configuration")
+    else
+      options+=("[DESHABILITADO] Install Printer System - Falta directorio Apps")
+    fi
+
+    # Options 13 and 14
     options+=("Uninstall - Remove all installations")
     options+=("Exit")
 
@@ -947,7 +975,7 @@ main_menu() {
       done
       echo
       
-      printf "Select option (1-13): "
+      printf "Select option (1-14): "
       read -r choice_index
       
       if [[ -z "$choice_index" ]]; then
@@ -1091,6 +1119,19 @@ main_menu() {
       fi
       ;;
     12)
+      if [[ "$apps_available" == true ]]; then
+        install_printer
+        echo
+        read -p "Press Enter to continue..."
+      else
+        echo
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
+      ;;
+    13)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
       read -r confirm </dev/tty
@@ -1102,7 +1143,7 @@ main_menu() {
       echo
       read -p "Press Enter to continue..." </dev/tty
       ;;
-    13)
+    14)
       echo -e "${GREEN}Goodbye!${NC}"
       exit 0
       ;;
