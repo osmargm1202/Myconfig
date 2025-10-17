@@ -293,6 +293,12 @@ install_all() {
   echo -e "${WHITE}  4. Aplicaciones Flatpak${NC}"
   echo -e "${WHITE}  5. Configuraciones del sistema${NC}"
   echo -e "${WHITE}  6. WebApp Creator${NC}"
+  echo -e "${WHITE}  7. SDDM Theme${NC}"
+  echo -e "${WHITE}  8. Plymouth Themes${NC}"
+  echo -e "${WHITE}  9. Wallpapers${NC}"
+  echo -e "${WHITE}  10. System76 Power${NC}"
+  echo -e "${WHITE}  11. Printer System${NC}"
+  echo -e "${WHITE}  12. Finalización y verificación${NC}"
   echo
   echo -e "${YELLOW}¿Continuar con la instalación completa? (y/N):${NC} "
   read -r confirm_all </dev/tty
@@ -308,23 +314,23 @@ install_all() {
   echo
 
   # Step 1: Install AUR Helper
-  echo -e "${BLUE}Paso 1/7: Instalando AUR Helper...${NC}"
+  echo -e "${BLUE}Paso 1/12: Instalando AUR Helper...${NC}"
   install_aur_silent
 
   # Step 2: Install packages
-  echo -e "${BLUE}Paso 2/7: Instalando paquetes del sistema...${NC}"
+  echo -e "${BLUE}Paso 2/12: Instalando paquetes del sistema...${NC}"
   install_packages_silent
 
   # Step 3: Install npm packages
-  echo -e "${BLUE}Paso 3/7: Instalando paquetes npm...${NC}"
+  echo -e "${BLUE}Paso 3/12: Instalando paquetes npm...${NC}"
   install_npm_silent
 
   # Step 4: Install Flatpak apps
-  echo -e "${BLUE}Paso 4/7: Instalando aplicaciones Flatpak...${NC}"
+  echo -e "${BLUE}Paso 4/12: Instalando aplicaciones Flatpak...${NC}"
   install_flatpak_silent
 
   # Step 5: Install configurations
-  echo -e "${BLUE}Paso 5/7: Instalando configuraciones...${NC}"
+  echo -e "${BLUE}Paso 5/12: Instalando configuraciones...${NC}"
   if [[ -f "$APPS_DIR/install_configs.sh" ]]; then
     echo "y" | "$APPS_DIR/install_configs.sh" "$REPO_DIR"
   else
@@ -332,22 +338,65 @@ install_all() {
   fi
 
   # Step 6: Install WebApp Creator
-  echo -e "${BLUE}Paso 6/7: Instalando WebApp Creator...${NC}"
+  echo -e "${BLUE}Paso 6/12: Instalando WebApp Creator...${NC}"
   if [[ -f "$APPS_DIR/install_webapp.sh" ]]; then
     echo "y" | "$APPS_DIR/install_webapp.sh" "$REPO_DIR"
   else
     install_webapp_creator_silent
   fi
 
-  # Step 7: Install SDDM (optional)
-  echo -e "${BLUE}Paso 7/7: ¿Instalar SDDM theme? (y/N):${NC} "
-  read -r install_sddm_choice </dev/tty
-  if [[ "$install_sddm_choice" =~ ^[Yy]$ ]]; then
-    if [[ -f "$APPS_DIR/install_sddm.sh" ]]; then
-      "$APPS_DIR/install_sddm.sh"
-    else
-      echo -e "${YELLOW}Script SDDM no encontrado, saltando...${NC}"
-    fi
+  # Step 7: Install SDDM
+  echo -e "${BLUE}Paso 7/12: Instalando SDDM Theme...${NC}"
+  install_sddm_silent
+
+  # Step 8: Install Plymouth
+  echo -e "${BLUE}Paso 8/12: Instalando Plymouth Themes...${NC}"
+  install_plymouth_silent
+
+  # Step 9: Install Wallpapers
+  echo -e "${BLUE}Paso 9/12: Instalando Wallpapers...${NC}"
+  install_wallpapers_silent
+
+  # Step 10: Install System76 Power
+  echo -e "${BLUE}Paso 10/12: Instalando System76 Power...${NC}"
+  install_system76_silent
+
+  # Step 11: Install Printer System
+  echo -e "${BLUE}Paso 11/12: Instalando Printer System...${NC}"
+  install_printer_silent
+
+  # Step 12: Finalization and verification
+  echo -e "${BLUE}Paso 12/12: Finalización y verificación...${NC}"
+  
+  # Verify key components
+  echo -e "${CYAN}Verificando instalaciones...${NC}"
+  
+  # Check AUR helper
+  if command -v yay &>/dev/null || command -v paru &>/dev/null; then
+    echo -e "${GREEN}  ✓ AUR Helper instalado${NC}"
+  else
+    echo -e "${YELLOW}  ⚠ AUR Helper no encontrado${NC}"
+  fi
+  
+  # Check configurations
+  if [[ -d "$HOME/.config/i3" && -d "$HOME/.config/polybar" ]]; then
+    echo -e "${GREEN}  ✓ Configuraciones del sistema instaladas${NC}"
+  else
+    echo -e "${YELLOW}  ⚠ Configuraciones del sistema incompletas${NC}"
+  fi
+  
+  # Check WebApp Creator
+  if [[ -f "$HOME/.local/bin/webapp-creator" ]]; then
+    echo -e "${GREEN}  ✓ WebApp Creator instalado${NC}"
+  else
+    echo -e "${YELLOW}  ⚠ WebApp Creator no encontrado${NC}"
+  fi
+  
+  # Check wallpapers
+  if [[ -d "$HOME/Wallpapers" ]]; then
+    echo -e "${GREEN}  ✓ Wallpapers instalados${NC}"
+  else
+    echo -e "${YELLOW}  ⚠ Wallpapers no encontrados${NC}"
   fi
 
   echo
@@ -355,6 +404,57 @@ install_all() {
   echo -e "${BLUE}Debes reiniciar tu sesión para que todos los cambios tomen efecto${NC}"
   echo
   read -p "Press Enter to continue..." </dev/tty </dev/tty
+}
+
+# Silent installation functions for missing components
+install_plymouth_silent() {
+  local plymouth_script="$APPS_DIR/install_plymouth.sh"
+  if [[ -f "$plymouth_script" ]]; then
+    chmod +x "$plymouth_script"
+    "$plymouth_script" "$REPO_DIR"
+  else
+    echo -e "${YELLOW}⚠ Plymouth installer not found, skipping...${NC}"
+  fi
+}
+
+install_wallpapers_silent() {
+  local wallpapers_script="$APPS_DIR/install_wallpapers.sh"
+  if [[ -f "$wallpapers_script" ]]; then
+    chmod +x "$wallpapers_script"
+    "$wallpapers_script" "$REPO_DIR"
+  else
+    echo -e "${YELLOW}⚠ Wallpapers installer not found, skipping...${NC}"
+  fi
+}
+
+install_system76_silent() {
+  local system76_script="$APPS_DIR/install_system76.sh"
+  if [[ -f "$system76_script" ]]; then
+    chmod +x "$system76_script"
+    "$system76_script"
+  else
+    echo -e "${YELLOW}⚠ System76 installer not found, skipping...${NC}"
+  fi
+}
+
+install_printer_silent() {
+  local printer_script="$APPS_DIR/install_printer.sh"
+  if [[ -f "$printer_script" ]]; then
+    chmod +x "$printer_script"
+    "$printer_script"
+  else
+    echo -e "${YELLOW}⚠ Printer installer not found, skipping...${NC}"
+  fi
+}
+
+install_sddm_silent() {
+  local sddm_script="$APPS_DIR/install_sddm.sh"
+  if [[ -f "$sddm_script" ]]; then
+    chmod +x "$sddm_script"
+    "$sddm_script"
+  else
+    echo -e "${YELLOW}⚠ SDDM installer not found, skipping...${NC}"
+  fi
 }
 
 # Silent installation functions for automated install
