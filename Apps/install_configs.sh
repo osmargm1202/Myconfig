@@ -67,7 +67,7 @@ show_config_details() {
   local source_dir="$1"
   local configs=("$@")
   
-  echo -e "${WHITE}Configuraciones encontradas:${NC}"
+  echo -e "${WHITE}Configuraciones a instalar:${NC}"
   echo
   
   for config in "${configs[@]:1}"; do
@@ -77,14 +77,16 @@ show_config_details() {
     local status=""
     
     if [[ -d "$target_path" ]]; then
-      status="${YELLOW}(existente)${NC}"
+      status="${YELLOW}(será reemplazada)${NC}"
     else
-      status="${GREEN}(nuevo)${NC}"
+      status="${GREEN}(nueva)${NC}"
     fi
     
     echo -e "${CYAN}  • $config${NC} $status - $file_count archivos"
   done
   
+  echo
+  echo -e "${YELLOW}Nota: Las configuraciones existentes serán reemplazadas sin backup${NC}"
   echo
 }
 
@@ -176,6 +178,37 @@ install_configurations() {
   return $failed
 }
 
+# Function to refresh system components
+refresh_system_components() {
+  echo -e "${BLUE}Refrescando componentes del sistema...${NC}"
+  
+  # Refresh i3 (Win+Shift+R equivalent)
+  if command -v i3-msg &>/dev/null; then
+    echo -e "${CYAN}  • Reiniciando i3...${NC}"
+    i3-msg restart 2>/dev/null || true
+  fi
+  
+  # Reload i3 config (Win+Alt+R equivalent)
+  if command -v i3-msg &>/dev/null; then
+    echo -e "${CYAN}  • Recargando configuración de i3...${NC}"
+    i3-msg reload 2>/dev/null || true
+  fi
+  
+  # Restart polybar if running
+  if pgrep polybar &>/dev/null; then
+    echo -e "${CYAN}  • Reiniciando polybar...${NC}"
+    polybar-msg cmd restart 2>/dev/null || true
+  fi
+  
+  # Restart picom if running
+  if pgrep picom &>/dev/null; then
+    echo -e "${CYAN}  • Reiniciando picom...${NC}"
+    pkill -USR1 picom 2>/dev/null || true
+  fi
+  
+  echo -e "${GREEN}✓ Componentes refrescados${NC}"
+}
+
 # Function to show completion message
 show_completion() {
   local installed_count="$1"
@@ -187,9 +220,13 @@ show_completion() {
   echo -e "${BLUE}  • Configuraciones instaladas: $installed_count${NC}"
   echo -e "${BLUE}  • Ubicación: ~/.config/${NC}"
   echo
+  
+  # Refresh system components
+  refresh_system_components
+  
+  echo
   echo -e "${YELLOW}Nota importante:${NC}"
-  echo -e "${BLUE}  • Algunas aplicaciones requieren reinicio para aplicar cambios${NC}"
-  echo -e "${BLUE}  • Para i3/polybar: Reinicia tu sesión o recarga la configuración${NC}"
+  echo -e "${BLUE}  • Los componentes del sistema han sido refrescados automáticamente${NC}"
   echo -e "${BLUE}  • Para fish: Ejecuta 'source ~/.config/fish/config.fish'${NC}"
   echo
 }
@@ -221,27 +258,9 @@ main() {
   # Show configuration details
   show_config_details "$REPO_DIR" "${configs_array[@]}"
   
-  # Ask for backup preference
-  echo -e "${YELLOW}¿Crear backups de las configuraciones existentes? (y/N):${NC} "
-  read -r make_backups </dev/tty
-  
+  # Install configurations without backup (always overwrite)
   local backup_mode="false"
-  if [[ "$make_backups" =~ ^[Yy]$ ]]; then
-    backup_mode="true"
-    echo -e "${GREEN}Se crearán backups de configuraciones existentes${NC}"
-  else
-    echo -e "${BLUE}Las configuraciones existentes serán reemplazadas${NC}"
-  fi
-  
-  echo
-  echo -e "${YELLOW}¿Continuar con la instalación? (y/N):${NC} "
-  read -r confirm </dev/tty
-  
-  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-    echo -e "${BLUE}Instalación cancelada${NC}"
-    exit 0
-  fi
-  
+  echo -e "${BLUE}Iniciando instalación automática...${NC}"
   echo
   
   # Install configurations

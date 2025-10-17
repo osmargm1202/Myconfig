@@ -28,6 +28,9 @@ sudo usermod -aG lp $USER
 echo "📦 Instalando system-config-printer..."
 sudo pacman -S system-config-printer --noconfirm
 
+echo "📦 Instalando EPSON 3250..."
+yay -S epson-laser-printer-lp-s3250 --noconfirm
+
 echo "✅ Instalación completada!"
 echo "🔄 Reinicia tu sesión para que los cambios de grupo tengan efecto."
 echo "🖨️  Puedes acceder a la configuración de impresoras desde el menú de aplicaciones."

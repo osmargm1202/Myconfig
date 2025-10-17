@@ -99,6 +99,65 @@ detect_environment() {
   LOCAL_BIN="$HOME/.local/bin"
 }
 
+# Function to setup ORGMOS desktop application
+setup_orgmos_desktop() {
+  local desktop_dir="$HOME/.local/share/applications"
+  local icon_dir="$HOME/.local/share/icons"
+  local desktop_file="$desktop_dir/orgmos.desktop"
+  local icon_file="$icon_dir/orgmos.png"
+  local setup_script="$REPO_DIR/setup.sh"
+  
+  # Create directories if they don't exist
+  mkdir -p "$desktop_dir"
+  mkdir -p "$icon_dir"
+  
+  # Download icon if not present
+  if [[ ! -f "$icon_file" ]]; then
+    echo -e "${BLUE}Descargando icono de ORGMOS...${NC}"
+    if command -v curl &>/dev/null; then
+      if curl -s -L "https://r2.or-gm.com/orgm.png" -o "$icon_file"; then
+        echo -e "${GREEN}✓ Icono descargado exitosamente${NC}"
+      else
+        echo -e "${YELLOW}⚠ No se pudo descargar el icono${NC}"
+      fi
+    elif command -v wget &>/dev/null; then
+      if wget -q "https://r2.or-gm.com/orgm.png" -O "$icon_file"; then
+        echo -e "${GREEN}✓ Icono descargado exitosamente${NC}"
+      else
+        echo -e "${YELLOW}⚠ No se pudo descargar el icono${NC}"
+      fi
+    else
+      echo -e "${YELLOW}⚠ curl/wget no disponibles, saltando descarga de icono${NC}"
+    fi
+  fi
+  
+  # Create or update .desktop file
+  echo -e "${BLUE}Configurando aplicación ORGMOS...${NC}"
+  cat > "$desktop_file" << EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=ORGMOS
+Comment=ORGMOS System Configuration Installer
+Exec=$setup_script
+Icon=orgmos
+Categories=System;Settings;
+Terminal=true
+NoDisplay=false
+StartupNotify=true
+EOF
+  
+  # Make desktop file executable
+  chmod +x "$desktop_file"
+  
+  # Update desktop database
+  if command -v update-desktop-database &>/dev/null; then
+    update-desktop-database "$desktop_dir" 2>/dev/null
+  fi
+  
+  echo -e "${GREEN}✓ Aplicación ORGMOS configurada${NC}"
+}
+
 # Function to clone repository if running standalone
 clone_repository() {
   if [[ "$IS_STANDALONE" == true ]]; then
@@ -944,7 +1003,7 @@ main_menu() {
     if [[ "$HAS_GUM" == true ]]; then
       # Use Gum for interactive selection
       local selected
-      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 14)
+      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 15)
       
       if [[ -n "$selected" ]]; then
         # Find index of selected option
@@ -1159,6 +1218,9 @@ detect_environment
 
 # Clone repository if running standalone
 clone_repository
+
+# Setup ORGMOS desktop application
+setup_orgmos_desktop
 
 # Check Gum availability and offer to install
 HAS_GUM=false

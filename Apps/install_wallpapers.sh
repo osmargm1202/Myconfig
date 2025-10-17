@@ -27,20 +27,7 @@ if command -v gum &>/dev/null; then
   export GUM_CONFIRM_SELECTED_FOREGROUND="#87CEEB"
 fi
 
-# Function to ask for confirmation with Gum support
-ask_confirmation() {
-  local message="$1"
-  
-  if [[ "$HAS_GUM" == true ]] && [[ -c /dev/tty ]]; then
-    gum confirm "$message" < /dev/tty
-    return $?
-  else
-    echo -e "${YELLOW}$message (y/N):${NC} "
-    read -r response </dev/tty
-    [[ "$response" =~ ^[Yy]$ ]]
-    return $?
-  fi
-}
+# Function removed - no confirmations needed
 
 # Function to display header
 show_header() {
@@ -82,15 +69,11 @@ copy_wallpapers() {
   
   if [[ $existing_count -gt 0 ]]; then
     echo -e "${YELLOW}Se encontraron $existing_count wallpapers existentes${NC}"
-    if ask_confirmation "¿Reemplazar wallpapers existentes?"; then
-      echo -e "${BLUE}Creando backup de wallpapers existentes...${NC}"
-      local backup_dir="$WALLPAPERS_TARGET.backup.$(date +%Y%m%d_%H%M%S)"
-      mv "$WALLPAPERS_TARGET" "$backup_dir"
-      echo -e "${GREEN}✓ Backup creado: $backup_dir${NC}"
-      mkdir -p "$WALLPAPERS_TARGET"
-    else
-      echo -e "${BLUE}Manteniendo wallpapers existentes, agregando nuevos...${NC}"
-    fi
+    echo -e "${BLUE}Creando backup de wallpapers existentes...${NC}"
+    local backup_dir="$WALLPAPERS_TARGET.backup.$(date +%Y%m%d_%H%M%S)"
+    mv "$WALLPAPERS_TARGET" "$backup_dir"
+    echo -e "${GREEN}✓ Backup creado: $backup_dir${NC}"
+    mkdir -p "$WALLPAPERS_TARGET"
   fi
   
   # Copy wallpapers
@@ -158,13 +141,7 @@ main() {
   fi
   
   echo
-  if ! ask_confirmation "¿Continuar con la instalación de wallpapers?"; then
-    echo -e "${BLUE}Instalación cancelada${NC}"
-    exit 0
-  fi
-  
-  echo
-  echo -e "${GREEN}Iniciando instalación...${NC}"
+  echo -e "${GREEN}Iniciando instalación automática...${NC}"
   echo
   
   # Copy wallpapers

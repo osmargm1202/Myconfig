@@ -15,6 +15,14 @@ fi
 flg_DryRun=${flg_DryRun:-0}
 export log_section="package"
 
+# Set default to non-interactive mode
+use_default="--noconfirm"
+
+echo "=========================================="
+echo "      Package Installation Summary       "
+echo "=========================================="
+echo
+
 "${scrDir}/install_aur.sh" "${getAur}" 2>&1
 chk_list "aurhlpr" "${aurList[@]}"
 listPkg="${1:-"${scrDir}/pkg_core.lst"}"
@@ -71,6 +79,13 @@ while read -r pkg deps; do
 done < <(cut -d '#' -f 1 "${listPkg}")
 
 IFS=${ofs}
+
+# Show package summary
+echo "Resumen de paquetes:"
+echo "  • Paquetes Arch: ${#archPkg[@]}"
+echo "  • Paquetes AUR: ${#aurhPkg[@]}"
+echo "  • Total: $((${#archPkg[@]} + ${#aurhPkg[@]}))"
+echo
 
 install_packages() {
     local -n pkg_array=$1

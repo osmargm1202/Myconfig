@@ -346,6 +346,9 @@ main() {
   echo -e "${BLUE}  6. Opción de autologin${NC}"
   echo
   
+  # Force mode by default when called from setup.sh
+  FORCE_YES=true
+  
   if [[ "$FORCE_YES" == true ]]; then
     echo -e "${GREEN}✓ Modo automático activado (sin confirmaciones)${NC}"
   fi
@@ -355,14 +358,7 @@ main() {
   fi
   
   echo
-  
-  if ! ask_confirmation "¿Continuar con la instalación de SDDM?"; then
-    echo -e "${BLUE}Instalación cancelada${NC}"
-    exit 0
-  fi
-  
-  echo
-  echo -e "${GREEN}Iniciando instalación...${NC}"
+  echo -e "${GREEN}Iniciando instalación automática...${NC}"
   echo
   
   # Install SDDM and theme

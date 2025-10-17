@@ -399,33 +399,8 @@ main() {
   echo -e "${BLUE}  5. Regenerar initramfs automáticamente${NC}"
   echo
   
-  # Ask what the user wants to do
-  echo -e "${YELLOW}¿Qué deseas hacer?${NC}"
-  echo
-  
-  local choice
-  choice=$(gum choose --header "Selecciona una opción" \
-    "Instalación automática" \
-    "Ver instrucciones de configuración manual" \
-    "Salir" < /dev/tty)
-  
-  case "$choice" in
-    "Ver instrucciones de configuración manual")
-      show_manual_instructions
-      exit 0
-      ;;
-    "Salir")
-      echo -e "${BLUE}Operación cancelada${NC}"
-      exit 0
-      ;;
-    "Instalación automática")
-      # Continue with automatic installation
-      ;;
-    *)
-      echo -e "${BLUE}Operación cancelada${NC}"
-      exit 0
-      ;;
-  esac
+  # Skip interactive menu - go straight to automatic installation
+  echo -e "${GREEN}✓ Iniciando instalación automática${NC}"
   
   echo
   
@@ -456,14 +431,9 @@ main() {
   echo -e "${GREEN}✓ ${#themes_array[@]} temas cargados${NC}"
   echo
   
-  # Show theme selection menu
-  local selected_theme
-  if ! selected_theme=$(show_theme_menu "${themes_array[@]}"); then
-    echo -e "${BLUE}Instalación cancelada${NC}"
-    exit 0
-  fi
-  
-  local theme_name="$selected_theme"
+  # Use default theme instead of interactive selection
+  local theme_name="colorful-loop"
+  echo -e "${GREEN}✓ Tema seleccionado automáticamente: $theme_name${NC}"
   
   echo
   echo -e "${GREEN}Tema seleccionado: $theme_name${NC}"

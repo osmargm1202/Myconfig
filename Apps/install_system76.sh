@@ -32,16 +32,7 @@ install_system76_power() {
   echo -e "${WHITE}  • system76-power (daemon de gestión de energía)${NC}"
   echo -e "${WHITE}  • system76-power-gui-x11 (interfaz gráfica)${NC}"
   echo
-  echo -e "${YELLOW}¿Continuar con la instalación? (y/N):${NC} "
-  read -r confirm </dev/tty
-  
-  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-    echo -e "${BLUE}Instalación cancelada${NC}"
-    exit 0
-  fi
-  
-  echo
-  echo -e "${GREEN}Iniciando instalación...${NC}"
+  echo -e "${GREEN}Iniciando instalación automática...${NC}"
   echo
   
   # Check if yay or paru is installed
