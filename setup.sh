@@ -300,17 +300,7 @@ install_all() {
   echo -e "${WHITE}  11. Printer System${NC}"
   echo -e "${WHITE}  12. Finalización y verificación${NC}"
   echo
-  echo -e "${YELLOW}¿Continuar con la instalación completa? (y/N):${NC} "
-  read -r confirm_all </dev/tty
-
-  if [[ ! "$confirm_all" =~ ^[Yy]$ ]]; then
-    echo -e "${BLUE}Instalación cancelada${NC}"
-    read -p "Press Enter to continue..." </dev/tty </dev/tty </dev/tty
-    return 1
-  fi
-
-  echo
-  echo -e "${GREEN}Iniciando instalación completa...${NC}"
+  echo -e "${BLUE}Iniciando instalación completa automática...${NC}"
   echo
 
   # Step 1: Install AUR Helper

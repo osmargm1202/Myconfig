@@ -61,10 +61,6 @@ else
         exit 0
     fi
     
-    updates=$(flatpak list --updates 2>/dev/null | wc -l)
-    if [ "$updates" -gt 0 ]; then
-        echo "󰏖 $updates"
-    else
-        echo "󰏖 0"
-    fi
+    updates=$(flatpak remote-ls --updates 2>/dev/null | wc -l)
+    echo "󰏖 $updates"
 fi
