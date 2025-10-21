@@ -466,135 +466,111 @@ install_app() {
   echo -e "${WHITE}──────────────────────${NC}"
   echo
 
+  # First check if Chromium is installed
+  echo -e "${BLUE}Checking dependencies...${NC}"
+  check_chromium
+  echo
+
   local bin_dir="$HOME/.local/bin"
   local script_name="webapp-creator"
   local script_path="$0"
-  local launcher_file="./launcher.sh"
   local installer_file="./install.sh"
   local gamemode_file="$REPO_DIR/i3/scripts/game-mode.sh"
   local webapps_archive="./webapps.tar.gz"
 
-  # Function to install app (self-install)
-  install_app() {
-    show_header
-    echo -e "${WHITE}Install WebApp Creator${NC}"
-    echo -e "${WHITE}──────────────────────${NC}"
-    echo
+  echo -e "${BLUE}Installing WebApp Creator...${NC}"
 
-    # First check if Chromium is installed
-    echo -e "${BLUE}Checking dependencies...${NC}"
-    check_chromium
-    echo
+  # Create .local/bin directory
+  mkdir -p "$bin_dir"
+  echo -e "${GREEN}✓ Created directory: $bin_dir${NC}"
 
-    local bin_dir="$HOME/.local/bin"
-    local script_name="webapp-creator"
-    local script_path="$0"
-    local launcher_file="./launcher.sh"
-    local webapps_archive="./webapps.tar.gz"
+  # Copy this script to .local/bin
+  if [[ -f "$script_path" ]]; then
+    cp "$script_path" "$bin_dir/$script_name"
+    chmod +x "$bin_dir/$script_name"
+    echo -e "${GREEN}✓ Copied script to: $bin_dir/$script_name${NC}"
+  else
+    echo -e "${RED}✗ Current script not found: $script_path${NC}"
+    return 1
+  fi
 
-    echo -e "${BLUE}Installing WebApp Creator...${NC}"
+  # Copy install.sh if it exists
+  if [[ -f "$installer_file" ]]; then
+    cp "$installer_file" "$bin_dir/"
+    chmod +x "$bin_dir/install.sh"
+    echo -e "${GREEN}✓ Copied install.sh to: $bin_dir/install.sh${NC}"
+  else
+    echo -e "${YELLOW}! install.sh not found, skipping...${NC}"
+  fi
 
-    # Create .local/bin directory
-    mkdir -p "$bin_dir"
-    echo -e "${GREEN}✓ Created directory: $bin_dir${NC}"
+  # Copy game-mode.sh if it exists
+  if [[ -f "$gamemode_file" ]]; then
+    cp "$gamemode_file" "$bin_dir/"
+    chmod +x "$bin_dir/game-mode.sh"
+    echo -e "${GREEN}✓ Copied game-mode.sh to: $bin_dir/game-mode.sh${NC}"
+  else
+    echo -e "${YELLOW}! game-mode.sh not found, skipping...${NC}"
+  fi
 
-    # Copy this script to .local/bin
-    if [[ -f "$script_path" ]]; then
-      cp "$script_path" "$bin_dir/$script_name"
-      chmod +x "$bin_dir/$script_name"
-      echo -e "${GREEN}✓ Copied script to: $bin_dir/$script_name${NC}"
-    else
-      echo -e "${RED}✗ Current script not found: $script_path${NC}"
-      return 1
+  # Create WebApp Creator desktop entry
+  create_webapp_creator_desktop
+
+  # Import default webapps if archive exists
+  if [[ -f "$webapps_archive" ]]; then
+    echo -e "${BLUE}Importing default webapps...${NC}"
+
+    # Create temporary directory for import
+    local temp_dir=$(mktemp -d)
+    tar -xzf "$webapps_archive" -C "$temp_dir"
+
+    # Import icons
+    if [[ -d "$temp_dir/webapp-icons" ]]; then
+      cp -r "$temp_dir/webapp-icons/"* "$ICONS_DIR/" 2>/dev/null
+      echo -e "${GREEN}✓ Default icons imported${NC}"
     fi
 
-    # Copy launcher.sh if it exists
-    if [[ -f "$launcher_file" ]]; then
-      cp "$launcher_file" "$bin_dir/"
-      chmod +x "$bin_dir/launcher.sh"
-      echo -e "${GREEN}✓ Copied launcher.sh to: $bin_dir/launcher.sh${NC}"
-    else
-      echo -e "${YELLOW}! launcher.sh not found, skipping...${NC}"
+    # Import applications
+    if [[ -d "$temp_dir/applications" ]]; then
+      cp "$temp_dir/applications/"*.desktop "$APPS_DIR/" 2>/dev/null
+      echo -e "${GREEN}✓ Default applications imported${NC}"
     fi
 
-    # Copy install.sh if it exists
-    if [[ -f "$installer_file" ]]; then
-      cp "$installer_file" "$bin_dir/"
-      chmod +x "$bin_dir/install.sh"
-      echo -e "${GREEN}✓ Copied install.sh to: $bin_dir/install.sh${NC}"
-    else
-      echo -e "${YELLOW}! install.sh not found, skipping...${NC}"
-    fi
-
-    # Copy game-mode.sh if it exists
-    if [[ -f "$gamemode_file" ]]; then
-      cp "$gamemode_file" "$bin_dir/"
-      chmod +x "$bin_dir/game-mode.sh"
-      echo -e "${GREEN}✓ Copied game-mode.sh to: $bin_dir/game-mode.sh${NC}"
-    else
-      echo -e "${YELLOW}! game-mode.sh not found, skipping...${NC}"
-    fi
-
-    # Create WebApp Creator desktop entry
-    create_webapp_creator_desktop
-
-    # Import default webapps if archive exists
-    if [[ -f "$webapps_archive" ]]; then
-      echo -e "${BLUE}Importing default webapps...${NC}"
-
-      # Create temporary directory for import
-      local temp_dir=$(mktemp -d)
-      tar -xzf "$webapps_archive" -C "$temp_dir"
-
-      # Import icons
-      if [[ -d "$temp_dir/webapp-icons" ]]; then
-        cp -r "$temp_dir/webapp-icons/"* "$ICONS_DIR/" 2>/dev/null
-        echo -e "${GREEN}✓ Default icons imported${NC}"
+    # Import and merge config
+    if [[ -f "$temp_dir/webapps.json" ]]; then
+      if [[ -f "$CONFIG_FILE" ]]; then
+        # Merge with existing config
+        local temp_config=$(mktemp)
+        jq -s '.[0] + .[1] | unique_by(.name)' "$CONFIG_FILE" "$temp_dir/webapps.json" >"$temp_config"
+        mv "$temp_config" "$CONFIG_FILE"
+      else
+        # Copy as new config
+        cp "$temp_dir/webapps.json" "$CONFIG_FILE"
       fi
-
-      # Import applications
-      if [[ -d "$temp_dir/applications" ]]; then
-        cp "$temp_dir/applications/"*.desktop "$APPS_DIR/" 2>/dev/null
-        echo -e "${GREEN}✓ Default applications imported${NC}"
-      fi
-
-      # Import and merge config
-      if [[ -f "$temp_dir/webapps.json" ]]; then
-        if [[ -f "$CONFIG_FILE" ]]; then
-          # Merge with existing config
-          local temp_config=$(mktemp)
-          jq -s '.[0] + .[1] | unique_by(.name)' "$CONFIG_FILE" "$temp_dir/webapps.json" >"$temp_config"
-          mv "$temp_config" "$CONFIG_FILE"
-        else
-          # Copy as new config
-          cp "$temp_dir/webapps.json" "$CONFIG_FILE"
-        fi
-        echo -e "${GREEN}✓ Default configuration imported${NC}"
-      fi
-
-      rm -rf "$temp_dir"
-      echo -e "${GREEN}✓ Default webapps installed${NC}"
-    else
-      echo -e "${YELLOW}! webapps.tar.gz not found, skipping default apps...${NC}"
+      echo -e "${GREEN}✓ Default configuration imported${NC}"
     fi
 
-    # Check if .local/bin is in PATH
-    if [[ ":$PATH:" != *":$bin_dir:"* ]]; then
-      echo
-      echo -e "${YELLOW}⚠ Warning: $bin_dir is not in your PATH${NC}"
-      echo -e "${BLUE}Add this line to your ~/.bashrc or ~/.zshrc:${NC}"
-      echo -e "${WHITE}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
-      echo
-      echo -e "${BLUE}Then reload your shell with: source ~/.bashrc${NC}"
-    fi
+    rm -rf "$temp_dir"
+    echo -e "${GREEN}✓ Default webapps installed${NC}"
+  else
+    echo -e "${YELLOW}! webapps.tar.gz not found, skipping default apps...${NC}"
+  fi
 
+  # Check if .local/bin is in PATH
+  if [[ ":$PATH:" != *":$bin_dir:"* ]]; then
     echo
-    echo -e "${GREEN}✓ WebApp Creator installed successfully!${NC}"
-    echo -e "${BLUE}You can now:${NC}"
-    echo -e "${WHITE}  • Run 'webapp-creator' from terminal${NC}"
-    echo -e "${WHITE}  • Find 'WebApp Creator' in your application menu${NC}"
-    echo -e "${WHITE}  • Launch from rofi/launcher${NC}"
-  }
+    echo -e "${YELLOW}⚠ Warning: $bin_dir is not in your PATH${NC}"
+    echo -e "${BLUE}Add this line to your ~/.bashrc or ~/.zshrc:${NC}"
+    echo -e "${WHITE}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
+    echo
+    echo -e "${BLUE}Then reload your shell with: source ~/.bashrc${NC}"
+  fi
+
+  echo
+  echo -e "${GREEN}✓ WebApp Creator installed successfully!${NC}"
+  echo -e "${BLUE}You can now:${NC}"
+  echo -e "${WHITE}  • Run 'webapp-creator' from terminal${NC}"
+  echo -e "${WHITE}  • Find 'WebApp Creator' in your application menu${NC}"
+  echo -e "${WHITE}  • Launch from rofi/launcher${NC}"
 }
 
 # Function to remove webapp

@@ -279,16 +279,30 @@ gaps outer 5
 # Regla para abrir un programa solo en un workspace específico
 # Ejemplo: abrir neovim solo en el workspace 3
 
+assign [title="claude.ai"] 3
+assign [title="chatgpt.com"] 3
+assign [title="aistudio.google.com"] 3
+assign [title="gmail.com"] 10
+assign [title="outlook.office.com"] 10
+assign [title="web.*whatsapp.com"] 9
+assign [title="teams.microsoft.com"] 9
+assign [title="meet.google.com"] 8
+assign [title="youtube.com"] 5
+assign [title="netflix.com"] 5
+assign [title="youtubekids.com"] 5
+assign [title="app.rollbar.com"] 4
+assign [title="console.neon.tech"] 4
+assign [title="console.cloud.google.com"] 4
+assign [title="chat.or-gm.com"] 3
+
+
+
+
 assign [class="Cursor"] 2
 assign [class="dota2"] 11
 assign [class="Hollow Knight Silksong"] 12
 assign [class="steam"] 14
 assign [class="discord"] 14
-assign [class="gmail.com"] 9
-assign [class="outlook.office.com"] 9
-assign [class="web.whatsapp.com"] 10
-assign [class="teams.microsoft.com"] 10
-assign [class="meet.google.com"] 8
 
 
 # Si quieres que otro programa (por ejemplo, Firefox) solo se abra en el workspace 2:

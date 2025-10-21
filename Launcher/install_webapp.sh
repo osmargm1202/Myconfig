@@ -74,7 +74,6 @@ install_webapp_creator() {
   local source_dir="$1"
   local launcher_dir="$source_dir/Launcher"
   local webapp_script="$launcher_dir/webapp-creator.sh"
-  local launcher_script="$launcher_dir/launcher.sh"
   local gamemode_script="$source_dir/i3/scripts/game-mode.sh"
   local webapps_archive="$launcher_dir/webapps.tar.gz"
   
@@ -99,14 +98,6 @@ install_webapp_creator() {
     return 1
   fi
   
-  # Copy launcher script
-  if [[ -f "$launcher_script" ]]; then
-    cp "$launcher_script" "$bin_dir/launcher.sh"
-    chmod +x "$bin_dir/launcher.sh"
-    echo -e "${GREEN}  ✓ launcher.sh copiado${NC}"
-  else
-    echo -e "${YELLOW}  ! launcher.sh no encontrado, omitiendo...${NC}"
-  fi
   
   # Copy game-mode script
   if [[ -f "$gamemode_script" ]]; then
@@ -142,12 +133,26 @@ EOF
   # Extract webapps if available
   if [[ -f "$webapps_archive" ]]; then
     echo -e "${BLUE}Extrayendo webapps por defecto...${NC}"
-    tar -xzf "$webapps_archive" -C "$HOME/.local/share/applications/"
-    if [[ $? -eq 0 ]]; then
-      echo -e "${GREEN}  ✓ Webapps por defecto instaladas${NC}"
-    else
-      echo -e "${YELLOW}  ! Error al extraer webapps${NC}"
+    
+    # Extraer a directorio temporal
+    local temp_dir=$(mktemp -d)
+    tar -xzf "$webapps_archive" -C "$temp_dir"
+    
+    # Copiar archivos .desktop
+    if [[ -d "$temp_dir/applications" ]]; then
+      cp "$temp_dir/applications/"*.desktop "$apps_dir/" 2>/dev/null
+      echo -e "${GREEN}  ✓ Archivos .desktop instalados${NC}"
     fi
+    
+    # Copiar iconos
+    if [[ -d "$temp_dir/webapp-icons" ]]; then
+      cp -r "$temp_dir/webapp-icons/"* "$icons_dir/" 2>/dev/null
+      echo -e "${GREEN}  ✓ Iconos instalados${NC}"
+    fi
+    
+    # Limpiar
+    rm -rf "$temp_dir"
+    echo -e "${GREEN}  ✓ Webapps por defecto instaladas${NC}"
   else
     echo -e "${YELLOW}  ! webapps.tar.gz no encontrado, omitiendo...${NC}"
   fi
@@ -176,7 +181,6 @@ show_completion() {
   echo
   echo -e "${WHITE}Archivos instalados:${NC}"
   echo -e "${BLUE}  • webapp-creator - Script principal${NC}"
-  echo -e "${BLUE}  • launcher.sh - Lanzador de aplicaciones${NC}"
   echo -e "${BLUE}  • game-mode.sh - Modo juego (wac-game)${NC}"
   echo -e "${BLUE}  • webapp-creator.desktop - Entrada de escritorio${NC}"
   echo
