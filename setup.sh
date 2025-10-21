@@ -105,7 +105,7 @@ setup_orgmos_desktop() {
   local icon_dir="$HOME/.local/share/icons"
   local desktop_file="$desktop_dir/orgmos.desktop"
   local icon_file="$icon_dir/orgmos.png"
-  local setup_script="$REPO_DIR/setup.sh"
+  local install_script="$REPO_DIR/install.sh"
   
   # Create directories if they don't exist
   mkdir -p "$desktop_dir"
@@ -139,7 +139,7 @@ Version=1.0
 Type=Application
 Name=ORGMOS
 Comment=ORGMOS System Configuration Installer
-Exec=$setup_script
+Exec=$install_script
 Icon=orgmos
 Categories=System;Settings;
 Terminal=true
