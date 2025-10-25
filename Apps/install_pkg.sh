@@ -108,11 +108,3 @@ echo ""
 install_packages archPkg "arch" "sudo pacman"
 echo ""
 install_packages aurhPkg "aur" "${aurhlpr}"
-
-# Wait for user input before returning to menu
-echo
-if [[ -c /dev/tty ]]; then
-  read -p "Presiona Enter para volver al menú principal..." </dev/tty
-else
-  read -p "Presiona Enter para volver al menú principal..."
-fi

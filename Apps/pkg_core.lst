@@ -31,6 +31,8 @@ pavucontrol                                            # control de volumen GUI
 pamixer                                                # control de volumen CLI
 playerctl                                              # controles multimedia
 mpv                                                    # reproductor multimedia
+antimicrox                                             # mapeador de controles/gamepads, interfaz CLI/GUI
+
 
 # ====================================================================================================
 # CONECTIVIDAD
@@ -40,6 +42,8 @@ network-manager-applet                                 # applet de red para syst
 bluez                                                  # stack bluetooth
 bluez-utils                                            # utilidades bluetooth CLI
 blueman                                                # gestor bluetooth GUI
+smbclient                                              # cliente SMB/CIFS
+gvfs-smb                                   `          # integración SMB con gestores de archivos
 
 # ====================================================================================================
 # DISPLAY MANAGER
@@ -131,6 +135,8 @@ jq                                                     # procesador JSON
 wget                                                   # descargador web
 curl                                                   # cliente web
 mailutils                                              # conexiones de transferencia
+gnome-keyring                                          # gestor de claves y contraseñas
+libsecret                                              # biblioteca para acceso a keyring
 
 # ====================================================================================================
 # THEMING Y CONFIGURACIÓN

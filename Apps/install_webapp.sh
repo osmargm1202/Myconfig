@@ -216,7 +216,7 @@ install_webapp_creator() {
 
   # Copy main webapp-creator script
   if [[ -f "$webapp_script" ]]; then
-    cp "$webapp_script" "$LOCAL_BIN/webapp-creator"
+    cp -f "$webapp_script" "$LOCAL_BIN/webapp-creator"
     chmod +x "$LOCAL_BIN/webapp-creator"
     echo -e "${GREEN}✓ Script principal copiado${NC}"
   else
@@ -228,14 +228,14 @@ install_webapp_creator() {
   local scripts_copied=0
   
   if [[ -f "$launcher_script" ]]; then
-    cp "$launcher_script" "$LOCAL_BIN/launcher.sh"
+    cp -f "$launcher_script" "$LOCAL_BIN/launcher.sh"
     chmod +x "$LOCAL_BIN/launcher.sh"
     echo -e "${GREEN}✓ launcher.sh copiado${NC}"
     ((scripts_copied++))
   fi
 
   if [[ -f "$gamemode_script" ]]; then
-    cp "$gamemode_script" "$LOCAL_BIN/game-mode.sh"
+    cp -f "$gamemode_script" "$LOCAL_BIN/game-mode.sh"
     chmod +x "$LOCAL_BIN/game-mode.sh"
     echo -e "${GREEN}✓ game-mode.sh copiado${NC}"
     ((scripts_copied++))
@@ -296,69 +296,29 @@ show_completion() {
 
 # Main execution
 main() {
-  show_header
-  
-  echo -e "${WHITE}Este script instalará:${NC}"
-  echo -e "${BLUE}  1. WebApp Creator y scripts relacionados${NC}"
-  echo -e "${BLUE}  2. Dependencias (Chromium si es necesario)${NC}"
-  echo -e "${BLUE}  3. Entrada de escritorio${NC}"
-  echo -e "${BLUE}  4. Webapps por defecto${NC}"
-  echo -e "${BLUE}  5. Symlinks y configuración${NC}"
-  echo
-  echo -e "${BLUE}Repositorio: $REPO_DIR${NC}"
-  echo
-  
   # Validate repository
   if ! validate_repository "$REPO_DIR"; then
-    echo -e "${RED}✗ No se puede continuar sin un repositorio válido${NC}"
     exit 1
   fi
   
-  echo -e "${YELLOW}¿Continuar con la instalación? (y/N):${NC} "
-  read -r confirm </dev/tty
-  
-  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-    echo -e "${BLUE}Instalación cancelada${NC}"
-    exit 0
-  fi
-  
-  echo
-  echo -e "${GREEN}Iniciando instalación...${NC}"
-  echo
-  
   # Check dependencies
-  echo -e "${BLUE}Verificando dependencias...${NC}"
   check_chromium
-  echo
   
   # Install WebApp Creator
   if ! install_webapp_creator; then
-    echo -e "${RED}✗ Error en la instalación${NC}"
     exit 1
   fi
   
-  echo
-  
   # Create desktop file
   create_desktop_file
-  echo
   
   # Import default webapps
   import_default_webapps
-  echo
   
-  # Check PATH
-  check_path_instructions
-  
-  # Show completion
-  show_completion
+  echo -e "${GREEN}✓ WebApp Creator instalado${NC}"
 }
 
 # Run main function if script is executed directly
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   main "$@"
-  
-  # Wait for user input before returning to menu (if running from menu)
-  echo
-  read -p "Presiona Enter para volver al menú principal..." </dev/tty
 fi

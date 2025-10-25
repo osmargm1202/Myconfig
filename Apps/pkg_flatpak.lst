@@ -29,3 +29,5 @@ org.gnome.eog
 
 # === VIRTUALIZACIÓN ===
 org.gnome.Boxes
+
+org.libretro.RetroArch

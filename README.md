@@ -256,3 +256,9 @@ Los paquetes npm están listados en `Apps/pkg_npm.lst` y se instalan automática
 - **Game Mode**: Optimización para juegos
 - **i3lock**: Bloqueo con blur y transparencia
 - **Configuración completa**: Todo listo para usar
+
+
+### Code Server
+
+sudo nano /etc/fstab
+//10.0.0.13/Code /mnt/Code cifs username=osmarg,password=1202,uid=1000,gid=1000,file_mode=0755,dir_mode=0755 0

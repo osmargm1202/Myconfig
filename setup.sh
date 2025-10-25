@@ -529,8 +529,8 @@ install_configs_silent() {
         rm -rf "$target_dir"
       fi
 
-      # Copy configuration
-      cp -r "$config_dir" "$target_dir"
+      # Copy configuration with force overwrite
+      cp -rf "$config_dir" "$target_dir"
       echo -e "${GREEN}  ✓ Installed $dir_name configuration${NC}"
     fi
   done
@@ -551,19 +551,19 @@ install_webapp_creator_silent() {
 
   # Copy webapp-creator script
   if [[ -f "$WEBAPP_CREATOR" ]]; then
-    cp "$WEBAPP_CREATOR" "$bin_dir/$script_name"
+    cp -f "$WEBAPP_CREATOR" "$bin_dir/$script_name"
     chmod +x "$bin_dir/$script_name"
     echo -e "${GREEN}✓ WebApp Creator installed${NC}"
   fi
 
   # Copy additional scripts
   if [[ -f "$LAUNCHER_SCRIPT" ]]; then
-    cp "$LAUNCHER_SCRIPT" "$bin_dir/"
+    cp -f "$LAUNCHER_SCRIPT" "$bin_dir/"
     chmod +x "$bin_dir/launcher.sh"
   fi
 
   if [[ -f "$GAMEMODE_SCRIPT" ]]; then
-    cp "$GAMEMODE_SCRIPT" "$bin_dir/"
+    cp -f "$GAMEMODE_SCRIPT" "$bin_dir/"
     chmod +x "$bin_dir/game-mode.sh"
     # Also give permissions to i3 scripts
     if [[ -d "$REPO_DIR/i3/scripts" ]]; then

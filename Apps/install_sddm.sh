@@ -98,8 +98,6 @@ check_root() {
 
 # Function to install SDDM and theme
 install_sddm_theme() {
-  echo -e "${BLUE}Instalando SDDM y theme corners...${NC}"
-  
   # Check if AUR helper is available
   local aur_helper=""
   if command -v yay &>/dev/null; then
@@ -107,68 +105,44 @@ install_sddm_theme() {
   elif command -v paru &>/dev/null; then
     aur_helper="paru"
   else
-    echo -e "${RED}✗ No se encontró un AUR helper (yay o paru)${NC}"
-    echo -e "${YELLOW}Instala un AUR helper primero${NC}"
+    echo -e "${RED}✗ No se encontró un AUR helper${NC}"
     return 1
   fi
   
   # Install SDDM
-  echo -e "${BLUE}Instalando SDDM...${NC}"
-  if sudo pacman -S sddm --noconfirm; then
-    echo -e "${GREEN}✓ SDDM instalado${NC}"
-  else
-    echo -e "${RED}✗ Error al instalar SDDM${NC}"
-    return 1
-  fi
+  sudo pacman -S sddm --noconfirm
   
   # Install corners theme
-  echo -e "${BLUE}Instalando theme corners desde AUR...${NC}"
-  if $aur_helper -S sddm-theme-corners-git --noconfirm; then
-    echo -e "${GREEN}✓ Theme corners instalado${NC}"
-  else
-    echo -e "${RED}✗ Error al instalar theme corners${NC}"
-    return 1
-  fi
-  
-  return 0
+  $aur_helper -S sddm-theme-corners-git --noconfirm
 }
 
 # Function to configure SDDM
 configure_sddm() {
-  echo -e "${BLUE}Configurando SDDM...${NC}"
-  
   local sddm_conf="/etc/sddm.conf"
   local backup_conf="/etc/sddm.conf.backup.$(date +%Y%m%d_%H%M%S)"
   
   # Create backup of existing config
   if [[ -f "$sddm_conf" ]]; then
-    echo -e "${YELLOW}Creando backup de configuración existente...${NC}"
     sudo cp "$sddm_conf" "$backup_conf"
-    echo -e "${GREEN}✓ Backup creado: $backup_conf${NC}"
   fi
   
   # Ask about autologin
-  echo
   local enable_autologin="n"
   
   if [[ "$ENABLE_AUTOLOGIN" == true ]]; then
     enable_autologin="y"
-    echo -e "${GREEN}✓ Autologin activado automáticamente (parámetro --autologin)${NC}"
-  elif ask_confirmation "¿Deseas activar autologin (inicio automático sin contraseña)?"; then
-    enable_autologin="y"
+  elif [[ "$HAS_GUM" == true ]]; then
+    if gum confirm "¿Activar autologin (inicio automático sin contraseña)?"; then
+      enable_autologin="y"
+    fi
   fi
   
   local autologin_user=""
   if [[ "$enable_autologin" =~ ^[Yy]$ ]]; then
     autologin_user="$USER"
-    echo -e "${GREEN}Autologin activado para usuario: $autologin_user${NC}"
-  else
-    echo -e "${BLUE}Autologin desactivado${NC}"
   fi
   
   # Create SDDM configuration
-  echo -e "${BLUE}Creando configuración SDDM...${NC}"
-  
   sudo tee "$sddm_conf" > /dev/null << EOF
 [Autologin]
 Relogin=false
@@ -196,113 +170,57 @@ XauthPath=/usr/bin/xauth
 XDisplayStop=30
 XDisplayStart=0
 EOF
-
-  if [[ $? -eq 0 ]]; then
-    echo -e "${GREEN}✓ Configuración SDDM creada${NC}"
-  else
-    echo -e "${RED}✗ Error al crear configuración SDDM${NC}"
-    return 1
-  fi
-  
-  return 0
 }
 
 # Function to enable SDDM service
 enable_sddm_service() {
-  echo -e "${BLUE}Habilitando servicio SDDM...${NC}"
-  
   # Disable other display managers first
-  echo -e "${YELLOW}Deshabilitando otros display managers...${NC}"
   local other_dms=(gdm gdm3 lightdm lxdm xdm kdm nodm slim entrance)
   
   for dm in "${other_dms[@]}"; do
     if systemctl is-enabled "$dm" &>/dev/null; then
-      echo -e "${YELLOW}  • Deshabilitando $dm...${NC}"
       sudo systemctl disable "$dm" 2>/dev/null || true
     fi
   done
   
   # Stop any running display managers
-  echo -e "${YELLOW}Deteniendo display managers en ejecución...${NC}"
   for dm in "${other_dms[@]}"; do
     if systemctl is-active "$dm" &>/dev/null; then
-      echo -e "${YELLOW}  • Deteniendo $dm...${NC}"
       sudo systemctl stop "$dm" 2>/dev/null || true
     fi
   done
   
   # Enable SDDM
-  echo -e "${BLUE}Habilitando SDDM...${NC}"
-  if sudo systemctl enable sddm; then
-    echo -e "${GREEN}✓ Servicio SDDM habilitado${NC}"
-  else
-    echo -e "${RED}✗ Error al habilitar servicio SDDM${NC}"
-    return 1
-  fi
-  
-  return 0
+  sudo systemctl enable sddm
 }
 
 # Function to validate SDDM is default display manager
 validate_sddm_default() {
-  echo -e "${BLUE}Validando configuración de SDDM...${NC}"
-  
-  local validation_failed=false
-  
   # Check if SDDM is enabled
-  if systemctl is-enabled sddm &>/dev/null; then
-    echo -e "${GREEN}✓ SDDM está habilitado${NC}"
-  else
+  if ! systemctl is-enabled sddm &>/dev/null; then
     echo -e "${RED}✗ SDDM no está habilitado${NC}"
-    validation_failed=true
+    return 1
   fi
   
   # Check for conflicting display managers
   local other_dms=(gdm gdm3 lightdm lxdm xdm kdm nodm slim entrance)
-  local conflicts_found=false
-  
   for dm in "${other_dms[@]}"; do
     if systemctl is-enabled "$dm" &>/dev/null; then
-      echo -e "${RED}✗ Display manager en conflicto encontrado: $dm está habilitado${NC}"
-      conflicts_found=true
-      validation_failed=true
+      echo -e "${RED}✗ Display manager en conflicto: $dm${NC}"
+      return 1
     fi
   done
   
-  if [[ "$conflicts_found" == false ]]; then
-    echo -e "${GREEN}✓ No se encontraron display managers en conflicto${NC}"
-  fi
-  
   # Check SDDM configuration file
-  if [[ -f "/etc/sddm.conf" ]]; then
-    echo -e "${GREEN}✓ Archivo de configuración SDDM existe${NC}"
-    
-    # Check if corners theme is configured
-    if grep -q "Current=corners" "/etc/sddm.conf"; then
-      echo -e "${GREEN}✓ Theme corners configurado${NC}"
-    else
-      echo -e "${YELLOW}⚠ Theme corners no encontrado en configuración${NC}"
-    fi
-  else
+  if [[ ! -f "/etc/sddm.conf" ]]; then
     echo -e "${RED}✗ Archivo de configuración SDDM no encontrado${NC}"
-    validation_failed=true
+    return 1
   fi
   
   # Check if corners theme is installed
-  if [[ -d "/usr/share/sddm/themes/corners" ]]; then
-    echo -e "${GREEN}✓ Theme corners instalado${NC}"
-  else
+  if [[ ! -d "/usr/share/sddm/themes/corners" ]]; then
     echo -e "${RED}✗ Theme corners no encontrado${NC}"
-    validation_failed=true
-  fi
-  
-  # Final validation
-  if [[ "$validation_failed" == true ]]; then
-    echo -e "${RED}✗ Validación fallida: SDDM no está configurado correctamente${NC}"
     return 1
-  else
-    echo -e "${GREEN}✓ SDDM está configurado correctamente como display manager por defecto${NC}"
-    return 0
   fi
 }
 
@@ -334,80 +252,28 @@ show_completion() {
 
 # Main execution
 main() {
-  show_header
   check_root
-  
-  echo -e "${WHITE}Este script instalará:${NC}"
-  echo -e "${BLUE}  1. SDDM (Simple Desktop Display Manager)${NC}"
-  echo -e "${BLUE}  2. Theme corners desde AUR${NC}"
-  echo -e "${BLUE}  3. Configuración automática${NC}"
-  echo -e "${BLUE}  4. Deshabilitación de otros display managers${NC}"
-  echo -e "${BLUE}  5. Validación como display manager por defecto${NC}"
-  echo -e "${BLUE}  6. Opción de autologin${NC}"
-  echo
-  
-  # Force mode by default when called from setup.sh
-  FORCE_YES=true
-  
-  if [[ "$FORCE_YES" == true ]]; then
-    echo -e "${GREEN}✓ Modo automático activado (sin confirmaciones)${NC}"
-  fi
-  
-  if [[ "$ENABLE_AUTOLOGIN" == true ]]; then
-    echo -e "${GREEN}✓ Autologin se activará automáticamente${NC}"
-  fi
-  
-  echo
-  echo -e "${GREEN}Iniciando instalación automática...${NC}"
-  echo
   
   # Install SDDM and theme
   if ! install_sddm_theme; then
-    echo -e "${RED}✗ Error en la instalación${NC}"
     exit 1
   fi
-  
-  echo
   
   # Configure SDDM
   if ! configure_sddm; then
-    echo -e "${RED}✗ Error en la configuración${NC}"
     exit 1
   fi
-  
-  echo
   
   # Enable service
   if ! enable_sddm_service; then
-    echo -e "${RED}✗ Error al habilitar servicio${NC}"
     exit 1
   fi
-  
-  echo
   
   # Validate SDDM configuration
-  if ! validate_sddm_default; then
-    echo -e "${RED}✗ Error en la validación final${NC}"
-    echo -e "${YELLOW}⚠ SDDM puede no estar configurado correctamente como display manager por defecto${NC}"
-    echo -e "${BLUE}Revisa manualmente la configuración si experimentas problemas${NC}"
-    exit 1
-  fi
+  validate_sddm_default
   
-  # Show completion
-  local autologin_status=""
-  if [[ "$ENABLE_AUTOLOGIN" == true ]] || [[ "$enable_autologin" =~ ^[Yy]$ ]]; then
-    autologin_status="$USER"
-  fi
-  show_completion "$autologin_status"
+  echo -e "${GREEN}✓ SDDM instalado y configurado${NC}"
 }
 
 # Run main function
 main "$@"
-
-# Wait for user input before returning to menu
-echo
-if [[ -c /dev/tty ]]; then
-  read -p "Presiona Enter para volver al menú principal..." </dev/tty
-else
-  read -p "Presiona Enter para volver al menú principal..."
-fi

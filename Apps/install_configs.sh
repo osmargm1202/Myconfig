@@ -178,6 +178,33 @@ install_configurations() {
   return $failed
 }
 
+# Function to create Desktop Apps application
+create_desktop_apps() {
+  local apps_dir="$HOME/.local/share/applications"
+  local desktop_file="$apps_dir/desktop-apps.desktop"
+  
+  echo -e "${BLUE}Creando aplicación Desktop Apps...${NC}"
+  
+  mkdir -p "$apps_dir"
+  
+  cat >"$desktop_file" <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Desktop Apps
+Comment=Open local applications directory
+Exec=xdg-open $HOME/.local/share/applications
+Icon=folder-applications
+Categories=System;Utility;
+Terminal=false
+NoDisplay=false
+StartupNotify=true
+EOF
+
+  chmod +x "$desktop_file"
+  echo -e "${GREEN}✓ Aplicación Desktop Apps creada${NC}"
+}
+
 # Function to refresh system components
 refresh_system_components() {
   echo -e "${BLUE}Refrescando componentes del sistema...${NC}"
@@ -233,14 +260,8 @@ show_completion() {
 
 # Main execution
 main() {
-  show_header
-  
-  echo -e "${BLUE}Directorio fuente: $REPO_DIR${NC}"
-  echo
-  
   # Validate source directory
   if ! validate_source_directory "$REPO_DIR"; then
-    echo -e "${RED}✗ No se puede continuar sin un directorio fuente válido${NC}"
     exit 1
   fi
   
@@ -251,6 +272,8 @@ main() {
   done < <(list_configurations "$REPO_DIR")
   
   if [[ ${#configs_array[@]} -eq 0 ]]; then
+    exit 0
+  fi
     echo -e "${YELLOW}No se encontraron configuraciones para instalar${NC}"
     exit 0
   fi
@@ -264,10 +287,10 @@ main() {
   echo
   
   # Install configurations
-  if install_configurations "$REPO_DIR" "$backup_mode" "${configs_array[@]}"; then
-    show_completion "${#configs_array[@]}"
+  if install_configurations "$REPO_DIR" "false" "${configs_array[@]}"; then
+    # Create Desktop Apps application
+    create_desktop_apps
   else
-    echo -e "${RED}✗ Algunas configuraciones fallaron. Revisa los mensajes anteriores.${NC}"
     exit 1
   fi
 }
@@ -275,8 +298,4 @@ main() {
 # Run main function if script is executed directly
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   main "$@"
-  
-  # Wait for user input before returning to menu (if running from menu)
-  echo
-  read -p "Presiona Enter para volver al menú principal..." </dev/tty
 fi
