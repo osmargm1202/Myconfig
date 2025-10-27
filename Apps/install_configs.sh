@@ -272,8 +272,6 @@ main() {
   done < <(list_configurations "$REPO_DIR")
   
   if [[ ${#configs_array[@]} -eq 0 ]]; then
-    exit 0
-  fi
     echo -e "${YELLOW}No se encontraron configuraciones para instalar${NC}"
     exit 0
   fi
@@ -290,6 +288,9 @@ main() {
   if install_configurations "$REPO_DIR" "false" "${configs_array[@]}"; then
     # Create Desktop Apps application
     create_desktop_apps
+    
+    # Show completion message and refresh system
+    show_completion "${#configs_array[@]}"
   else
     exit 1
   fi
