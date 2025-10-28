@@ -138,6 +138,7 @@ curl                                                   # cliente web
 mailutils                                              # conexiones de transferencia
 gnome-keyring                                          # gestor de claves y contraseñas
 libsecret                                              # biblioteca para acceso a keyring
+seahorse                                               # gestor gráfico de llaveros (Gnome Keyring)
 
 # ====================================================================================================
 # THEMING Y CONFIGURACIÓN
