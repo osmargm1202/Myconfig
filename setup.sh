@@ -937,6 +937,27 @@ install_printer() {
   read -p "Press Enter to continue..." </dev/tty
 }
 
+# Function to run Starship installer
+install_starship() {
+  show_header
+  echo -e "${WHITE}Install Starship Configuration${NC}"
+  echo -e "${WHITE}─────────────────────────────${NC}"
+  echo
+  
+  if [[ -f "$APPS_DIR/install_starship.sh" ]]; then
+    echo -e "${BLUE}Running Starship installer...${NC}"
+    echo
+    chmod +x "$APPS_DIR/install_starship.sh"
+    "$APPS_DIR/install_starship.sh"
+  else
+    echo -e "${RED}✗ Starship installer not found: $APPS_DIR/install_starship.sh${NC}"
+    echo -e "${BLUE}Make sure the file exists in the Apps directory${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
 # Function to run Flatpak installer
 install_flatpak() {
   show_header
@@ -1152,7 +1173,14 @@ main_menu() {
       options+=("[DESHABILITADO] Install Printer System - Falta directorio Apps")
     fi
 
-    # Options 13 and 14
+    # Option 13 - Starship Configuration
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install Starship Configuration - Terminal prompt theme")
+    else
+      options+=("[DESHABILITADO] Install Starship Configuration - Falta directorio Apps")
+    fi
+
+    # Options 14 and 15
     options+=("Uninstall - Remove all installations")
     options+=("Exit")
 
@@ -1195,7 +1223,7 @@ main_menu() {
       done
       echo
       
-      printf "Select option (1-14): "
+      printf "Select option (1-15): "
       read -r choice_index
       
       if [[ -z "$choice_index" ]]; then
@@ -1352,6 +1380,19 @@ main_menu() {
       fi
       ;;
     13)
+      if [[ "$apps_available" == true ]]; then
+        install_starship
+        echo
+        read -p "Press Enter to continue..."
+      else
+        echo
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
+      ;;
+    14)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
       read -r confirm </dev/tty
@@ -1363,7 +1404,7 @@ main_menu() {
       echo
       read -p "Press Enter to continue..." </dev/tty
       ;;
-    14)
+    15)
       echo -e "${GREEN}Goodbye!${NC}"
       exit 0
       ;;

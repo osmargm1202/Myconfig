@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# SDDM Local Theme Installer
-# Installs and configures SDDM with a local theme
+# SDDM ORGMOS Theme Installer
+# Installs and configures SDDM with ORGMOS theme
 
 # Support for non-interactive mode
 FORCE_YES=false
@@ -43,10 +43,6 @@ CYAN='\033[0;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
-# Global variables for selected theme
-SELECTED_THEME_FILE=""
-SELECTED_THEME_NAME=""
-
 # Check if Gum is available and set colors
 HAS_GUM=false
 if command -v gum &>/dev/null; then
@@ -86,106 +82,9 @@ show_header() {
   clear
   echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
   echo -e "${CYAN}║         SDDM Theme Installer          ║${NC}"
-  echo -e "${CYAN}║       Local Themes Selector           ║${NC}"
+  echo -e "${CYAN}║       ORGMOS Login Manager           ║${NC}"
   echo -e "${CYAN}╚════════════════════════════════════════╝${NC}"
   echo
-}
-
-# Function to select theme from local files
-select_theme() {
-  local themes_dir="/home/osmar/Myconfig/sddm"
-  local selected_theme=""
-  local clean_name=""
-  
-  # Check if themes directory exists
-  if [[ ! -d "$themes_dir" ]]; then
-    echo -e "${RED}✗ Directorio de themes no encontrado: $themes_dir${NC}"
-    return 1
-  fi
-  
-  # Find all theme archives using portable method
-  local theme_files=()
-  local theme_names=()
-  local file
-  
-  for file in "$themes_dir"/*.tar.gz "$themes_dir"/*.tar.xz; do
-    if [[ -f "$file" ]]; then
-      theme_files+=("$(basename "$file")")
-      # Get clean name (without extension)
-      clean_name="${theme_files[-1]%.tar.*}"
-      theme_names+=("$clean_name")
-    fi
-  done
-  
-  # Check if any themes found
-  if [[ ${#theme_files[@]} -eq 0 ]]; then
-    echo -e "${RED}✗ No se encontraron themes en $themes_dir${NC}"
-    return 1
-  fi
-  
-  # Show info about found themes
-  echo -e "${CYAN}✓ Encontrados ${#theme_files[@]} theme(s):${NC}"
-  for i in "${!theme_names[@]}"; do
-    echo -e "${BLUE}  • ${theme_names[i]}${NC}"
-  done
-  echo
-  
-  # Show theme selection
-  if [[ "$FORCE_YES" == true ]]; then
-    # In force mode, select first theme
-    selected_theme="${theme_files[0]}"
-    clean_name="${theme_names[0]}"
-    echo -e "${GREEN}✓ Seleccionando primer theme: $clean_name${NC}"
-  elif [[ "$HAS_GUM" == true ]]; then
-    # Use gum for selection with clean names
-    local choice_index
-    choice_index=$(gum choose --header="Selecciona un theme de SDDM:" "${theme_names[@]}")
-    
-    # Validate selection
-    if [[ -z "$choice_index" ]]; then
-      echo -e "${RED}✗ No se seleccionó ningún theme${NC}"
-      return 1
-    fi
-    
-    # Find index of selected name
-    local i
-    for i in "${!theme_names[@]}"; do
-      if [[ "${theme_names[i]}" == "$choice_index" ]]; then
-        selected_theme="${theme_files[i]}"
-        clean_name="${theme_names[i]}"
-        break
-      fi
-    done
-  else
-    # Fallback to traditional prompt
-    echo -e "${CYAN}Themes disponibles:${NC}"
-    for i in "${!theme_names[@]}"; do
-      echo -e "  ${GREEN}$((i+1))${NC}. ${theme_names[i]}"
-    done
-    echo -ne "${YELLOW}Selecciona un theme (1-${#theme_names[@]}):${NC} "
-    read -r choice </dev/tty
-    if [[ "$choice" =~ ^[0-9]+$ ]] && [[ $choice -ge 1 ]] && [[ $choice -le ${#theme_files[@]} ]]; then
-      selected_theme="${theme_files[$((choice-1))]}"
-      clean_name="${theme_names[$((choice-1))]}"
-    else
-      echo -e "${RED}✗ Selección inválida${NC}"
-      return 1
-    fi
-  fi
-  
-  # Validate that a theme was selected
-  if [[ -z "$selected_theme" ]]; then
-    echo -e "${RED}✗ No se pudo determinar el theme seleccionado${NC}"
-    return 1
-  fi
-  
-  # Set global variables
-  SELECTED_THEME_FILE="$selected_theme"
-  SELECTED_THEME_NAME="$clean_name"
-  
-  echo -e "${GREEN}✓ Theme seleccionado: $clean_name (${selected_theme})${NC}"
-  
-  return 0
 }
 
 # Function to check if running as root
@@ -197,62 +96,68 @@ check_root() {
   fi
 }
 
-# Function to install SDDM and extract theme
-install_sddm_theme() {
-  local theme_name="$1"
-  local theme_file="$2"
-  local themes_dir="/home/osmar/Myconfig/sddm"
-  local temp_dir="/tmp/sddm-theme-$$"
-  
-  # Install SDDM
+# Function to install SDDM
+install_sddm() {
   echo -e "${BLUE}Instalando SDDM...${NC}"
   sudo pacman -S sddm --noconfirm
   
-  # Extract theme
-  echo -e "${BLUE}Extrayendo theme: $theme_name...${NC}"
-  
-  # Create temporary directory
-  mkdir -p "$temp_dir"
-  
-  # Extract archive
-  if [[ "$theme_file" == *.tar.gz ]]; then
-    tar -xzf "$themes_dir/$theme_file" -C "$temp_dir"
-  elif [[ "$theme_file" == *.tar.xz ]]; then
-    tar -xJf "$themes_dir/$theme_file" -C "$temp_dir"
+  if [[ $? -eq 0 ]]; then
+    echo -e "${GREEN}✓ SDDM instalado exitosamente${NC}"
   else
-    echo -e "${RED}✗ Formato de archivo no soportado: $theme_file${NC}"
+    echo -e "${RED}✗ Error al instalar SDDM${NC}"
+    return 1
+  fi
+}
+
+# Function to install ORGMOS theme
+install_orgmos_theme() {
+  local repo_dir=""
+  
+  # Try to find repository directory
+  if [[ -d "/home/osmar/Myconfig" ]]; then
+    repo_dir="/home/osmar/Myconfig"
+  else
+    # Try parent directory
+    repo_dir="$(cd "$(dirname "$0")/.." && pwd)"
+  fi
+  
+  local theme_source="$repo_dir/sddm/orgmos-sddm"
+  local theme_dest="/usr/share/sddm/themes/orgmos-sddm"
+  
+  # Check if source exists
+  if [[ ! -d "$theme_source" ]]; then
+    echo -e "${RED}✗ Theme orgmos-sddm no encontrado en: $theme_source${NC}"
     return 1
   fi
   
-  # Find extracted theme directory
-  local extracted_dir=""
-  extracted_dir=$(find "$temp_dir" -mindepth 1 -maxdepth 1 -type d | head -n1)
+  echo -e "${BLUE}Instalando theme ORGMOS...${NC}"
   
-  if [[ -z "$extracted_dir" ]]; then
-    echo -e "${RED}✗ No se pudo encontrar el directorio del theme extraído${NC}"
-    rm -rf "$temp_dir"
-    return 1
+  # Remove existing theme if present
+  if [[ -d "$theme_dest" ]]; then
+    sudo rm -rf "$theme_dest"
   fi
   
-  # Move theme to SDDM themes directory
-  sudo mkdir -p "/usr/share/sddm/themes/"
-  sudo cp -r "$extracted_dir" "/usr/share/sddm/themes/$theme_name"
+  # Copy theme folder
+  sudo mkdir -p "/usr/share/sddm/themes"
+  sudo cp -r "$theme_source" "$theme_dest"
   
-  # Clean up
-  rm -rf "$temp_dir"
-  
-  echo -e "${GREEN}✓ Theme $theme_name instalado en /usr/share/sddm/themes/${NC}"
+  if [[ $? -eq 0 ]]; then
+    echo -e "${GREEN}✓ Theme orgmos-sddm instalado en /usr/share/sddm/themes/${NC}"
+  else
+    echo -e "${RED}✗ Error al instalar theme${NC}"
+    return 1
+  fi
 }
 
 # Function to configure SDDM
 configure_sddm() {
-  local theme_name="$1"
   local sddm_conf="/etc/sddm.conf"
   local backup_conf="/etc/sddm.conf.backup.$(date +%Y%m%d_%H%M%S)"
   
   # Create backup of existing config
   if [[ -f "$sddm_conf" ]]; then
     sudo cp "$sddm_conf" "$backup_conf"
+    echo -e "${BLUE}Backup creado: $(basename "$backup_conf")${NC}"
   fi
   
   # Ask about autologin
@@ -288,6 +193,7 @@ configure_sddm() {
   fi
   
   # Create SDDM configuration
+  echo -e "${BLUE}Configurando SDDM...${NC}"
   sudo tee "$sddm_conf" > /dev/null << EOF
 [Autologin]
 Relogin=false
@@ -299,7 +205,7 @@ HaltCommand=/usr/bin/systemctl poweroff
 RebootCommand=/usr/bin/systemctl reboot
 
 [Theme]
-Current=$theme_name
+Current=orgmos-sddm
 
 [Users]
 MaximumUid=60513
@@ -315,6 +221,8 @@ XauthPath=/usr/bin/xauth
 XDisplayStop=30
 XDisplayStart=0
 EOF
+  
+  echo -e "${GREEN}✓ Configuración de SDDM creada${NC}"
 }
 
 # Function to enable SDDM service
@@ -324,6 +232,7 @@ enable_sddm_service() {
   
   for dm in "${other_dms[@]}"; do
     if systemctl is-enabled "$dm" &>/dev/null; then
+      echo -e "${BLUE}Deshabilitando $dm...${NC}"
       sudo systemctl disable "$dm" 2>/dev/null || true
     fi
   done
@@ -331,18 +240,25 @@ enable_sddm_service() {
   # Stop any running display managers
   for dm in "${other_dms[@]}"; do
     if systemctl is-active "$dm" &>/dev/null; then
+      echo -e "${BLUE}Deteniendo $dm...${NC}"
       sudo systemctl stop "$dm" 2>/dev/null || true
     fi
   done
   
   # Enable SDDM
+  echo -e "${BLUE}Habilitando SDDM...${NC}"
   sudo systemctl enable sddm
+  
+  if [[ $? -eq 0 ]]; then
+    echo -e "${GREEN}✓ SDDM habilitado${NC}"
+  else
+    echo -e "${RED}✗ Error al habilitar SDDM${NC}"
+    return 1
+  fi
 }
 
 # Function to validate SDDM is default display manager
 validate_sddm_default() {
-  local theme_name="$1"
-  
   # Check if SDDM is enabled
   if ! systemctl is-enabled sddm &>/dev/null; then
     echo -e "${RED}✗ SDDM no está habilitado${NC}"
@@ -364,24 +280,25 @@ validate_sddm_default() {
     return 1
   fi
   
-  # Check if selected theme is installed
-  if [[ ! -d "/usr/share/sddm/themes/$theme_name" ]]; then
-    echo -e "${RED}✗ Theme $theme_name no encontrado${NC}"
+  # Check if orgmos-sddm theme is installed
+  if [[ ! -d "/usr/share/sddm/themes/orgmos-sddm" ]]; then
+    echo -e "${RED}✗ Theme orgmos-sddm no encontrado${NC}"
     return 1
   fi
+  
+  echo -e "${GREEN}✓ Validación completa${NC}"
 }
 
 # Function to show completion message
 show_completion() {
-  local theme_name="$1"
-  local autologin_user="$2"
+  local autologin_user="$1"
   
   echo
-  echo -e "${GREEN}✓ ¡SDDM con theme $theme_name instalado y configurado!${NC}"
+  echo -e "${GREEN}✓ ¡SDDM con theme ORGMOS instalado y configurado!${NC}"
   echo
   echo -e "${WHITE}Configuración aplicada:${NC}"
   echo -e "${BLUE}  • Display Manager: SDDM${NC}"
-  echo -e "${BLUE}  • Theme: $theme_name${NC}"
+  echo -e "${BLUE}  • Theme: orgmos-sddm${NC}"
   echo -e "${BLUE}  • Estado: Validado como display manager por defecto${NC}"
   if [[ -n "$autologin_user" ]]; then
     echo -e "${BLUE}  • Autologin: activado para $autologin_user${NC}"
@@ -403,22 +320,20 @@ show_completion() {
 # Main execution
 main() {
   check_root
-  
-  # Show header
   show_header
   
-  # Select theme
-  if ! select_theme; then
+  # Install SDDM
+  if ! install_sddm; then
     exit 1
   fi
   
-  # Install SDDM and extract theme
-  if ! install_sddm_theme "$SELECTED_THEME_NAME" "$SELECTED_THEME_FILE"; then
+  # Install ORGMOS theme
+  if ! install_orgmos_theme; then
     exit 1
   fi
   
   # Configure SDDM
-  if ! configure_sddm "$SELECTED_THEME_NAME"; then
+  if ! configure_sddm; then
     exit 1
   fi
   
@@ -428,17 +343,17 @@ main() {
   fi
   
   # Validate SDDM configuration
-  if ! validate_sddm_default "$SELECTED_THEME_NAME"; then
+  if ! validate_sddm_default; then
     exit 1
   fi
   
   # Show completion message
   local autologin_user=""
-  if [[ -n "$USER" ]] && grep -q "User=$USER" /etc/sddm.conf; then
+  if [[ -n "$USER" ]] && grep -q "User=$USER" /etc/sddm.conf 2>/dev/null; then
     autologin_user="$USER"
   fi
   
-  show_completion "$SELECTED_THEME_NAME" "$autologin_user"
+  show_completion "$autologin_user"
 }
 
 # Run main function
