@@ -102,6 +102,10 @@ bindsym $mod+Tab exec --no-startup-id "rofi -show window"
 # Super+Alt+Space = Random wallpaper
 bindsym $mod+Mod1+space exec --no-startup-id ~/.config/i3/scripts/change-wallpaper.sh random
 
+# Visual wallpaper selector with large thumbnails
+# Super+Shift+W = Visual wallpaper selector
+bindsym $mod+Shift+w exec --no-startup-id ~/.config/i3/scripts/wallpaper-selector.sh
+
 # For feh
 #bindsym $mod+Mod1+space exec --no-startup-id feh --bg-fill "$(find ~/Pictures -type f | shuf -n1)"
 

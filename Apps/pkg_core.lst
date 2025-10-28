@@ -33,7 +33,6 @@ playerctl                                              # controles multimedia
 mpv                                                    # reproductor multimedia
 antimicrox                                             # mapeador de controles/gamepads, interfaz CLI/GUI
 
-
 # ====================================================================================================
 # CONECTIVIDAD
 # ====================================================================================================
@@ -123,6 +122,7 @@ okular                                                 # visor de documentos
 gnome-calculator                                       # calculadora
 inkscape                                               # editor gráfico vectorial
 gimp                                                   # editor de imágenes
+imagemagick                                            # utilidades de conversión y edición de imágenes
 
 # ====================================================================================================
 # HERRAMIENTAS Y UTILIDADES
