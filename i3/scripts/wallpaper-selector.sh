@@ -27,7 +27,7 @@ generate_thumbnails() {
         
         # Generate thumbnail if not exists or if source is newer
         if [[ ! -f "$thumb" ]] || [[ "$wallpaper" -nt "$thumb" ]]; then
-            convert "$wallpaper" -resize 400x400^ -gravity center -extent 400x400 "$thumb" 2>/dev/null
+            convert "$wallpaper" -resize 200x200^ -gravity center -extent 200x200 "$thumb" 2>/dev/null
             ((count++))
         fi
     done
@@ -122,17 +122,15 @@ select_wallpaper() {
         rofi -dmenu -i \
         -p "Select Wallpaper" \
         -show-icons \
-        -theme-str 'element-icon { size: 16em; }' \
-        -theme-str 'window { width: 90%; height: 85%; }' \
-        -theme-str 'window { location: northwest; anchor: northwest; x-offset: 5%; y-offset: 5%; }' \
-        -theme-str 'listview { columns: 3; lines: 3; spacing: 20px; }' \
-        -theme-str 'element { orientation: vertical; padding: 15px; }' \
+        -theme-str 'element-icon { size: 5em; }' \
+        -theme-str 'window { width: 40%; height: 65%; location: center; anchor: center; x-offset: 0; y-offset: 0; }' \
+        -theme-str 'listview { columns: 5; lines: 1; spacing: 5px; }' \
+        -theme-str 'element { orientation: vertical; padding: 5px; }' \
         -theme-str 'element-text { horizontal-align: 0.5; margin-top: 10px; }' \
         -theme-str 'element-icon { border-radius: 8px; }' \
         -theme-str 'element selected { background-color: #1e3a5f; border-radius: 10px; }' \
         -selection-row 0 \
         -scroll-method 1)
-    
     # Apply selected wallpaper
     if [[ -n "$selected" ]]; then
         for i in "${!options[@]}"; do
