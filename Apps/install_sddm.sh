@@ -259,16 +259,32 @@ configure_sddm() {
   local enable_autologin="n"
   
   if [[ "$ENABLE_AUTOLOGIN" == true ]]; then
+    # Explicit --autologin flag was passed
     enable_autologin="y"
-  elif [[ "$HAS_GUM" == true ]]; then
-    if gum confirm "¿Activar autologin (inicio automático sin contraseña)?"; then
-      enable_autologin="y"
+    echo -e "${GREEN}✓ Autologin activado (flag --autologin)${NC}"
+  else
+    # Always ask, regardless of FORCE_YES
+    if [[ "$HAS_GUM" == true ]]; then
+      # Use gum for confirmation
+      if gum confirm "¿Activar autologin (inicio automático sin contraseña)?"; then
+        enable_autologin="y"
+      fi
+    else
+      # Fallback to traditional prompt
+      echo -e "${YELLOW}¿Activar autologin (inicio automático sin contraseña)? (y/N):${NC} "
+      read -r response </dev/tty
+      if [[ "$response" =~ ^[Yy]$ ]]; then
+        enable_autologin="y"
+      fi
     fi
   fi
   
   local autologin_user=""
   if [[ "$enable_autologin" =~ ^[Yy]$ ]]; then
     autologin_user="$USER"
+    echo -e "${GREEN}✓ Autologin configurado para: $USER${NC}"
+  else
+    echo -e "${BLUE}→ Autologin desactivado${NC}"
   fi
   
   # Create SDDM configuration
