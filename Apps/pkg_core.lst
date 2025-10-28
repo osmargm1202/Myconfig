@@ -42,7 +42,8 @@ bluez                                                  # stack bluetooth
 bluez-utils                                            # utilidades bluetooth CLI
 blueman                                                # gestor bluetooth GUI
 smbclient                                              # cliente SMB/CIFS
-gvfs-smb                                   `          # integración SMB con gestores de archivos
+gvfs-smb                                               # integración SMB con gestores de archivos
+# smb NO existe, se usan smbclient y gvfs-smb
 
 # ====================================================================================================
 # DISPLAY MANAGER
@@ -52,6 +53,8 @@ qt5-quickcontrols                                      # elementos UI para sddm
 qt5-quickcontrols2                                     # elementos UI para sddm
 qt5-graphicaleffects                                   # efectos para sddm
 plymouth                                               # splash screen boot
+polkit-gnome                                           # autenticación GUI para polkit
+grub-customizer                                        # herramienta gráfica para editar GRUB
 transmission-cli                                       # cliente torrent CLI
 transmission-gtk                                       # cliente torrent GUI
 

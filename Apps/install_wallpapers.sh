@@ -69,11 +69,7 @@ copy_wallpapers() {
   
   if [[ $existing_count -gt 0 ]]; then
     echo -e "${YELLOW}Se encontraron $existing_count wallpapers existentes${NC}"
-    echo -e "${BLUE}Creando backup de wallpapers existentes...${NC}"
-    local backup_dir="$WALLPAPERS_TARGET.backup.$(date +%Y%m%d_%H%M%S)"
-    mv "$WALLPAPERS_TARGET" "$backup_dir"
-    echo -e "${GREEN}✓ Backup creado: $backup_dir${NC}"
-    mkdir -p "$WALLPAPERS_TARGET"
+    echo -e "${BLUE}Copiando nuevos wallpapers sin crear backup...${NC}"
   fi
   
   # Copy wallpapers
@@ -128,7 +124,7 @@ main() {
   
   echo -e "${WHITE}Este script instalará:${NC}"
   echo -e "${BLUE}  1. Copia wallpapers del repo a ~/Wallpapers${NC}"
-  echo -e "${BLUE}  2. Crea backup de wallpapers existentes si los hay${NC}"
+  echo -e "${BLUE}  2. Omite wallpapers que ya existen${NC}"
   echo
   echo -e "${BLUE}Directorio fuente: $WALLPAPERS_SOURCE${NC}"
   echo -e "${BLUE}Directorio destino: $WALLPAPERS_TARGET${NC}"

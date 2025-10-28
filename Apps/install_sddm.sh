@@ -6,6 +6,7 @@
 # Support for non-interactive mode
 FORCE_YES=false
 ENABLE_AUTOLOGIN=false
+SELECTED_THEME=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -18,11 +19,16 @@ while [[ $# -gt 0 ]]; do
       ENABLE_AUTOLOGIN=true
       shift
       ;;
+    --theme)
+      SELECTED_THEME="$2"
+      shift 2
+      ;;
     -h|--help)
       echo "Uso: $0 [opciones]"
       echo "Opciones:"
       echo "  -y, --yes, --force    Instalar sin confirmaciones"
       echo "  --autologin          Activar autologin automáticamente"
+      echo "  --theme TEMA         Seleccionar tema específico"
       echo "  -h, --help           Mostrar esta ayuda"
       exit 0
       ;;
@@ -109,6 +115,93 @@ install_sddm() {
   fi
 }
 
+# Function to select SDDM color theme
+select_sddm_theme() {
+  local theme_source="$1"
+  local themes=()
+  local theme_labels=()
+  
+  # Find all .conf files
+  for conf in "$theme_source"/*.conf; do
+    if [[ -f "$conf" ]]; then
+      local filename=$(basename "$conf" .conf)
+      case "$filename" in
+        "theme.conf")
+          themes+=("theme.conf")
+          theme_labels+=("Default - Original sky blue")
+          ;;
+        "tokyo-night")
+          themes+=("tokyo-night.conf")
+          theme_labels+=("Tokyo Night ⭐ - Dark with bright sky blue button")
+          ;;
+        "panther")
+          themes+=("panther.conf")
+          theme_labels+=("Panther - Dark minimal")
+          ;;
+        "lynx")
+          themes+=("lynx.conf")
+          theme_labels+=("Lynx - Light theme")
+          ;;
+      esac
+    fi
+  done
+  
+  if [[ ${#themes[@]} -eq 0 ]]; then
+    echo -e "${YELLOW}⚠ No se encontraron temas, usando default${NC}"
+    echo "Default"
+    return 0
+  fi
+  
+  local selected_theme
+  local selected_index
+  
+  # Use gum if available
+  if command -v gum &>/dev/null && [[ "$HAS_GUM" == true ]]; then
+    echo -e "${BLUE}Selecciona el tema de color:${NC}" >&2
+    echo >&2
+    
+    # Build label array for gum
+    local labels_string=$(printf '%s\n' "${theme_labels[@]}")
+    
+    selected_label=$(echo "$labels_string" | gum choose --header "🌙 SDDM Color Theme Selector" 2>&1)
+    
+    if [[ -z "$selected_label" ]]; then
+      echo -e "${YELLOW}Selección cancelada, usando Default${NC}" >&2
+      echo "Default"
+      return 0
+    fi
+    
+    # Find index of selected label
+    for i in "${!theme_labels[@]}"; do
+      if [[ "${theme_labels[$i]}" == "$selected_label" ]]; then
+        selected_index=$i
+        break
+      fi
+    done
+  else
+    # Fallback to traditional menu
+    echo -e "${BLUE}Selecciona el tema de color:${NC}" >&2
+    local i=1
+    for label in "${theme_labels[@]}"; do
+      echo "  $i) $label" >&2
+      ((i++))
+    done
+    echo >&2
+    
+    local choice
+    read -p "Selecciona tema (1-${#themes[@]}): " choice
+    selected_index=$((choice - 1))
+  fi
+  
+  if [[ -n "$selected_index" && $selected_index -ge 0 && $selected_index -lt ${#themes[@]} ]]; then
+    selected_theme="${themes[$selected_index]}:${theme_labels[$selected_index]}"
+    echo "$selected_theme"
+  else
+    echo -e "${YELLOW}Selección inválida, usando Default${NC}" >&2
+    echo "Default:Default - Original sky blue"
+  fi
+}
+
 # Function to install ORGMOS theme
 install_orgmos_theme() {
   local repo_dir=""
@@ -146,6 +239,29 @@ install_orgmos_theme() {
   else
     echo -e "${RED}✗ Error al instalar theme${NC}"
     return 1
+  fi
+  
+  # Apply selected theme (chosen before sudo)
+  echo
+  if [[ -n "$SELECTED_THEME" ]]; then
+    local theme_file="${SELECTED_THEME%%:*}"
+    local theme_name="${SELECTED_THEME#*:}"
+    
+    echo -e "${BLUE}Aplicando tema: ${CYAN}$theme_name${NC}"
+    
+    # Copy selected theme to theme.conf
+    if sudo cp "$theme_source/$theme_file" "$theme_dest/theme.conf" 2>/dev/null; then
+      echo -e "${GREEN}✓ Tema '$theme_name' aplicado${NC}"
+    else
+      echo -e "${RED}✗ Error al aplicar tema${NC}"
+    fi
+  else
+    # Fallback: use tokyo-night as default
+    if [[ -f "$theme_source/tokyo-night.conf" ]]; then
+      echo -e "${BLUE}Aplicando Tokyo Night (por defecto)${NC}"
+      sudo cp "$theme_source/tokyo-night.conf" "$theme_dest/theme.conf"
+      echo -e "${GREEN}✓ Tokyo Night aplicado${NC}"
+    fi
   fi
 }
 
@@ -317,10 +433,121 @@ show_completion() {
   echo
 }
 
+# Function to select theme before sudo
+select_theme_before_sudo() {
+  # Try to find repository directory
+  local repo_dir=""
+  if [[ -d "/home/osmar/Myconfig" ]]; then
+    repo_dir="/home/osmar/Myconfig"
+  else
+    repo_dir="$(cd "$(dirname "$0")/.." && pwd)"
+  fi
+  
+  local theme_source="$repo_dir/sddm/orgmos-sddm"
+  
+  if [[ ! -d "$theme_source" ]]; then
+    echo -e "${YELLOW}⚠ Theme source no encontrado${NC}"
+    echo "tokyo-night.conf:Tokyo Night"
+    return 0
+  fi
+  
+  local themes=()
+  local theme_labels=()
+  
+  # Find all .conf files
+  for conf in "$theme_source"/*.conf; do
+    if [[ -f "$conf" ]]; then
+      local filename=$(basename "$conf" .conf)
+      case "$filename" in
+        "theme.conf")
+          themes+=("theme.conf")
+          theme_labels+=("Default - Original sky blue")
+          ;;
+        "tokyo-night")
+          themes+=("tokyo-night.conf")
+          theme_labels+=("Tokyo Night ⭐ - Dark with bright sky blue button")
+          ;;
+        "panther")
+          themes+=("panther.conf")
+          theme_labels+=("Panther - Dark minimal")
+          ;;
+        "lynx")
+          themes+=("lynx.conf")
+          theme_labels+=("Lynx - Light theme")
+          ;;
+      esac
+    fi
+  done
+  
+  if [[ ${#themes[@]} -eq 0 ]]; then
+    echo "tokyo-night.conf:Tokyo Night"
+    return 0
+  fi
+  
+  local selected_label
+  local selected_index
+  
+  # Use gum if available
+  if command -v gum &>/dev/null && [[ "$HAS_GUM" == true ]]; then
+    selected_label=$(printf '%s\n' "${theme_labels[@]}" | gum choose --header "🌙 SDDM Color Theme Selector")
+    
+    if [[ -z "$selected_label" ]]; then
+      # Use Tokyo Night as default
+      for i in "${!theme_labels[@]}"; do
+        if [[ "${theme_labels[$i]}" == "Tokyo Night ⭐ - Dark with bright sky blue button" ]]; then
+          selected_index=$i
+          break
+        fi
+      done
+    else
+      # Find index of selected label
+      for i in "${!theme_labels[@]}"; do
+        if [[ "${theme_labels[$i]}" == "$selected_label" ]]; then
+          selected_index=$i
+          break
+        fi
+      done
+    fi
+  else
+    # Fallback menu
+    echo -e "${BLUE}Selecciona el tema de color:${NC}"
+    local i=1
+    for label in "${theme_labels[@]}"; do
+      echo "  $i) $label"
+      ((i++))
+    done
+    echo
+    
+    local choice
+    read -p "Selecciona tema (1-${#themes[@]}): " choice
+    selected_index=$((choice - 1))
+  fi
+  
+  if [[ -n "$selected_index" && $selected_index -ge 0 && $selected_index -lt ${#themes[@]} ]]; then
+    echo "${themes[$selected_index]}:${theme_labels[$selected_index]}"
+  else
+    echo "tokyo-night.conf:Tokyo Night"
+  fi
+}
+
 # Main execution
 main() {
   check_root
+  
+  # Select theme before sudo operations
+  if [[ "$FORCE_YES" == false && -z "$SELECTED_THEME" ]]; then
+    show_header
+    echo -e "${BLUE}Preparando instalación de SDDM...${NC}"
+    echo
+    SELECTED_THEME=$(select_theme_before_sudo)
+  elif [[ -z "$SELECTED_THEME" ]]; then
+    SELECTED_THEME="tokyo-night.conf:Tokyo Night"
+  fi
+  
   show_header
+  
+  # Export selected theme for use in install function
+  export SELECTED_THEME
   
   # Install SDDM
   if ! install_sddm; then

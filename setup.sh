@@ -1140,7 +1140,7 @@ main_menu() {
 
     # Option 8
     if [[ "$apps_available" == true ]]; then
-      options+=("Install SDDM Theme (Corners) - Login manager setup")
+      options+=("Install SDDM Theme - Login manager setup")
     else
       options+=("[DESHABILITADO] Install SDDM Theme - Falta directorio Apps")
     fi

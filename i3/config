@@ -52,6 +52,7 @@ exec --no-startup-id system-config-printer-applet && notify-send -u normal -a "i
 exec --no-startup-id transmission-daemon && notify-send -u normal -a "i3" "<span color='#7aa2f7'>Transmission Daemon iniciado</span>"
 # Lanzar GNOME Keyring en el inicio y notificar en la terminal con color
 exec --no-startup-id /usr/bin/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh,gpg && notify-send -u normal -a "i3" "<span color='#7aa2f7'>GNOME Keyring iniciado</span>"
+exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 
 
 
@@ -91,7 +92,6 @@ bindsym $mod+Shift+o exec systemctl suspend
 bindsym $mod+Mod1+o exec poweroff
 bindsym $mod+k exec --no-startup-id "setxkbmap -query | grep -q 'layout:.*us' && setxkbmap latam || setxkbmap us"
 bindsym $mod+Tab exec --no-startup-id "rofi -show window"
-
 
 # Wallpaper configuration
 # Restore last wallpaper on i3 startup/restart
