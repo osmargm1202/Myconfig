@@ -32,6 +32,9 @@ exec --no-startup-id dex --autostart --environment i3
 
 # xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
 # screen before suspend. Use loginctl lock-session to lock your screen.
+# Lanzar GNOME Keyring en el inicio y notificar en la terminal con color
+exec --no-startup-id /usr/bin/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh,gpg && notify-send -u normal -a "i3" "GNOME Keyring iniciado"
+exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec --no-startup-id xss-lock --transfer-sleep-lock -- ~/.config/i3/scripts/lock.sh
 exec --no-startup-id polybar
 exec --no-startup-id system76-power daemon
@@ -46,13 +49,10 @@ exec --no-startup-id picom --config ~/.config/picom/picom.conf -b
 exec --no-startup-id setxkbmap -layout "us,latam"
 exec --no-startup-id ~/.config/i3/scripts/change-wallpaper.sh restore
 exec --no-startup-id ~/.config/i3/hotkey.sh --generate 
-exec --no-startup-id nextcloud && notify-send -u normal -a "i3" "<span color='#7aa2f7'>Nextcloud iniciado</span>"
-exec --no-startup-id system-config-printer-applet && notify-send -u normal -a "i3" "<span color='#7aa2f7'>Impresora configurada</span>"
 # Lanzar Transmission Daemon y notificar en la terminal con color
-exec --no-startup-id transmission-daemon && notify-send -u normal -a "i3" "<span color='#7aa2f7'>Transmission Daemon iniciado</span>"
-# Lanzar GNOME Keyring en el inicio y notificar en la terminal con color
-exec --no-startup-id /usr/bin/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh,gpg && notify-send -u normal -a "i3" "<span color='#7aa2f7'>GNOME Keyring iniciado</span>"
-exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec --no-startup-id transmission-daemon && notify-send -u normal -a "i3" "Transmission Daemon Torrent iniciado"
+exec --no-startup-id system-config-printer-applet && notify-send -u normal -a "i3" "Impresora configurada correctamente"
+exec --no-startup-id nextcloud && notify-send -u normal -a "i3" "Nextcloud iniciado correctamente"
 
 
 
