@@ -10,6 +10,77 @@ if [ -z "$BASH_VERSION" ]; then
   exit 1
 fi
 
+# Parse update flag before main execution
+if [[ "$1" == "--update" ]]; then
+  # Colors for output
+  RED='\033[0;31m'
+  GREEN='\033[0;32m'
+  YELLOW='\033[1;33m'
+  BLUE='\033[0;34m'
+  CYAN='\033[0;36m'
+  NC='\033[0m'
+  
+  # Determine script directory
+  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+  
+  echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
+  echo -e "${CYAN}║         ORGMOS Updater                ║${NC}"
+  echo -e "${CYAN}╚════════════════════════════════════════╝${NC}"
+  echo
+  
+  # Check if in git repository
+  if [[ ! -d "$SCRIPT_DIR/.git" ]]; then
+    echo -e "${RED}✗ No se encontró un repositorio git en: $SCRIPT_DIR${NC}"
+    echo -e "${YELLOW}Este directorio no es un repositorio git válido${NC}"
+    exit 1
+  fi
+  
+  # Check if git is installed
+  if ! command -v git &>/dev/null; then
+    echo -e "${RED}✗ Git no está instalado${NC}"
+    exit 1
+  fi
+  
+  # Update repository
+  echo -e "${BLUE}Actualizando repositorio...${NC}"
+  cd "$SCRIPT_DIR"
+  
+  if git pull; then
+    echo -e "${GREEN}✓ Repositorio actualizado exitosamente${NC}"
+  else
+    echo -e "${RED}✗ Error al actualizar el repositorio${NC}"
+    exit 1
+  fi
+  
+  # Update permissions on all .sh files
+  echo -e "${BLUE}Actualizando permisos de ejecución...${NC}"
+  
+  if [[ -d "$SCRIPT_DIR/Apps" ]]; then
+    chmod +x "$SCRIPT_DIR/Apps"/*.sh 2>/dev/null
+    echo -e "${GREEN}  ✓ Apps/${NC}"
+  fi
+  
+  if [[ -d "$SCRIPT_DIR/Launcher" ]]; then
+    chmod +x "$SCRIPT_DIR/Launcher"/*.sh 2>/dev/null
+    echo -e "${GREEN}  ✓ Launcher/${NC}"
+  fi
+  
+  if [[ -d "$SCRIPT_DIR/i3/scripts" ]]; then
+    chmod +x "$SCRIPT_DIR/i3/scripts"/*.sh 2>/dev/null
+    echo -e "${GREEN}  ✓ i3/scripts/${NC}"
+  fi
+  
+  if [[ -d "$SCRIPT_DIR/polybar/scripts" ]]; then
+    chmod +x "$SCRIPT_DIR/polybar/scripts"/*.sh 2>/dev/null
+    echo -e "${GREEN}  ✓ polybar/scripts/${NC}"
+  fi
+  
+  echo
+  echo -e "${GREEN}✓ ¡Actualización completada!${NC}"
+  echo -e "${BLUE}ORGMOS ha sido actualizado a la última versión${NC}"
+  exit 0
+fi
+
 # Repository information
 REPO_URL="https://github.com/osmargm1202/Myconfig.git"
 REPO_NAME="Myconfig"

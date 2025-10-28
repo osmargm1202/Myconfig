@@ -52,8 +52,9 @@ sddm                                                   # display manager
 qt5-quickcontrols                                      # elementos UI para sddm
 qt5-quickcontrols2                                     # elementos UI para sddm
 qt5-graphicaleffects                                   # efectos para sddm
-sddm-theme-corners-git                                 # tema sddm
 plymouth                                               # splash screen boot
+transmission-cli                                       # cliente torrent CLI
+transmission-gtk                                       # cliente torrent GUI
 
 # ====================================================================================================
 # WINDOW MANAGER Y ENTORNO
