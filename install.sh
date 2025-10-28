@@ -78,7 +78,19 @@ if [[ "$1" == "--update" ]]; then
   echo
   echo -e "${GREEN}✓ ¡Actualización completada!${NC}"
   echo -e "${BLUE}ORGMOS ha sido actualizado a la última versión${NC}"
-  exit 0
+  echo
+  echo -e "${BLUE}Iniciando el configurador principal...${NC}"
+  echo
+  
+  # Run setup script after update
+  if [[ -f "$SCRIPT_DIR/setup.sh" ]]; then
+    chmod +x "$SCRIPT_DIR/setup.sh"
+    "$SCRIPT_DIR/setup.sh"
+    exit $?
+  else
+    echo -e "${YELLOW}⚠ Archivo setup.sh no encontrado${NC}"
+    exit 1
+  fi
 fi
 
 # Repository information
