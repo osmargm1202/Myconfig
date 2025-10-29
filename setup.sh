@@ -350,322 +350,6 @@ check_chromium() {
 
 
 
-# Function to install everything automatically
-install_all() {
-  show_header
-  echo -e "${WHITE}Instalación Completa Automática${NC}"
-  echo -e "${WHITE}─────────────────────────────${NC}"
-  echo
-
-  echo -e "${BLUE}Este proceso instalará todo automáticamente:${NC}"
-  echo -e "${WHITE}  1. AUR Helper${NC}"
-  echo -e "${WHITE}  2. Paquetes del sistema${NC}"
-  echo -e "${WHITE}  3. Paquetes npm (Claude CLI, etc.)${NC}"
-  echo -e "${WHITE}  4. Aplicaciones Flatpak${NC}"
-  echo -e "${WHITE}  5. Configuraciones del sistema${NC}"
-  echo -e "${WHITE}  6. WebApp Creator${NC}"
-  echo -e "${WHITE}  7. SDDM Theme${NC}"
-  echo -e "${WHITE}  8. Plymouth Themes${NC}"
-  echo -e "${WHITE}  9. Wallpapers${NC}"
-  echo -e "${WHITE}  10. System76 Power${NC}"
-  echo -e "${WHITE}  11. Printer System${NC}"
-  echo -e "${WHITE}  12. Finalización y verificación${NC}"
-  echo
-  echo -e "${BLUE}Iniciando instalación completa automática...${NC}"
-  echo
-
-  # Step 1: Install AUR Helper
-  echo -e "${BLUE}Paso 1/12: Instalando AUR Helper...${NC}"
-  install_aur_silent
-
-  # Step 2: Install packages
-  echo -e "${BLUE}Paso 2/12: Instalando paquetes del sistema...${NC}"
-  install_packages_silent
-
-  # Step 3: Install npm packages
-  echo -e "${BLUE}Paso 3/12: Instalando paquetes npm...${NC}"
-  install_npm_silent
-
-  # Step 4: Install Flatpak apps
-  echo -e "${BLUE}Paso 4/12: Instalando aplicaciones Flatpak...${NC}"
-  install_flatpak_silent
-
-  # Step 5: Install configurations
-  echo -e "${BLUE}Paso 5/12: Instalando configuraciones...${NC}"
-  if [[ -f "$APPS_DIR/install_configs.sh" ]]; then
-    echo "y" | "$APPS_DIR/install_configs.sh" "$REPO_DIR"
-  else
-    install_configs_silent
-  fi
-
-  # Step 6: Install WebApp Creator
-  echo -e "${BLUE}Paso 6/12: Instalando WebApp Creator...${NC}"
-  if [[ -f "$APPS_DIR/install_webapp.sh" ]]; then
-    echo "y" | "$APPS_DIR/install_webapp.sh" "$REPO_DIR"
-  else
-    install_webapp_creator_silent
-  fi
-
-  # Step 7: Install SDDM
-  echo -e "${BLUE}Paso 7/12: Instalando SDDM Theme...${NC}"
-  install_sddm_silent
-
-  # Step 8: Install Plymouth
-  echo -e "${BLUE}Paso 8/12: Instalando Plymouth Themes...${NC}"
-  install_plymouth_silent
-
-  # Step 9: Install Wallpapers
-  echo -e "${BLUE}Paso 9/12: Instalando Wallpapers...${NC}"
-  install_wallpapers_silent
-
-  # Step 10: Install System76 Power
-  echo -e "${BLUE}Paso 10/12: Instalando System76 Power...${NC}"
-  install_system76_silent
-
-  # Step 11: Install Printer System
-  echo -e "${BLUE}Paso 11/12: Instalando Printer System...${NC}"
-  install_printer_silent
-
-  # Step 12: Finalization and verification
-  echo -e "${BLUE}Paso 12/12: Finalización y verificación...${NC}"
-  
-  # Verify key components
-  echo -e "${CYAN}Verificando instalaciones...${NC}"
-  
-  # Check AUR helper
-  if command -v yay &>/dev/null || command -v paru &>/dev/null; then
-    echo -e "${GREEN}  ✓ AUR Helper instalado${NC}"
-  else
-    echo -e "${YELLOW}  ⚠ AUR Helper no encontrado${NC}"
-  fi
-  
-  # Check configurations
-  if [[ -d "$HOME/.config/i3" && -d "$HOME/.config/polybar" ]]; then
-    echo -e "${GREEN}  ✓ Configuraciones del sistema instaladas${NC}"
-  else
-    echo -e "${YELLOW}  ⚠ Configuraciones del sistema incompletas${NC}"
-  fi
-  
-  # Check WebApp Creator
-  if [[ -f "$HOME/.local/bin/webapp-creator" ]]; then
-    echo -e "${GREEN}  ✓ WebApp Creator instalado${NC}"
-  else
-    echo -e "${YELLOW}  ⚠ WebApp Creator no encontrado${NC}"
-  fi
-  
-  # Check wallpapers
-  if [[ -d "$HOME/Wallpapers" ]]; then
-    echo -e "${GREEN}  ✓ Wallpapers instalados${NC}"
-  else
-    echo -e "${YELLOW}  ⚠ Wallpapers no encontrados${NC}"
-  fi
-
-  echo
-  echo -e "${GREEN}✓ ¡Instalación completa finalizada!${NC}"
-  echo -e "${BLUE}Debes reiniciar tu sesión para que todos los cambios tomen efecto${NC}"
-  echo
-  read -p "Press Enter to continue..." </dev/tty </dev/tty
-}
-
-# Silent installation functions for missing components
-install_plymouth_silent() {
-  local plymouth_script="$APPS_DIR/install_plymouth.sh"
-  if [[ -f "$plymouth_script" ]]; then
-    chmod +x "$plymouth_script"
-    "$plymouth_script" "$REPO_DIR"
-  else
-    echo -e "${YELLOW}⚠ Plymouth installer not found, skipping...${NC}"
-  fi
-}
-
-install_wallpapers_silent() {
-  local wallpapers_script="$APPS_DIR/install_wallpapers.sh"
-  if [[ -f "$wallpapers_script" ]]; then
-    chmod +x "$wallpapers_script"
-    "$wallpapers_script" "$REPO_DIR"
-  else
-    echo -e "${YELLOW}⚠ Wallpapers installer not found, skipping...${NC}"
-  fi
-}
-
-install_system76_silent() {
-  local system76_script="$APPS_DIR/install_system76.sh"
-  if [[ -f "$system76_script" ]]; then
-    chmod +x "$system76_script"
-    "$system76_script"
-  else
-    echo -e "${YELLOW}⚠ System76 installer not found, skipping...${NC}"
-  fi
-}
-
-install_printer_silent() {
-  local printer_script="$APPS_DIR/install_printer.sh"
-  if [[ -f "$printer_script" ]]; then
-    chmod +x "$printer_script"
-    "$printer_script"
-  else
-    echo -e "${YELLOW}⚠ Printer installer not found, skipping...${NC}"
-  fi
-}
-
-install_sddm_silent() {
-  local sddm_script="$APPS_DIR/install_sddm.sh"
-  if [[ -f "$sddm_script" ]]; then
-    chmod +x "$sddm_script"
-    "$sddm_script"
-  else
-    echo -e "${YELLOW}⚠ SDDM installer not found, skipping...${NC}"
-  fi
-}
-
-# Silent installation functions for automated install
-install_aur_silent() {
-  local aur_script="$APPS_DIR/install_aur.sh"
-  if [[ -f "$aur_script" ]]; then
-    chmod +x "$aur_script"
-    "$aur_script"
-  else
-    echo -e "${RED}✗ AUR installer not found: $aur_script${NC}"
-    return 1
-  fi
-}
-
-install_packages_silent() {
-  local pkg_script="$APPS_DIR/install_pkg.sh"
-  if [[ -f "$pkg_script" ]]; then
-    chmod +x "$pkg_script"
-    "$pkg_script"
-  else
-    echo -e "${RED}✗ Package installer not found: $pkg_script${NC}"
-    return 1
-  fi
-}
-
-install_flatpak_silent() {
-  local flatpak_script="$APPS_DIR/install_flatpak.sh"
-  if [[ -f "$flatpak_script" ]]; then
-    chmod +x "$flatpak_script"
-    "$flatpak_script"
-  else
-    echo -e "${RED}✗ Flatpak installer not found: $flatpak_script${NC}"
-    return 1
-  fi
-}
-
-install_npm_silent() {
-  local npm_script="$APPS_DIR/install_npm.sh"
-  if [[ -f "$npm_script" ]]; then
-    chmod +x "$npm_script"
-    "$npm_script"
-  else
-    echo -e "${YELLOW}⚠ npm installer not found: $npm_script${NC}"
-    echo -e "${BLUE}Skipping npm packages installation...${NC}"
-    return 0
-  fi
-}
-
-install_configs_silent() {
-  echo -e "${BLUE}Installing configuration files...${NC}"
-
-  # Ensure we use the repository directory, not the script directory
-  local source_dir="$REPO_DIR"
-  echo -e "${BLUE}Using source directory: $source_dir${NC}"
-  
-  # Verify the repository directory exists and contains expected structure
-  if [[ ! -d "$source_dir" ]]; then
-    echo -e "${RED}✗ Repository directory not found: $source_dir${NC}"
-    return 1
-  fi
-  
-  if [[ ! -d "$source_dir/Apps" || ! -d "$source_dir/Launcher" ]]; then
-    echo -e "${RED}✗ Invalid repository structure in: $source_dir${NC}"
-    echo -e "${YELLOW}Expected: Apps/ and Launcher/ directories${NC}"
-    return 1
-  fi
-
-  # Copy all directories except Apps and Launcher to ~/.config/
-  for config_dir in "$source_dir"/*; do
-    if [[ -d "$config_dir" ]]; then
-      local dir_name=$(basename "$config_dir")
-
-      # Skip Apps, Launcher, and Wallpapers directories
-      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" || "$dir_name" == "Wallpapers" ]]; then
-        continue
-      fi
-
-      local target_dir="$HOME/.config/$dir_name"
-
-      # Remove existing without backup for silent install
-      if [[ -d "$target_dir" ]]; then
-        rm -rf "$target_dir"
-      fi
-
-      # Copy configuration with force overwrite
-      cp -rf "$config_dir" "$target_dir"
-      echo -e "${GREEN}  ✓ Installed $dir_name configuration${NC}"
-    fi
-  done
-}
-
-install_webapp_creator_silent() {
-  # Check Chromium
-  check_chromium
-
-  local bin_dir="$HOME/.local/bin"
-  local script_name="webapp-creator"
-
-  # Create directories
-  mkdir -p "$bin_dir"
-  mkdir -p "$HOME/.local/share/applications"
-  mkdir -p "$HOME/.local/share/icons/webapp-icons"
-  mkdir -p "$HOME/.local/share/webapp-sync"
-
-  # Copy webapp-creator script
-  if [[ -f "$WEBAPP_CREATOR" ]]; then
-    cp -f "$WEBAPP_CREATOR" "$bin_dir/$script_name"
-    chmod +x "$bin_dir/$script_name"
-    echo -e "${GREEN}✓ WebApp Creator installed${NC}"
-  fi
-
-  # Copy additional scripts
-  if [[ -f "$LAUNCHER_SCRIPT" ]]; then
-    cp -f "$LAUNCHER_SCRIPT" "$bin_dir/"
-    chmod +x "$bin_dir/launcher.sh"
-  fi
-
-  if [[ -f "$GAMEMODE_SCRIPT" ]]; then
-    cp -f "$GAMEMODE_SCRIPT" "$bin_dir/"
-    chmod +x "$bin_dir/game-mode.sh"
-    # Also give permissions to i3 scripts
-    if [[ -d "$REPO_DIR/i3/scripts" ]]; then
-      chmod +x "$REPO_DIR/i3/scripts"/*.sh 2>/dev/null
-    fi
-  fi
-
-  # Create desktop entry (simplified)
-  local apps_dir="$HOME/.local/share/applications"
-  local desktop_file="$apps_dir/webapp-creator.desktop"
-  local bin_path="$HOME/.local/bin/webapp-creator"
-
-  mkdir -p "$apps_dir"
-  
-  cat >"$desktop_file" <<EOF
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=WebApp Creator
-Comment=Create and manage web applications using Chromium
-Exec=$bin_path
-Categories=Development;System;Utility;
-NoDisplay=false
-StartupNotify=true
-Terminal=true
-EOF
-
-  chmod +x "$desktop_file"
-  echo -e "${GREEN}✓ WebApp Creator desktop file created${NC}"
-}
-
 
 # Function to install system configurations
 install_configs() {
@@ -958,6 +642,27 @@ install_starship() {
   read -p "Press Enter to continue..." </dev/tty
 }
 
+# Function to run Chaotic-AUR installer
+install_chaotic() {
+  show_header
+  echo -e "${WHITE}Install Chaotic-AUR Repository${NC}"
+  echo -e "${WHITE}──────────────────────────────${NC}"
+  echo
+  
+  if [[ -f "$APPS_DIR/install_chaotic.sh" ]]; then
+    echo -e "${BLUE}Running Chaotic-AUR installer...${NC}"
+    echo
+    chmod +x "$APPS_DIR/install_chaotic.sh"
+    "$APPS_DIR/install_chaotic.sh"
+  else
+    echo -e "${RED}✗ Chaotic-AUR installer not found: $APPS_DIR/install_chaotic.sh${NC}"
+    echo -e "${BLUE}Make sure the file exists in the Apps directory${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
 # Function to run Flatpak installer
 install_flatpak() {
   show_header
@@ -1089,95 +794,95 @@ main_menu() {
     # Build menu options array
     local options=()
     
-    # Option 1
-    if [[ "$launcher_available" == true && "$apps_available" == true ]]; then
-      options+=("Instalación Completa Automática - Instala todo de una vez")
-    else
-      options+=("[DESHABILITADO] Instalación Completa Automática - Faltan directorios")
-    fi
-
-    # Option 2 - System Configurations only
+    # Option 1 - System Configurations
     if [[ "$apps_available" == true ]]; then
       options+=("Install System Configurations - i3, polybar, fish, etc.")
     else
       options+=("[DESHABILITADO] Install System Configurations - Falta directorio Apps")
     fi
 
-    # Option 3 - WebApp Creator only
-    if [[ "$launcher_available" == true ]]; then
-      options+=("Install WebApp Creator - Create web applications")
-    else
-      options+=("[DESHABILITADO] Install WebApp Creator - Falta directorio Launcher")
-    fi
-
-    # Option 4
-    if [[ "$apps_available" == true ]]; then
-      options+=("Install AUR Helper")
-    else
-      options+=("[DESHABILITADO] Install AUR Helper - Falta directorio Apps")
-    fi
-
-    # Option 5
-    if [[ "$apps_available" == true ]]; then
-      options+=("Install Packages")
-    else
-      options+=("[DESHABILITADO] Install Packages - Falta directorio Apps")
-    fi
-
-    # Option 6
-    if [[ "$apps_available" == true ]]; then
-      options+=("Install npm Packages - Claude CLI y herramientas npm")
-    else
-      options+=("[DESHABILITADO] Install npm Packages - Falta directorio Apps")
-    fi
-
-    # Option 7
-    if [[ "$apps_available" == true ]]; then
-      options+=("Install Flatpak Apps - Aplicaciones desde Flathub")
-    else
-      options+=("[DESHABILITADO] Install Flatpak Apps - Falta directorio Apps")
-    fi
-
-    # Option 8
-    if [[ "$apps_available" == true ]]; then
-      options+=("Install SDDM Theme - Login manager setup")
-    else
-      options+=("[DESHABILITADO] Install SDDM Theme - Falta directorio Apps")
-    fi
-
-    # Option 9
-    if [[ "$apps_available" == true ]]; then
-      options+=("Install Plymouth Themes - Boot splash themes")
-    else
-      options+=("[DESHABILITADO] Install Plymouth Themes - Falta directorio Apps")
-    fi
-
-    # Option 10 - Wallpapers
+    # Option 2 - Wallpapers
     if [[ "$wallpapers_available" == true ]]; then
       options+=("Setup Wallpapers - Configure backgrounds for i3WM")
     else
       options+=("[DESHABILITADO] Setup Wallpapers - Falta directorio Wallpapers")
     fi
 
-    # Option 11 - System76 Power
-    if [[ "$apps_available" == true ]]; then
-      options+=("Install System76 Power - Power management tools")
+    # Option 3 - WebApp Creator
+    if [[ "$launcher_available" == true ]]; then
+      options+=("Install WebApp Creator - Create web applications")
     else
-      options+=("[DESHABILITADO] Install System76 Power - Falta directorio Apps")
+      options+=("[DESHABILITADO] Install WebApp Creator - Falta directorio Launcher")
     fi
 
-    # Option 12 - Printer System
+    # Option 4 - AUR Helper
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install AUR Helper")
+    else
+      options+=("[DESHABILITADO] Install AUR Helper - Falta directorio Apps")
+    fi
+
+    # Option 5 - Packages
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install Packages")
+    else
+      options+=("[DESHABILITADO] Install Packages - Falta directorio Apps")
+    fi
+
+    # Option 6 - Chaotic-AUR
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install Chaotic-AUR Repository - Add chaotic-aur and multilib")
+    else
+      options+=("[DESHABILITADO] Install Chaotic-AUR - Falta directorio Apps")
+    fi
+
+    # Option 7 - Starship Configuration
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install Starship Configuration - Terminal prompt theme")
+    else
+      options+=("[DESHABILITADO] Install Starship Configuration - Falta directorio Apps")
+    fi
+
+    # Option 8 - npm Packages
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install npm Packages - Claude CLI y herramientas npm")
+    else
+      options+=("[DESHABILITADO] Install npm Packages - Falta directorio Apps")
+    fi
+
+    # Option 9 - Flatpak
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install Flatpak Apps - Aplicaciones desde Flathub")
+    else
+      options+=("[DESHABILITADO] Install Flatpak Apps - Falta directorio Apps")
+    fi
+
+    # Option 10 - Printer System
     if [[ "$apps_available" == true ]]; then
       options+=("Install Printer System - CUPS, drivers and configuration")
     else
       options+=("[DESHABILITADO] Install Printer System - Falta directorio Apps")
     fi
 
-    # Option 13 - Starship Configuration
+    # Option 11 - SDDM
     if [[ "$apps_available" == true ]]; then
-      options+=("Install Starship Configuration - Terminal prompt theme")
+      options+=("Install SDDM Theme - Login manager setup")
     else
-      options+=("[DESHABILITADO] Install Starship Configuration - Falta directorio Apps")
+      options+=("[DESHABILITADO] Install SDDM Theme - Falta directorio Apps")
+    fi
+
+    # Option 12 - Plymouth
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install Plymouth Themes - Boot splash themes")
+    else
+      options+=("[DESHABILITADO] Install Plymouth Themes - Falta directorio Apps")
+    fi
+
+    # Option 13 - System76
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install System76 Power - Power management tools")
+    else
+      options+=("[DESHABILITADO] Install System76 Power - Falta directorio Apps")
     fi
 
     # Options 14 and 15
@@ -1234,18 +939,6 @@ main_menu() {
 
     case $choice_index in
     1)
-      if [[ "$launcher_available" == true && "$apps_available" == true ]]; then
-        install_all
-        echo
-        read -p "Press Enter to continue..."
-      else
-        echo
-        echo -e "${RED}Esta opción no está disponible. Faltan directorios requeridos.${NC}"
-        echo
-        read -p "Press Enter to continue..."
-      fi
-      ;;
-    2)
       if [[ "$apps_available" == true ]]; then
         install_configs_auto
         echo
@@ -1253,6 +946,18 @@ main_menu() {
       else
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
+      ;;
+    2)
+      if [[ "$wallpapers_available" == true ]]; then
+        install_wallpapers
+        echo
+        read -p "Press Enter to continue..."
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Wallpapers.${NC}"
         echo
         read -p "Press Enter to continue..."
       fi
@@ -1295,7 +1000,7 @@ main_menu() {
       ;;
     6)
       if [[ "$apps_available" == true ]]; then
-        install_npm
+        install_chaotic
         echo
         read -p "Press Enter to continue..."
       else
@@ -1307,7 +1012,7 @@ main_menu() {
       ;;
     7)
       if [[ "$apps_available" == true ]]; then
-        install_flatpak
+        install_starship
         echo
         read -p "Press Enter to continue..."
       else
@@ -1319,7 +1024,7 @@ main_menu() {
       ;;
     8)
       if [[ "$apps_available" == true ]]; then
-        install_sddm
+        install_npm
         echo
         read -p "Press Enter to continue..."
       else
@@ -1331,7 +1036,7 @@ main_menu() {
       ;;
     9)
       if [[ "$apps_available" == true ]]; then
-        install_plymouth
+        install_flatpak
         echo
         read -p "Press Enter to continue..."
       else
@@ -1342,24 +1047,23 @@ main_menu() {
       fi
       ;;
     10)
-      if [[ "$wallpapers_available" == true ]]; then
-        install_wallpapers
+      if [[ "$apps_available" == true ]]; then
+        install_printer
         echo
         read -p "Press Enter to continue..."
       else
         echo
-        echo -e "${RED}Esta opción no está disponible. Falta el directorio Wallpapers.${NC}"
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
         echo
         read -p "Press Enter to continue..."
       fi
       ;;
     11)
       if [[ "$apps_available" == true ]]; then
-        install_system76
+        install_sddm
         echo
         read -p "Press Enter to continue..."
       else
-        echo
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
         echo
@@ -1368,11 +1072,10 @@ main_menu() {
       ;;
     12)
       if [[ "$apps_available" == true ]]; then
-        install_printer
+        install_plymouth
         echo
         read -p "Press Enter to continue..."
       else
-        echo
         echo
         echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
         echo
@@ -1381,7 +1084,7 @@ main_menu() {
       ;;
     13)
       if [[ "$apps_available" == true ]]; then
-        install_starship
+        install_system76
         echo
         read -p "Press Enter to continue..."
       else
