@@ -180,6 +180,50 @@ install_configurations() {
   return $failed
 }
 
+# Function to install individual config files (like dolphinrc, kdeglobals)
+install_individual_config_files() {
+  local source_dir="$1"
+  local make_backup="$2"
+  
+  # List of individual config files to copy to ~/.config/
+  local config_files=("dolphinrc" "kdeglobals")
+  
+  echo -e "${BLUE}Instalando archivos de configuración individuales...${NC}"
+  echo
+  
+  for config_file in "${config_files[@]}"; do
+    local source_file="$source_dir/$config_file"
+    local target_file="$HOME/.config/$config_file"
+    
+    if [[ -f "$source_file" ]]; then
+      echo -e "${BLUE}Instalando: $config_file${NC}"
+      
+      # Handle existing file
+      if [[ -f "$target_file" ]]; then
+        if [[ "$make_backup" == "true" ]]; then
+          local backup_file="$target_file.backup.$(date +%Y%m%d_%H%M%S)"
+          if mv "$target_file" "$backup_file"; then
+            echo -e "${YELLOW}  • Backup creado: $(basename "$backup_file")${NC}"
+          fi
+        else
+          echo -e "${YELLOW}  • Reemplazando archivo existente${NC}"
+        fi
+      fi
+      
+      # Copy file
+      if cp "$source_file" "$target_file"; then
+        echo -e "${GREEN}  ✓ Instalado $config_file${NC}"
+      else
+        echo -e "${RED}  ✗ Error al instalar $config_file${NC}"
+      fi
+    else
+      echo -e "${YELLOW}  ○ $config_file no encontrado, saltando...${NC}"
+    fi
+  done
+  
+  echo
+}
+
 # Function to create Desktop Apps application
 create_desktop_apps() {
   local apps_dir="$HOME/.local/share/applications"
@@ -288,6 +332,9 @@ main() {
   
   # Install configurations
   if install_configurations "$REPO_DIR" "false" "${configs_array[@]}"; then
+    # Install individual config files (dolphinrc, kdeglobals, etc.)
+    install_individual_config_files "$REPO_DIR" "false"
+    
     # Create Desktop Apps application
     create_desktop_apps
     
