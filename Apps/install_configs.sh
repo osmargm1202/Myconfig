@@ -224,6 +224,56 @@ install_individual_config_files() {
   echo
 }
 
+# Function to install icon themes
+install_icon_themes() {
+  local source_dir="$1"
+  local icons_source="$source_dir/Icons"
+  local icons_target="$HOME/.local/share/icons"
+  
+  echo -e "${BLUE}Instalando temas de iconos...${NC}"
+  echo
+  
+  # Create target directory if it doesn't exist
+  mkdir -p "$icons_target"
+  
+  if [[ ! -d "$icons_source" ]]; then
+    echo -e "${YELLOW}  ○ Directorio Icons no encontrado, saltando...${NC}"
+    echo
+    return 0
+  fi
+  
+  # Copy each icon theme directory (exclude individual files like orgmos.png)
+  local copied=0
+  for item in "$icons_source"/*; do
+    if [[ -d "$item" ]]; then
+      local theme_name=$(basename "$item")
+      local target_theme="$icons_target/$theme_name"
+      
+      echo -e "${BLUE}Instalando tema de iconos: $theme_name${NC}"
+      
+      # Remove existing theme if it exists
+      if [[ -d "$target_theme" ]]; then
+        echo -e "${YELLOW}  • Reemplazando tema existente${NC}"
+        rm -rf "$target_theme"
+      fi
+      
+      # Copy theme directory
+      if cp -r "$item" "$target_theme"; then
+        echo -e "${GREEN}  ✓ Instalado $theme_name${NC}"
+        ((copied++))
+      else
+        echo -e "${RED}  ✗ Error al instalar $theme_name${NC}"
+      fi
+    fi
+  done
+  
+  if [[ $copied -gt 0 ]]; then
+    echo -e "${GREEN}✓ $copied tema(s) de iconos instalado(s)${NC}"
+  fi
+  
+  echo
+}
+
 # Function to create Desktop Apps application
 create_desktop_apps() {
   local apps_dir="$HOME/.local/share/applications"
@@ -334,6 +384,9 @@ main() {
   if install_configurations "$REPO_DIR" "false" "${configs_array[@]}"; then
     # Install individual config files (dolphinrc, kdeglobals, etc.)
     install_individual_config_files "$REPO_DIR" "false"
+    
+    # Install icon themes
+    install_icon_themes "$REPO_DIR"
     
     # Create Desktop Apps application
     create_desktop_apps

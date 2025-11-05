@@ -48,7 +48,9 @@ exec --no-startup-id clipmenud
 exec --no-startup-id picom --config ~/.config/picom/picom.conf -b
 exec --no-startup-id setxkbmap -layout "us,latam"
 exec --no-startup-id ~/.config/i3/scripts/change-wallpaper.sh restore
-exec --no-startup-id ~/.config/i3/hotkey.sh --generate 
+exec --no-startup-id ~/.config/i3/hotkey.sh --generate
+# Configure cursor theme Bibata-Modern-Ice
+exec --no-startup-id gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice' 2>/dev/null || xsetroot -cursor_name left_ptr 2>/dev/null || true 
 # Lanzar Transmission Daemon y notificar en la terminal con color
 exec --no-startup-id transmission-daemon && notify-send -u normal -a "i3" "Transmission Daemon Torrent iniciado"
 exec --no-startup-id system-config-printer-applet && notify-send -u normal -a "i3" "Impresora configurada correctamente"
@@ -105,6 +107,10 @@ bindsym $mod+Mod1+space exec --no-startup-id ~/.config/i3/scripts/change-wallpap
 # Visual wallpaper selector with large thumbnails
 # Super+Shift+W = Visual wallpaper selector
 bindsym $mod+Shift+w exec --no-startup-id ~/.config/i3/scripts/wallpaper-selector.sh
+
+# Icon theme selector
+# Super+Shift+I = Icon theme selector
+bindsym $mod+Shift+i exec --no-startup-id ~/.config/i3/scripts/icon-selector.sh
 
 # For feh
 #bindsym $mod+Mod1+space exec --no-startup-id feh --bg-fill "$(find ~/Pictures -type f | shuf -n1)"

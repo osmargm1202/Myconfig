@@ -5,7 +5,7 @@ BackgroundNormal=#0B0F17FF
 TerminalApplication=/usr/bin/kitty
 
 [Icons]
-Theme=BeautyLine
+Theme=Papirus-kanagawa
 
 [KDE]
 ShowDeleteCommand=false
@@ -20,8 +20,8 @@ LocationCombo Completionmode=5
 PathCombo Completionmode=5
 Show Full Path=false
 Show Inline Previews=true
-Show Preview=false
-Show Speedbar=true
+Show Preview=falseGruvbox-Plus-Dark
+Show Speedbar=trueNordzyPapirus-kanagawa
 Show hidden files=false
 Sort by=Name
 Sort directories first=true
