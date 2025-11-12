@@ -269,27 +269,22 @@ mode "resize" {
 bindsym $mod+r mode "resize"
 
 
-for_window [class="kitty"] floating enable
-for_window [class="konsole"] floating enable
-for_window [class="dolphin"] floating enable
+# for_window [class="kitty"] floating enable
+# for_window [class="konsole"] floating enable
+# for_window [class="dolphin"] floating enable
 for_window [class="gnome-calculator"] floating enable
 for_window [class="Yad"] floating enable
-for_window [class="Kate"] floating enable
-for_window [class="Neovim"] floating enable
+# for_window [class="Kate"] floating enable
+# for_window [class="Neovim"] floating enable
+for_window [class="nextcloud"] floating enable
 for_window [class="Zathura"] floating enable
 for_window [class="Okular"] floating enable
 for_window [class="Evince"] floating enable
 for_window [class="Xreader"] floating enable
 for_window [class="pavucontrol"] floating enable
-for_window [class="admapp"] floating enable
-for_window [class="admapp-dev-linux-amd64"] floating enable
-for_window [class="Gestor de Propuestas"] floating enable
-for_window [class="Gestor Adminisrativo"] floating enable
-for_window [class="orgm-prop"] floating enable
-for_window [class="orgm-admapp"] floating enable
 for_window [class="system-config-printer"] floating enable
 #for_window [tiling] border pixel 2
-for_window [all] border pixel 2
+for_window [all] border pixel 0
 for_window [class="Cursor"] layout tabbed
 # Márgenes globales
 gaps inner 10
@@ -298,28 +293,28 @@ gaps outer 5
 # Regla para abrir un programa solo en un workspace específico
 # Ejemplo: abrir neovim solo en el workspace 3
 
-assign [title="claude.ai"] 3
-assign [title="chatgpt.com"] 3
-assign [title="aistudio.google.com"] 3
-assign [title="gmail.com"] 10
-assign [title="outlook.office.com"] 10
+# assign [title="claude.ai"] 3
+# assign [title="chatgpt.com"] 3
+# assign [title="aistudio.google.com"] 3
+# assign [title="gmail.com"] 10
+# assign [title="outlook.office.com"] 10
 assign [title="web.*whatsapp.com"] 9
 assign [title="teams.microsoft.com"] 9
 assign [title="meet.google.com"] 8
-assign [title="youtube.com"] 5
-assign [title="netflix.com"] 5
-assign [title="youtubekids.com"] 5
+# assign [title="youtube.com"] 5
+# assign [title="netflix.com"] 5
+# assign [title="youtubekids.com"] 5
 assign [title="app.rollbar.com"] 4
 assign [title="console.neon.tech"] 4
 assign [title="console.cloud.google.com"] 4
-assign [title="chat.or-gm.com"] 3
+# assign [title="chat.or-gm.com"] 3
 
 
 
 
 assign [class="Cursor"] 2
-assign [class="dota2"] 11
-assign [class="Hollow Knight Silksong"] 12
+assign [class="dota2"] 14
+assign [class="Hollow Knight Silksong"] 14
 assign [class="steam"] 14
 assign [class="discord"] 14
 
