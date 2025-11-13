@@ -145,6 +145,18 @@ install_single_config() {
       ((script_count++))
     done < <(find "$target_path" -name "*.sh" -type f 2>/dev/null)
     
+    # Special handling for autorandr hook
+    if [[ "$config_name" == "i3" ]]; then
+      local autorandr_hook="$target_path/scripts/autorandr-hook.sh"
+      if [[ -f "$autorandr_hook" ]]; then
+        chmod +x "$autorandr_hook"
+        # Create symlink in autorandr hooks directory
+        mkdir -p "$HOME/.config/autorandr/postswitch.d"
+        ln -sf "$autorandr_hook" "$HOME/.config/autorandr/postswitch.d/auto-display-handler" 2>/dev/null
+        echo -e "${BLUE}  ✓ Hook de autorandr configurado${NC}"
+      fi
+    fi
+    
     echo -e "${GREEN}  ✓ Instalado $config_name ($file_count archivos)${NC}"
     if [[ $script_count -gt 0 ]]; then
       echo -e "${BLUE}  ✓ Permisos de ejecución otorgados a $script_count script(s) .sh${NC}"

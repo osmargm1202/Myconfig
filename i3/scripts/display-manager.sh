@@ -4,6 +4,12 @@
 # Usa autorandr para guardar/cargar perfiles y xrandr para configuraciones rápidas
 #
 
+# Source wallpaper helper functions
+WALLPAPER_HELPER="$HOME/.config/i3/scripts/wallpaper-helper.sh"
+if [[ -f "$WALLPAPER_HELPER" ]]; then
+    source "$WALLPAPER_HELPER"
+fi
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -82,6 +88,10 @@ save_profile() {
         if gum confirm "¿Sobrescribir el perfil existente '$profile_name'?"; then
             echo -e "${BLUE}Guardando configuración como: $profile_name (sobrescribiendo)${NC}"
             if autorandr --save "$profile_name" --force; then
+                # Save wallpapers for all monitors to this profile
+                if [[ -f "$WALLPAPER_HELPER" ]]; then
+                    save_wallpapers_to_profile "$profile_name" 2>/dev/null
+                fi
                 gum style --foreground="$GREEN" "✓ Perfil '$profile_name' guardado exitosamente (sobrescrito)"
                 notify-send "Display Manager" "Perfil '$profile_name' guardado (sobrescrito)" -t 2000 2>/dev/null || true
             else
@@ -95,6 +105,10 @@ save_profile() {
     else
         echo -e "${BLUE}Guardando configuración como: $profile_name${NC}"
         if autorandr --save "$profile_name"; then
+            # Save wallpapers for all monitors to this profile
+            if [[ -f "$WALLPAPER_HELPER" ]]; then
+                save_wallpapers_to_profile "$profile_name" 2>/dev/null
+            fi
             gum style --foreground="$GREEN" "✓ Perfil '$profile_name' guardado exitosamente"
             notify-send "Display Manager" "Perfil '$profile_name' guardado" -t 2000 2>/dev/null || true
         else

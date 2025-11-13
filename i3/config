@@ -37,6 +37,11 @@ exec --no-startup-id /usr/bin/gnome-keyring-daemon --start --components=pkcs11,s
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec --no-startup-id ~/.config/i3/scripts/screen-lock.sh
 exec --no-startup-id polybar
+# Auto-detect monitor changes with autorandr
+# Try to load matching profile on startup
+exec --no-startup-id autorandr --change --default default
+# Monitor for display changes and handle them automatically
+exec_always --no-startup-id ~/.config/i3/scripts/monitor-watcher.sh
 exec --no-startup-id system76-power daemon
 
 # NetworkManager is the most popular way to manage wireless networks on Linux,

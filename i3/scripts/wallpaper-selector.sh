@@ -3,6 +3,12 @@
 # Visual Wallpaper Selector with Large Thumbnails
 # Uses rofi with large icon display to browse and select wallpapers
 
+# Source wallpaper helper functions
+WALLPAPER_HELPER="$HOME/.config/i3/scripts/wallpaper-helper.sh"
+if [[ -f "$WALLPAPER_HELPER" ]]; then
+    source "$WALLPAPER_HELPER"
+fi
+
 WALLPAPERS_DIR="$HOME/Wallpapers"
 STATE_FILE="$HOME/.config/current_wallpaper"
 CACHE_DIR="$HOME/.cache/wallpaper-thumbnails"
@@ -99,19 +105,41 @@ apply_wallpaper() {
     # Try xwallpaper first (better multi-monitor support - can target specific monitor)
     if command -v xwallpaper &>/dev/null; then
         if [[ -n "$current_monitor" ]]; then
-            # Apply wallpaper only to the current monitor
-            xwallpaper --output "$current_monitor" --stretch "$wallpaper" 2>/dev/null
-            if [[ $? -eq 0 ]]; then
-                # Save current wallpaper to state file
-                echo "$wallpaper" > "$STATE_FILE"
-                
-                # Send notification if available
-                if command -v notify-send &>/dev/null; then
-                    notify-send "Wallpaper Changed" "$(basename "$wallpaper") on $current_monitor" -i "$wallpaper" -t 2000 2>/dev/null || true
+            # Use helper function if available, otherwise use direct xwallpaper call
+            if [[ -f "$WALLPAPER_HELPER" ]] && declare -f apply_wallpaper_to_monitor &>/dev/null; then
+                if apply_wallpaper_to_monitor "$current_monitor" "$wallpaper"; then
+                    # Save wallpaper state for this monitor
+                    save_wallpaper_state "$current_monitor" "$wallpaper"
+                    # Also save to legacy state file for compatibility
+                    echo "$wallpaper" > "$STATE_FILE"
+                    
+                    # Send notification if available
+                    if command -v notify-send &>/dev/null; then
+                        notify-send "Wallpaper Changed" "$(basename "$wallpaper") on $current_monitor" -i "$wallpaper" -t 2000 2>/dev/null || true
+                    fi
+                    
+                    echo "✓ Wallpaper changed to: $(basename "$wallpaper") on monitor: $current_monitor"
+                    return 0
                 fi
-                
-                echo "✓ Wallpaper changed to: $(basename "$wallpaper") on monitor: $current_monitor"
-                return 0
+            else
+                # Fallback to direct xwallpaper call
+                if xwallpaper --output "$current_monitor" --stretch "$wallpaper" 2>/dev/null; then
+                    # Save current wallpaper to state file
+                    echo "$wallpaper" > "$STATE_FILE"
+                    
+                    # Save wallpaper state for this monitor if helper is available
+                    if [[ -f "$WALLPAPER_HELPER" ]] && declare -f save_wallpaper_state &>/dev/null; then
+                        save_wallpaper_state "$current_monitor" "$wallpaper"
+                    fi
+                    
+                    # Send notification if available
+                    if command -v notify-send &>/dev/null; then
+                        notify-send "Wallpaper Changed" "$(basename "$wallpaper") on $current_monitor" -i "$wallpaper" -t 2000 2>/dev/null || true
+                    fi
+                    
+                    echo "✓ Wallpaper changed to: $(basename "$wallpaper") on monitor: $current_monitor"
+                    return 0
+                fi
             fi
         fi
         # If xwallpaper failed or no monitor detected, fall through to feh with workaround
