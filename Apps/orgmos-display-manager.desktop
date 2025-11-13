@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=ORGMOS Display Manager
+Comment=Manage screen configurations and monitor settings
+Exec=kitty -e %h/.config/i3/scripts/display-manager.sh
+Icon=video-display
+Categories=System;Settings;HardwareSettings;
+Keywords=display;monitor;screen;xrandr;autorandr;orgmos;
+NoDisplay=false
+StartupNotify=true
+Terminal=false
+

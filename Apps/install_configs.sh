@@ -361,31 +361,50 @@ install_orgmos_pacman() {
   echo
 }
 
-# Function to create Desktop Apps application
-create_desktop_apps() {
+# Function to install ORGMOS desktop files
+install_orgmos_desktop_files() {
+  local source_dir="$1"
   local apps_dir="$HOME/.local/share/applications"
-  local desktop_file="$apps_dir/desktop-apps.desktop"
+  local desktop_files=(
+    "orgmos-webapp-creator.desktop"
+    "orgmos-display-manager.desktop"
+    "orgmos-wallpaper-selector.desktop"
+    "orgmos-pacman.desktop"
+    "orgmos-game-mode.desktop"
+    "orgmos-desktop-apps.desktop"
+  )
   
-  echo -e "${BLUE}Creando aplicación Desktop Apps...${NC}"
+  echo -e "${BLUE}Instalando archivos .desktop de aplicaciones ORGMOS...${NC}"
   
+  # Create applications directory if it doesn't exist
   mkdir -p "$apps_dir"
   
-  cat >"$desktop_file" <<EOF
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Desktop Apps
-Comment=Open local applications directory
-Exec=xdg-open $HOME/.local/share/applications
-Icon=folder-applications
-Categories=System;Utility;
-Terminal=false
-NoDisplay=false
-StartupNotify=true
-EOF
-
-  chmod +x "$desktop_file"
-  echo -e "${GREEN}✓ Aplicación Desktop Apps creada${NC}"
+  local installed=0
+  for desktop_file in "${desktop_files[@]}"; do
+    local source_file="$source_dir/$desktop_file"
+    local target_file="$apps_dir/$desktop_file"
+    
+    if [[ -f "$source_file" ]]; then
+      # Replace %h with $HOME in Exec and Icon paths
+      sed "s|%h|$HOME|g" "$source_file" > "$target_file"
+      chmod +x "$target_file"
+      echo -e "${GREEN}  ✓ Instalado $desktop_file${NC}"
+      ((installed++))
+    else
+      echo -e "${YELLOW}  ○ $desktop_file no encontrado, saltando...${NC}"
+    fi
+  done
+  
+  # Update desktop database
+  if command -v update-desktop-database &>/dev/null; then
+    update-desktop-database "$apps_dir" 2>/dev/null
+    echo -e "${GREEN}  ✓ Base de datos de aplicaciones actualizada${NC}"
+  fi
+  
+  if [[ $installed -gt 0 ]]; then
+    echo -e "${GREEN}✓ $installed archivo(s) .desktop de ORGMOS instalado(s)${NC}"
+  fi
+  echo
 }
 
 # Function to refresh system components
@@ -475,11 +494,11 @@ main() {
     # Install orgmos_pacman package manager
     install_orgmos_pacman "$REPO_DIR"
     
-    # Create Desktop Apps application
-    create_desktop_apps
-    
     # Create/update webapp-creator desktop file
     create_webapp_creator_desktop
+    
+    # Install ORGMOS desktop files
+    install_orgmos_desktop_files "$REPO_DIR/Apps"
     
     # Show completion message and refresh system
     show_completion "${#configs_array[@]}"

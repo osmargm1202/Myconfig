@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=ORGMOS Desktop Apps
+Comment=Open local applications directory
+Exec=xdg-open %h/.local/share/applications
+Icon=folder
+Categories=System;Utility;
+Keywords=applications;desktop;files;orgmos;
+Terminal=false
+NoDisplay=false
+StartupNotify=true
+

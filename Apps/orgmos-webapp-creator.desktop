@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=ORGMOS WebApp Creator
+Comment=Create and manage web applications using Chromium
+Exec=%h/.local/bin/webapp-creator
+Icon=web-browser
+Categories=Development;System;Utility;
+Keywords=webapp;chromium;browser;application;orgmos;
+NoDisplay=false
+StartupNotify=true
+Terminal=false
+StartupWMClass=webapp-creator
+

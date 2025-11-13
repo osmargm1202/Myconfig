@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=ORGMOS Wallpaper Selector
+Comment=Select and change desktop wallpapers
+Exec=%h/.config/i3/scripts/wallpaper-selector.sh
+Icon=preferences-desktop-wallpaper
+Categories=System;Settings;Graphics;
+Keywords=wallpaper;background;image;desktop;orgmos;
+NoDisplay=false
+StartupNotify=true
+Terminal=false
+

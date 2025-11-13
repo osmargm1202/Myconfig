@@ -37,7 +37,13 @@ if type -q fzf
     end
 end
 
-fastfetch
+# Deshabilitar mensaje de ayuda de fish
+set -U fish_greeting ""
+
+# Ejecutar fastfetch con logo de Arch
+if type -q fastfetch
+    fastfetch --logo arch
+end
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/home/osmar/google-cloud-sdk/path.fish.inc' ]; . '/home/osmar/google-cloud-sdk/path.fish.inc'; end

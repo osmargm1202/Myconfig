@@ -941,7 +941,25 @@ main_menu() {
       options+=("[DESHABILITADO] Install Google Cloud CLI - Falta directorio Apps")
     fi
 
-    # Options 16 and 17
+    # Option 16 - ORGMOS WebApp Creator
+    options+=("ORGMOS WebApp Creator - Create web applications")
+    
+    # Option 17 - ORGMOS Display Manager
+    options+=("ORGMOS Display Manager - Manage screen configurations")
+    
+    # Option 18 - ORGMOS Wallpaper Selector
+    options+=("ORGMOS Wallpaper Selector - Change wallpapers")
+    
+    # Option 19 - ORGMOS Gestor de Paquetes
+    options+=("ORGMOS Gestor de Paquetes - Package manager")
+    
+    # Option 20 - ORGMOS Modo Juego
+    options+=("ORGMOS Modo Juego - Toggle game mode")
+    
+    # Option 21 - ORGMOS Desktop Apps
+    options+=("ORGMOS Desktop Apps - Open applications directory")
+
+    # Options 22 and 23
     options+=("Uninstall - Remove all installations")
     options+=("Exit")
 
@@ -953,7 +971,7 @@ main_menu() {
     if [[ "$HAS_GUM" == true ]]; then
       # Use Gum for interactive selection
       local selected
-      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 17)
+      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 23)
       
       if [[ -n "$selected" ]]; then
         # Find index of selected option
@@ -984,7 +1002,7 @@ main_menu() {
       done
       echo
       
-      printf "Select option (1-17): "
+      printf "Select option (1-23): "
       read -r choice_index
       
       if [[ -z "$choice_index" ]]; then
@@ -1176,6 +1194,24 @@ main_menu() {
       fi
       ;;
     16)
+      run_webapp_creator
+      ;;
+    17)
+      run_display_manager
+      ;;
+    18)
+      run_wallpaper_selector
+      ;;
+    19)
+      run_orgmos_pacman
+      ;;
+    20)
+      run_game_mode
+      ;;
+    21)
+      run_desktop_apps
+      ;;
+    22)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
       read -r confirm </dev/tty
@@ -1187,8 +1223,8 @@ main_menu() {
       echo
       read -p "Press Enter to continue..." </dev/tty
       ;;
-    17)
-      echo -e "${GREEN}Goodbye!${NC}"
+    23)
+      echo -e "${GREEN}¡Hasta luego!${NC}"
       exit 0
       ;;
     *)
@@ -1350,6 +1386,130 @@ install_webapp_auto() {
 
   echo
   echo -e "${GREEN}✓ Instalación de WebApp Creator completada${NC}"
+}
+
+# Function to run ORGMOS WebApp Creator
+run_webapp_creator() {
+  show_header
+  echo -e "${WHITE}ORGMOS WebApp Creator${NC}"
+  echo -e "${WHITE}────────────────────${NC}"
+  echo
+  
+  if [[ -f "$HOME/.local/bin/webapp-creator" ]]; then
+    echo -e "${BLUE}Ejecutando WebApp Creator...${NC}"
+    "$HOME/.local/bin/webapp-creator"
+  else
+    echo -e "${RED}✗ WebApp Creator no está instalado${NC}"
+    echo -e "${YELLOW}Instala primero el WebApp Creator desde el menú principal${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
+# Function to run ORGMOS Display Manager
+run_display_manager() {
+  show_header
+  echo -e "${WHITE}ORGMOS Display Manager${NC}"
+  echo -e "${WHITE}──────────────────────${NC}"
+  echo
+  
+  if [[ -f "$HOME/.config/i3/scripts/display-manager.sh" ]]; then
+    echo -e "${BLUE}Ejecutando Display Manager...${NC}"
+    if command -v kitty &>/dev/null; then
+      kitty -e "$HOME/.config/i3/scripts/display-manager.sh"
+    else
+      echo -e "${YELLOW}Kitty no está disponible, ejecutando en terminal actual...${NC}"
+      "$HOME/.config/i3/scripts/display-manager.sh"
+    fi
+  else
+    echo -e "${RED}✗ Display Manager no está instalado${NC}"
+    echo -e "${YELLOW}Instala primero las configuraciones del sistema desde el menú principal${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
+# Function to run ORGMOS Wallpaper Selector
+run_wallpaper_selector() {
+  show_header
+  echo -e "${WHITE}ORGMOS Wallpaper Selector${NC}"
+  echo -e "${WHITE}─────────────────────────${NC}"
+  echo
+  
+  if [[ -f "$HOME/.config/i3/scripts/wallpaper-selector.sh" ]]; then
+    echo -e "${BLUE}Ejecutando Wallpaper Selector...${NC}"
+    "$HOME/.config/i3/scripts/wallpaper-selector.sh"
+  else
+    echo -e "${RED}✗ Wallpaper Selector no está instalado${NC}"
+    echo -e "${YELLOW}Instala primero las configuraciones del sistema desde el menú principal${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
+# Function to run ORGMOS Gestor de Paquetes
+run_orgmos_pacman() {
+  show_header
+  echo -e "${WHITE}ORGMOS Gestor de Paquetes${NC}"
+  echo -e "${WHITE}────────────────────────${NC}"
+  echo
+  
+  if [[ -f "$HOME/.local/bin/orgmos_pacman" ]]; then
+    echo -e "${BLUE}Ejecutando Gestor de Paquetes...${NC}"
+    "$HOME/.local/bin/orgmos_pacman"
+  else
+    echo -e "${RED}✗ Gestor de Paquetes no está instalado${NC}"
+    echo -e "${YELLOW}Instala primero las configuraciones del sistema desde el menú principal${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
+# Function to run ORGMOS Modo Juego
+run_game_mode() {
+  show_header
+  echo -e "${WHITE}ORGMOS Modo Juego${NC}"
+  echo -e "${WHITE}─────────────────${NC}"
+  echo
+  
+  if [[ -f "$HOME/.config/i3/scripts/game-mode.sh" ]]; then
+    echo -e "${BLUE}Ejecutando Modo Juego...${NC}"
+    if command -v kitty &>/dev/null; then
+      kitty -e "$HOME/.config/i3/scripts/game-mode.sh"
+    else
+      echo -e "${YELLOW}Kitty no está disponible, ejecutando en terminal actual...${NC}"
+      "$HOME/.config/i3/scripts/game-mode.sh"
+    fi
+  else
+    echo -e "${RED}✗ Modo Juego no está instalado${NC}"
+    echo -e "${YELLOW}Instala primero las configuraciones del sistema desde el menú principal${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
+# Function to run ORGMOS Desktop Apps
+run_desktop_apps() {
+  show_header
+  echo -e "${WHITE}ORGMOS Desktop Apps${NC}"
+  echo -e "${WHITE}───────────────────${NC}"
+  echo
+  
+  if command -v xdg-open &>/dev/null; then
+    echo -e "${BLUE}Abriendo directorio de aplicaciones...${NC}"
+    xdg-open "$HOME/.local/share/applications"
+  else
+    echo -e "${RED}✗ xdg-open no está disponible${NC}"
+    echo -e "${YELLOW}Instala xdg-utils para abrir el directorio${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
 }
 
 echo
