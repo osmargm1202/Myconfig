@@ -52,8 +52,8 @@ list_configurations() {
     if [[ -d "$config_dir" ]]; then
       local dir_name=$(basename "$config_dir")
       
-      # Skip Apps, Launcher, sddm, and Wallpapers directories
-      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" || "$dir_name" == "sddm" || "$dir_name" == "Wallpapers" ]]; then
+      # Skip Apps, Launcher, sddm, Wallpapers, and Icons directories
+      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" || "$dir_name" == "sddm" || "$dir_name" == "Wallpapers" || "$dir_name" == "Icons" ]]; then
         continue
       fi
       
@@ -224,53 +224,111 @@ install_individual_config_files() {
   echo
 }
 
-# Function to install icon themes
-install_icon_themes() {
-  local source_dir="$1"
-  local icons_source="$source_dir/Icons"
-  local icons_target="$HOME/.local/share/icons"
+# Function to create webapp-creator desktop file
+create_webapp_creator_desktop() {
+  local apps_dir="$HOME/.local/share/applications"
+  local icons_dir="$HOME/.local/share/icons/webapp-icons"
+  local desktop_file="$apps_dir/webapp-creator.desktop"
+  local icon_path="$icons_dir/webapp-creator.png"
+  local bin_path="$HOME/.local/bin/webapp-creator"
+
+  echo -e "${BLUE}Creando/actualizando archivo .desktop de WebApp Creator...${NC}"
+
+  # Create directories if they don't exist
+  mkdir -p "$apps_dir" "$icons_dir"
+
+  # Create icon for webapp-creator if it doesn't exist
+  if [[ ! -f "$icon_path" ]]; then
+    if command -v convert &>/dev/null; then
+      convert -size 128x128 xc:transparent -fill "#4A90E2" -draw "circle 64,64 64,20" \
+        -fill white -font DejaVu-Sans-Bold -pointsize 14 -gravity center \
+        -annotate +0+0 "WEB\nAPP" "$icon_path" 2>/dev/null
+      echo -e "${GREEN}  ✓ Icono creado${NC}"
+    else
+      # Try to copy a system icon as fallback
+      for sys_icon in /usr/share/icons/hicolor/*/apps/preferences-system.png \
+        /usr/share/pixmaps/preferences-system.png \
+        /usr/share/icons/*/*/apps/application-default-icon.png; do
+        if [[ -f "$sys_icon" ]]; then
+          cp "$sys_icon" "$icon_path" 2>/dev/null && break
+        fi
+      done
+    fi
+  fi
+
+  # Create or update the desktop file
+  cat >"$desktop_file" <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=WebApp Creator
+Comment=Create and manage web applications using Chromium
+Exec=$bin_path
+Icon=$icon_path
+Categories=Development;System;Utility;
+Keywords=webapp;chromium;browser;application;
+NoDisplay=false
+StartupNotify=true
+Terminal=false
+StartupWMClass=webapp-creator
+EOF
+
+  chmod +x "$desktop_file"
   
-  echo -e "${BLUE}Instalando temas de iconos...${NC}"
+  # Update desktop database
+  if command -v update-desktop-database &>/dev/null; then
+    update-desktop-database "$apps_dir" 2>/dev/null
+  fi
+  
+  echo -e "${GREEN}  ✓ Archivo .desktop de WebApp Creator creado/actualizado${NC}"
   echo
+}
+
+# Function to install orgmos_pacman package manager
+install_orgmos_pacman() {
+  local source_dir="$1"
+  local bin_dir="$HOME/.local/bin"
+  local apps_dir="$HOME/.local/share/applications"
+  local binary_source="$source_dir/orgmos_pacman"
+  local desktop_source="$source_dir/orgmos_pacman.desktop"
+  local binary_target="$bin_dir/orgmos_pacman"
+  local desktop_target="$apps_dir/orgmos_pacman.desktop"
   
-  # Create target directory if it doesn't exist
-  mkdir -p "$icons_target"
+  echo -e "${BLUE}Instalando ORGMOS Gestor de Paquetes...${NC}"
   
-  if [[ ! -d "$icons_source" ]]; then
-    echo -e "${YELLOW}  ○ Directorio Icons no encontrado, saltando...${NC}"
-    echo
+  # Create directories if they don't exist
+  mkdir -p "$bin_dir" "$apps_dir"
+  
+  # Install binary
+  if [[ -f "$binary_source" ]]; then
+    if cp "$binary_source" "$binary_target"; then
+      chmod +x "$binary_target"
+      echo -e "${GREEN}  ✓ Binario instalado en $binary_target${NC}"
+    else
+      echo -e "${RED}  ✗ Error al instalar el binario${NC}"
+      return 1
+    fi
+  else
+    echo -e "${YELLOW}  ○ Binario orgmos_pacman no encontrado, saltando...${NC}"
     return 0
   fi
   
-  # Copy each icon theme directory (exclude individual files like orgmos.png)
-  local copied=0
-  for item in "$icons_source"/*; do
-    if [[ -d "$item" ]]; then
-      local theme_name=$(basename "$item")
-      local target_theme="$icons_target/$theme_name"
-      
-      echo -e "${BLUE}Instalando tema de iconos: $theme_name${NC}"
-      
-      # Remove existing theme if it exists
-      if [[ -d "$target_theme" ]]; then
-        echo -e "${YELLOW}  • Reemplazando tema existente${NC}"
-        rm -rf "$target_theme"
-      fi
-      
-      # Copy theme directory
-      if cp -r "$item" "$target_theme"; then
-        echo -e "${GREEN}  ✓ Instalado $theme_name${NC}"
-        ((copied++))
-      else
-        echo -e "${RED}  ✗ Error al instalar $theme_name${NC}"
-      fi
-    fi
-  done
-  
-  if [[ $copied -gt 0 ]]; then
-    echo -e "${GREEN}✓ $copied tema(s) de iconos instalado(s)${NC}"
+  # Install desktop file
+  if [[ -f "$desktop_source" ]]; then
+    # Update the Exec path in the desktop file
+    sed "s|^Exec=.*|Exec=$binary_target|" "$desktop_source" > "$desktop_target"
+    chmod +x "$desktop_target"
+    echo -e "${GREEN}  ✓ Archivo .desktop instalado${NC}"
+  else
+    echo -e "${YELLOW}  ○ Archivo .desktop no encontrado, saltando...${NC}"
   fi
   
+  # Update desktop database
+  if command -v update-desktop-database &>/dev/null; then
+    update-desktop-database "$apps_dir" 2>/dev/null
+  fi
+  
+  echo -e "${GREEN}✓ ORGMOS Gestor de Paquetes instalado${NC}"
   echo
 }
 
@@ -385,11 +443,14 @@ main() {
     # Install individual config files (dolphinrc, kdeglobals, etc.)
     install_individual_config_files "$REPO_DIR" "false"
     
-    # Install icon themes
-    install_icon_themes "$REPO_DIR"
+    # Install orgmos_pacman package manager
+    install_orgmos_pacman "$REPO_DIR"
     
     # Create Desktop Apps application
     create_desktop_apps
+    
+    # Create/update webapp-creator desktop file
+    create_webapp_creator_desktop
     
     # Show completion message and refresh system
     show_completion "${#configs_array[@]}"

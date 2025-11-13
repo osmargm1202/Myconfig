@@ -600,6 +600,48 @@ install_system76() {
   fi
 }
 
+# Function to run Icons installer
+install_icons() {
+  show_header
+  echo -e "${WHITE}Install Icon Themes${NC}"
+  echo -e "${WHITE}───────────────────${NC}"
+  echo
+  
+  if [[ -f "$APPS_DIR/install_icons.sh" ]]; then
+    echo -e "${BLUE}Running icon themes installer...${NC}"
+    echo
+    chmod +x "$APPS_DIR/install_icons.sh"
+    "$APPS_DIR/install_icons.sh" "$REPO_DIR"
+  else
+    echo -e "${RED}✗ Icon installer not found: $APPS_DIR/install_icons.sh${NC}"
+    echo -e "${BLUE}Make sure the file exists in the Apps directory${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
+# Function to run Google Cloud CLI installer
+install_gcloud() {
+  show_header
+  echo -e "${WHITE}Install Google Cloud CLI${NC}"
+  echo -e "${WHITE}────────────────────────${NC}"
+  echo
+  
+  if [[ -f "$APPS_DIR/install_gcloud.sh" ]]; then
+    echo -e "${BLUE}Running Google Cloud CLI installer...${NC}"
+    echo
+    chmod +x "$APPS_DIR/install_gcloud.sh"
+    "$APPS_DIR/install_gcloud.sh"
+  else
+    echo -e "${RED}✗ Google Cloud CLI installer not found: $APPS_DIR/install_gcloud.sh${NC}"
+    echo -e "${BLUE}Make sure the file exists in the Apps directory${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
 # Function to run Printer installer
 install_printer() {
   show_header
@@ -885,7 +927,21 @@ main_menu() {
       options+=("[DESHABILITADO] Install System76 Power - Falta directorio Apps")
     fi
 
-    # Options 14 and 15
+    # Option 14 - Icon Themes
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install Icon Themes - Install icon themes to system")
+    else
+      options+=("[DESHABILITADO] Install Icon Themes - Falta directorio Apps")
+    fi
+
+    # Option 15 - Google Cloud CLI
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install Google Cloud CLI - Install and configure gcloud")
+    else
+      options+=("[DESHABILITADO] Install Google Cloud CLI - Falta directorio Apps")
+    fi
+
+    # Options 16 and 17
     options+=("Uninstall - Remove all installations")
     options+=("Exit")
 
@@ -897,7 +953,7 @@ main_menu() {
     if [[ "$HAS_GUM" == true ]]; then
       # Use Gum for interactive selection
       local selected
-      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 15)
+      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 17)
       
       if [[ -n "$selected" ]]; then
         # Find index of selected option
@@ -928,7 +984,7 @@ main_menu() {
       done
       echo
       
-      printf "Select option (1-15): "
+      printf "Select option (1-17): "
       read -r choice_index
       
       if [[ -z "$choice_index" ]]; then
@@ -1096,6 +1152,30 @@ main_menu() {
       fi
       ;;
     14)
+      if [[ "$apps_available" == true ]]; then
+        install_icons
+        echo
+        read -p "Press Enter to continue..."
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
+      ;;
+    15)
+      if [[ "$apps_available" == true ]]; then
+        install_gcloud
+        echo
+        read -p "Press Enter to continue..."
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
+      ;;
+    16)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
       read -r confirm </dev/tty
@@ -1107,7 +1187,7 @@ main_menu() {
       echo
       read -p "Press Enter to continue..." </dev/tty
       ;;
-    15)
+    17)
       echo -e "${GREEN}Goodbye!${NC}"
       exit 0
       ;;
