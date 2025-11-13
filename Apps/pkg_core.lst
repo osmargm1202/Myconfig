@@ -67,6 +67,7 @@ rofi                                                   # lanzador de aplicacione
 polybar                                                # barra del sistema
 picom                                                  # compositor para transparencias
 feh                                                    # gestor de wallpapers
+xwallpaper                                             # gestor de wallpapers con soporte multi-monitor
 i3lock-color                                           # pantalla de bloqueo mejorada
 brightnessctl                                          # control de brillo
 udiskie                                                # montaje automático de medios
@@ -75,12 +76,15 @@ udiskie                                                # montaje automático de 
 # HERRAMIENTAS DEL SISTEMA
 # ====================================================================================================
 scrot                                                  # capturas para lock screen
+maim                                                   # capturas rápidas para lock screen (más rápido que scrot)
 flameshot                                              # herramienta de capturas
 xclip                                                  # gestor de portapapeles
 clipmenu                                               # menú de portapapeles
 btop                                                   # monitor del sistema
 fastfetch                                              # información del sistema
 nwg-displays                                           # gestión de monitores
+arandr                                                 # GUI para configurar pantallas con xrandr
+autorandr                                               # gestión automática de configuraciones de pantalla
 ncdu                                                   # visor de uso de disco en terminal
 
 # ====================================================================================================

@@ -37,6 +37,52 @@ generate_thumbnails() {
     fi
 }
 
+# Function to get current monitor (where cursor is)
+get_current_monitor() {
+    # Try to get monitor where cursor is located using xdotool
+    if command -v xdotool &>/dev/null; then
+        local mouse_x mouse_y
+        mouse_x=$(xdotool getmouselocation --shell 2>/dev/null | grep "X=" | cut -d= -f2)
+        mouse_y=$(xdotool getmouselocation --shell 2>/dev/null | grep "Y=" | cut -d= -f2)
+        
+        if [[ -n "$mouse_x" && -n "$mouse_y" ]]; then
+            # Get all connected monitors and their geometry
+            while IFS= read -r line; do
+                local monitor=$(echo "$line" | awk '{print $1}')
+                local geometry=$(xrandr --query | grep "^$monitor" | grep -oE '[0-9]+x[0-9]+\+[0-9]+\+[0-9]+' | head -n1)
+                
+                if [[ -n "$geometry" ]]; then
+                    local width=$(echo "$geometry" | cut -d+ -f1 | cut -dx -f1)
+                    local height=$(echo "$geometry" | cut -d+ -f1 | cut -dx -f2)
+                    local x_pos=$(echo "$geometry" | cut -d+ -f2)
+                    local y_pos=$(echo "$geometry" | cut -d+ -f3)
+                    local end_x=$((x_pos + width))
+                    local end_y=$((y_pos + height))
+                    
+                    # Check if cursor is within this monitor's bounds
+                    if [[ $mouse_x -ge $x_pos && $mouse_x -lt $end_x && \
+                          $mouse_y -ge $y_pos && $mouse_y -lt $end_y ]]; then
+                        echo "$monitor"
+                        return 0
+                    fi
+                fi
+            done < <(xrandr --query | grep " connected" | awk '{print $1}')
+        fi
+    fi
+    
+    # Fallback: get primary monitor
+    local primary
+    primary=$(xrandr --query | grep " connected" | grep "primary" | awk '{print $1}' | head -n1)
+    
+    if [[ -n "$primary" ]]; then
+        echo "$primary"
+        return 0
+    fi
+    
+    # Last fallback: first connected monitor
+    xrandr --query | grep " connected" | awk '{print $1}' | head -n1
+}
+
 # Function to apply wallpaper
 apply_wallpaper() {
     local wallpaper="$1"
@@ -46,8 +92,48 @@ apply_wallpaper() {
         return 1
     fi
     
-    # Set wallpaper with feh
+    # Get current monitor
+    local current_monitor
+    current_monitor=$(get_current_monitor)
+    
+    # Try xwallpaper first (better multi-monitor support - can target specific monitor)
+    if command -v xwallpaper &>/dev/null; then
+        if [[ -n "$current_monitor" ]]; then
+            # Apply wallpaper only to the current monitor
+            xwallpaper --output "$current_monitor" --stretch "$wallpaper" 2>/dev/null
+            if [[ $? -eq 0 ]]; then
+                # Save current wallpaper to state file
+                echo "$wallpaper" > "$STATE_FILE"
+                
+                # Send notification if available
+                if command -v notify-send &>/dev/null; then
+                    notify-send "Wallpaper Changed" "$(basename "$wallpaper") on $current_monitor" -i "$wallpaper" -t 2000 2>/dev/null || true
+                fi
+                
+                echo "✓ Wallpaper changed to: $(basename "$wallpaper") on monitor: $current_monitor"
+                return 0
+            fi
+        fi
+        # If xwallpaper failed or no monitor detected, fall through to feh with workaround
+    fi
+    
+    # Fallback to feh - feh doesn't support single monitor, need xwallpaper
     if command -v feh &>/dev/null; then
+        echo "Error: feh cannot apply wallpaper to a single monitor." >&2
+        echo "  Current monitor detected: ${current_monitor:-none}" >&2
+        echo "  To apply wallpaper to only the current monitor, install xwallpaper:" >&2
+        echo "  sudo pacman -S xwallpaper" >&2
+        echo "" >&2
+        echo "  Applying to all monitors with feh (not recommended for single-monitor setup)..." >&2
+        
+        # Ask user if they want to continue
+        read -p "Continue applying to all monitors? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Operation cancelled."
+            return 1
+        fi
+        
         feh --bg-fill "$wallpaper" 2>/dev/null
         
         # Save current wallpaper to state file
@@ -55,13 +141,16 @@ apply_wallpaper() {
         
         # Send notification if available
         if command -v notify-send &>/dev/null; then
-            notify-send "Wallpaper Changed" "$(basename "$wallpaper")" -i "$wallpaper" -t 2000 2>/dev/null || true
+            notify-send "Wallpaper Changed" "$(basename "$wallpaper") (all monitors - install xwallpaper for single monitor)" -i "$wallpaper" -t 3000 2>/dev/null || true
         fi
         
-        echo "✓ Wallpaper changed to: $(basename "$wallpaper")"
+        echo "✓ Wallpaper changed to: $(basename "$wallpaper") (applied to all monitors)"
+        echo "  ⚠ Install xwallpaper for single-monitor support: sudo pacman -S xwallpaper"
         return 0
     else
-        echo "Error: feh not installed. Install with: sudo pacman -S feh" >&2
+        echo "Error: feh or xwallpaper not installed." >&2
+        echo "  Install with: sudo pacman -S feh xwallpaper" >&2
+        echo "  For single-monitor wallpaper support, install xwallpaper: sudo pacman -S xwallpaper" >&2
         return 1
     fi
 }

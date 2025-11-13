@@ -35,7 +35,7 @@ exec --no-startup-id dex --autostart --environment i3
 # Lanzar GNOME Keyring en el inicio y notificar en la terminal con color
 exec --no-startup-id /usr/bin/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh,gpg && notify-send -u normal -a "i3" "GNOME Keyring iniciado"
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
-exec --no-startup-id xss-lock --transfer-sleep-lock -- ~/.config/i3/scripts/lock.sh
+exec --no-startup-id ~/.config/i3/scripts/screen-lock.sh
 exec --no-startup-id polybar
 exec --no-startup-id system76-power daemon
 
@@ -123,6 +123,9 @@ bindsym $mod+Mod1+r exec --no-startup-id ~/.config/i3/scripts/game-mode.sh reloa
 
 # Bloquear pantalla con Mod+Ctrl+L
 bindsym $mod+Ctrl+l exec --no-startup-id ~/.config/i3/scripts/lock.sh
+
+# Gestor de configuraciones de pantalla con Mod+Shift+P
+bindsym $mod+Shift+p exec $term -e ~/.config/i3/scripts/display-manager.sh
 
 
 # Listado de Hotkeys

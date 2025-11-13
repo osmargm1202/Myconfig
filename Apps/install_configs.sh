@@ -134,15 +134,44 @@ install_single_config() {
     fi
   fi
   
-  # Copy new configuration
-  if cp -r "$source_path" "$target_path"; then
+  # Copy new configuration (force overwrite all files)
+  if cp -rf "$source_path" "$target_path"; then
     local file_count=$(find "$target_path" -type f | wc -l)
     
-    # Give execute permissions to scripts
-    find "$target_path" -name "*.sh" -type f -exec chmod +x {} \; 2>/dev/null
+    # Give execute permissions to all scripts (overwrite existing permissions)
+    local script_count=0
+    while IFS= read -r script_file; do
+      chmod +x "$script_file" 2>/dev/null
+      ((script_count++))
+    done < <(find "$target_path" -name "*.sh" -type f 2>/dev/null)
     
     echo -e "${GREEN}  ✓ Instalado $config_name ($file_count archivos)${NC}"
-    echo -e "${BLUE}  ✓ Permisos de ejecución otorgados a scripts .sh${NC}"
+    if [[ $script_count -gt 0 ]]; then
+      echo -e "${BLUE}  ✓ Permisos de ejecución otorgados a $script_count script(s) .sh${NC}"
+    fi
+    
+    # Verify all source scripts were copied
+    local source_scripts=()
+    while IFS= read -r script; do
+      [[ -n "$script" ]] && source_scripts+=("$script")
+    done < <(find "$source_path" -name "*.sh" -type f 2>/dev/null)
+    
+    local missing_scripts=()
+    for source_script in "${source_scripts[@]}"; do
+      local rel_path="${source_script#$source_path/}"
+      local target_script="$target_path/$rel_path"
+      if [[ ! -f "$target_script" ]]; then
+        missing_scripts+=("$rel_path")
+      fi
+    done
+    
+    if [[ ${#missing_scripts[@]} -gt 0 ]]; then
+      echo -e "${YELLOW}  ⚠ Advertencia: ${#missing_scripts[@]} script(s) no se copiaron correctamente${NC}"
+      for missing in "${missing_scripts[@]}"; do
+        echo -e "${YELLOW}    - $missing${NC}"
+      done
+    fi
+    
     return 0
   else
     echo -e "${RED}  ✗ Error al instalar $config_name${NC}"
@@ -210,9 +239,9 @@ install_individual_config_files() {
         fi
       fi
       
-      # Copy file
-      if cp "$source_file" "$target_file"; then
-        echo -e "${GREEN}  ✓ Instalado $config_file${NC}"
+      # Copy file (force overwrite)
+      if cp -f "$source_file" "$target_file"; then
+        echo -e "${GREEN}  ✓ Instalado $config_file (sobrescrito)${NC}"
       else
         echo -e "${RED}  ✗ Error al instalar $config_file${NC}"
       fi
@@ -299,11 +328,11 @@ install_orgmos_pacman() {
   # Create directories if they don't exist
   mkdir -p "$bin_dir" "$apps_dir"
   
-  # Install binary
+  # Install binary (force overwrite)
   if [[ -f "$binary_source" ]]; then
-    if cp "$binary_source" "$binary_target"; then
+    if cp -f "$binary_source" "$binary_target"; then
       chmod +x "$binary_target"
-      echo -e "${GREEN}  ✓ Binario instalado en $binary_target${NC}"
+      echo -e "${GREEN}  ✓ Binario instalado en $binary_target (sobrescrito)${NC}"
     else
       echo -e "${RED}  ✗ Error al instalar el binario${NC}"
       return 1
@@ -313,12 +342,12 @@ install_orgmos_pacman() {
     return 0
   fi
   
-  # Install desktop file
+  # Install desktop file (force overwrite)
   if [[ -f "$desktop_source" ]]; then
-    # Update the Exec path in the desktop file
+    # Update the Exec path in the desktop file and overwrite existing
     sed "s|^Exec=.*|Exec=$binary_target|" "$desktop_source" > "$desktop_target"
     chmod +x "$desktop_target"
-    echo -e "${GREEN}  ✓ Archivo .desktop instalado${NC}"
+    echo -e "${GREEN}  ✓ Archivo .desktop instalado (sobrescrito)${NC}"
   else
     echo -e "${YELLOW}  ○ Archivo .desktop no encontrado, saltando...${NC}"
   fi
