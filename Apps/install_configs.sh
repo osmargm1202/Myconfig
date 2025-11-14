@@ -52,8 +52,8 @@ list_configurations() {
     if [[ -d "$config_dir" ]]; then
       local dir_name=$(basename "$config_dir")
       
-      # Skip Apps, Launcher, sddm, Wallpapers, and Icons directories
-      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" || "$dir_name" == "sddm" || "$dir_name" == "Wallpapers" || "$dir_name" == "Icons" ]]; then
+      # Skip Apps, Launcher, sddm, Wallpapers, Icons, and chromium directories
+      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" || "$dir_name" == "sddm" || "$dir_name" == "Wallpapers" || "$dir_name" == "Icons" || "$dir_name" == "chromium" ]]; then
         continue
       fi
       

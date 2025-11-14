@@ -391,8 +391,8 @@ install_configs() {
     if [[ -d "$config_dir" ]]; then
       local dir_name=$(basename "$config_dir")
 
-      # Skip Apps, Launcher, and Wallpapers directories
-      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" || "$dir_name" == "Wallpapers" ]]; then
+      # Skip Apps, Launcher, Wallpapers, and chromium directories
+      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" || "$dir_name" == "Wallpapers" || "$dir_name" == "chromium" ]]; then
         echo -e "${BLUE}Skipping: $dir_name${NC}"
         continue
       fi
