@@ -118,6 +118,10 @@ go                                                     # lenguaje Go
 nodejs                                                 # runtime JavaScript
 npm                                                    # gestor de paquetes Node.js
 uv                                                     # gestor de paquetes Python
+python-requests                                        # biblioteca HTTP para Python (para descargador de videos)
+python-rich                                            # terminal mejorado con colores y formato (para descargador de videos)
+yt-dlp                                                 # descargador de videos de YouTube y otros sitios
+python-playwright                                      # navegador sin cabeza y automatización de navegación web (para descargas avanzadas)
 
 # ====================================================================================================
 # APLICACIONES GRÁFICAS

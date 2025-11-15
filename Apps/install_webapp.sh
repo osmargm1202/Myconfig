@@ -57,35 +57,6 @@ validate_repository() {
   return 0
 }
 
-# Function to check chromium installation
-check_chromium() {
-  if command -v chromium &>/dev/null || command -v chromium-browser &>/dev/null; then
-    echo -e "${GREEN}✓ Chromium está instalado${NC}"
-    return 0
-  else
-    echo -e "${YELLOW}⚠ Chromium no está instalado${NC}"
-    echo -e "${BLUE}WebApp Creator requiere Chromium para crear aplicaciones web${NC}"
-    echo
-    echo -ne "${YELLOW}¿Instalar Chromium ahora? (y/N): ${NC}"
-    read -r install_choice </dev/tty
-
-    if [[ "$install_choice" =~ ^[Yy]$ ]]; then
-      echo -e "${BLUE}Instalando Chromium...${NC}"
-      if sudo pacman -S chromium --noconfirm; then
-        echo -e "${GREEN}✓ Chromium instalado exitosamente${NC}"
-        return 0
-      else
-        echo -e "${RED}✗ Error al instalar Chromium${NC}"
-        echo -e "${YELLOW}Puedes instalarlo manualmente: sudo pacman -S chromium${NC}"
-        return 1
-      fi
-    else
-      echo -e "${YELLOW}Chromium no instalado${NC}"
-      echo -e "${BLUE}Nota: WebApp Creator no funcionará sin Chromium${NC}"
-      return 1
-    fi
-  fi
-}
 
 # Function to create webapp-creator desktop file
 create_desktop_file() {
@@ -300,9 +271,6 @@ main() {
   if ! validate_repository "$REPO_DIR"; then
     exit 1
   fi
-  
-  # Check dependencies
-  check_chromium
   
   # Install WebApp Creator
   if ! install_webapp_creator; then

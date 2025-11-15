@@ -303,11 +303,11 @@ create_webapp_creator_desktop() {
 Version=1.0
 Type=Application
 Name=WebApp Creator
-Comment=Create and manage web applications using Chromium
+Comment=Create and manage web applications
 Exec=$bin_path
 Icon=$icon_path
 Categories=Development;System;Utility;
-Keywords=webapp;chromium;browser;application;
+Keywords=webapp;browser;application;
 NoDisplay=false
 StartupNotify=true
 Terminal=false

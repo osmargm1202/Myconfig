@@ -2,11 +2,11 @@
 Version=1.0
 Type=Application
 Name=ORGMOS WebApp Creator
-Comment=Create and manage web applications using Chromium
+Comment=Create and manage web applications
 Exec=%h/.local/bin/webapp-creator
 Icon=web-browser
 Categories=Development;System;Utility;
-Keywords=webapp;chromium;browser;application;orgmos;
+Keywords=webapp;browser;application;orgmos;
 NoDisplay=false
 StartupNotify=true
 Terminal=false

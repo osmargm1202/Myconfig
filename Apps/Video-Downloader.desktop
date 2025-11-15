@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=ORGMOS Video Downloader
+Comment=Descargador de videos de YouTube, Filemon, Rumble y otros streams con HLS o TAR
+Exec=%h/Myconfig/Downloader/downloader.sh
+Icon=video-x-generic
+Terminal=true
+Categories=Network;Video;Utility;
+Keywords=video;download;youtube;rumble;filemon;hls;stream;
+NoDisplay=false
+StartupNotify=true
+

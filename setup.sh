@@ -315,42 +315,6 @@ show_header() {
   echo
 }
 
-# Function to check chromium installation
-check_chromium() {
-  if command -v chromium &>/dev/null; then
-    echo -e "${GREEN}✓ Chromium is already installed${NC}"
-    return 0
-  elif command -v chromium-browser &>/dev/null; then
-    echo -e "${GREEN}✓ Chromium browser is already installed${NC}"
-    return 0
-  else
-    echo -e "${YELLOW}⚠ Chromium not found${NC}"
-    echo -e "${BLUE}WebApp Creator requires Chromium to create web applications${NC}"
-    echo
-    echo -ne "${YELLOW}Would you like to install Chromium now? (y/N): ${NC}"
-    read -r install_choice </dev/tty
-
-    if [[ "$install_choice" =~ ^[Yy]$ ]]; then
-      echo -e "${BLUE}Installing Chromium...${NC}"
-      if sudo pacman -S chromium; then
-        echo -e "${GREEN}✓ Chromium installed successfully${NC}"
-        return 0
-      else
-        echo -e "${RED}✗ Failed to install Chromium${NC}"
-        echo -e "${YELLOW}You can install it manually later with: sudo pacman -S chromium${NC}"
-        return 1
-      fi
-    else
-      echo -e "${YELLOW}Skipping Chromium installation${NC}"
-      echo -e "${BLUE}Note: WebApp Creator won't work properly without Chromium${NC}"
-      return 1
-    fi
-  fi
-}
-
-
-
-
 # Function to install system configurations
 install_configs() {
   show_header
@@ -958,8 +922,11 @@ main_menu() {
     
     # Option 21 - ORGMOS Desktop Apps
     options+=("ORGMOS Desktop Apps - Open applications directory")
+    
+    # Option 22 - ORGMOS Video Downloader
+    options+=("ORGMOS Video Downloader - Descargar videos de YouTube, Rumble, Filemon, etc.")
 
-    # Options 22 and 23
+    # Options 23 and 24
     options+=("Uninstall - Remove all installations")
     options+=("Exit")
 
@@ -971,7 +938,7 @@ main_menu() {
     if [[ "$HAS_GUM" == true ]]; then
       # Use Gum for interactive selection
       local selected
-      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 23)
+      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 24)
       
       if [[ -n "$selected" ]]; then
         # Find index of selected option
@@ -1002,7 +969,7 @@ main_menu() {
       done
       echo
       
-      printf "Select option (1-23): "
+      printf "Select option (1-24): "
       read -r choice_index
       
       if [[ -z "$choice_index" ]]; then
@@ -1212,6 +1179,9 @@ main_menu() {
       run_desktop_apps
       ;;
     22)
+      run_video_downloader
+      ;;
+    23)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
       read -r confirm </dev/tty
@@ -1223,7 +1193,7 @@ main_menu() {
       echo
       read -p "Press Enter to continue..." </dev/tty
       ;;
-    23)
+    24)
       echo -e "${GREEN}¡Hasta luego!${NC}"
       exit 0
       ;;
@@ -1502,6 +1472,29 @@ run_desktop_apps() {
   else
     echo -e "${RED}✗ xdg-open no está disponible${NC}"
     echo -e "${YELLOW}Instala xdg-utils para abrir el directorio${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
+# Function to run Video Downloader
+run_video_downloader() {
+  show_header
+  echo -e "${WHITE}ORGMOS Video Downloader${NC}"
+  echo -e "${WHITE}───────────────────────${NC}"
+  echo
+  
+  local downloader_script="$REPO_DIR/Downloader/downloader.sh"
+  
+  if [[ -f "$downloader_script" ]]; then
+    echo -e "${BLUE}Ejecutando ORGMOS Video Downloader...${NC}"
+    chmod +x "$downloader_script"
+    "$downloader_script"
+  else
+    echo -e "${RED}✗ ORGMOS Video Downloader no está disponible${NC}"
+    echo -e "${YELLOW}El script no se encuentra en: $downloader_script${NC}"
+    echo -e "${BLUE}Asegúrate de que el directorio Downloader existe en el repositorio${NC}"
   fi
   
   echo
