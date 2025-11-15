@@ -52,6 +52,7 @@ const (
 	SearchInput SearchState = iota
 	SearchResults
 	SearchInstalling
+	SearchInstallTerminal
 )
 
 type SearchModel struct {
@@ -70,6 +71,7 @@ type SearchModel struct {
 	installOutput  []string
 	installingPkg  string
 	progressChan   <-chan pkg.InstallProgress
+	installTerminal InstallTerminalModel
 }
 
 func NewSearchModel() SearchModel {
@@ -259,10 +261,12 @@ func (m SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, textinput.Blink
 
 				case key.Matches(msg, m.keys.Install) || msg.Type == tea.KeyEnter:
-					// Instalar paquete seleccionado
+					// Instalar paquete seleccionado - abrir terminal de instalación
 					if m.table.SelectedRow() != nil && len(m.table.SelectedRow()) > 0 {
 						pkgName := m.table.SelectedRow()[0]
-						return m, installPackage(pkgName)
+						m.state = SearchInstallTerminal
+						m.installTerminal = NewInstallTerminalModel(pkgName)
+						return m, m.installTerminal.Init()
 					}
 
 				default:
@@ -342,6 +346,31 @@ func (m SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
+	// Si estamos en modo terminal de instalación, actualizar ese modelo
+	if m.state == SearchInstallTerminal {
+		var cmd tea.Cmd
+		var model tea.Model
+		model, cmd = m.installTerminal.Update(msg)
+		m.installTerminal = model.(InstallTerminalModel)
+		
+		// Si la instalación terminó, volver a resultados
+		if m.installTerminal.done {
+			m.state = SearchResults
+			if m.installTerminal.err != nil {
+				m.error = fmt.Sprintf("Error: %v", m.installTerminal.err)
+			} else {
+				m.success = fmt.Sprintf("Paquete %s instalado exitosamente", m.installTerminal.pkgName)
+				// Recargar búsqueda para actualizar estado de instalación
+				if m.lastQuery != "" {
+					m.loading = true
+					cmds = append(cmds, searchPackages(m.lastQuery))
+				}
+			}
+		} else {
+			cmds = append(cmds, cmd)
+		}
+	}
+
 	return m, tea.Batch(cmds...)
 }
 
@@ -384,6 +413,9 @@ func (m SearchModel) View() string {
 		
 		s.WriteString("\n")
 		s.WriteString(ui.RenderHelp("Instalando... Por favor espera"))
+	} else if m.state == SearchInstallTerminal {
+		// Modo terminal de instalación interactiva
+		return m.installTerminal.View()
 	} else {
 		// Modo resultados: tabla de resultados
 		if m.filtering {
@@ -482,6 +514,9 @@ func searchPackages(query string) tea.Cmd {
 	}
 }
 
+// openInstallTerminal ya no se usa, se maneja directamente en el modelo
+
+// Mantener installPackage por compatibilidad, pero ya no se usa
 func installPackage(pkgName string) tea.Cmd {
 	return func() tea.Msg {
 		progressChan := make(chan pkg.InstallProgress, 100)

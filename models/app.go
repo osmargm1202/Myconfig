@@ -145,16 +145,18 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 
 	case tea.KeyMsg:
-		// Verificar si estamos en modo input antes de procesar teclas del menú
+		// Verificar si estamos en modo input o terminal de instalación antes de procesar teclas del menú
 		isInInputMode := false
 		if m.currentView == InstalledView && m.installed.state == InstalledInput {
 			isInInputMode = true
 		}
-		if m.currentView == SearchView && m.search.state == SearchInput {
-			isInInputMode = true
+		if m.currentView == SearchView {
+			if m.search.state == SearchInput || m.search.state == SearchInstallTerminal {
+				isInInputMode = true
+			}
 		}
 
-		// Solo procesar teclas del menú si NO estamos en modo input
+		// Solo procesar teclas del menú si NO estamos en modo input o terminal
 		if !isInInputMode {
 			switch {
 			case key.Matches(msg, m.keys.Quit):
