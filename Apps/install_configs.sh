@@ -325,54 +325,6 @@ EOF
   echo
 }
 
-# Function to install orgmos_pacman package manager
-install_orgmos_pacman() {
-  local source_dir="$1"
-  local bin_dir="$HOME/.local/bin"
-  local apps_dir="$HOME/.local/share/applications"
-  local binary_source="$source_dir/orgmos_pacman"
-  local desktop_source="$source_dir/orgmos_pacman.desktop"
-  local binary_target="$bin_dir/orgmos_pacman"
-  local desktop_target="$apps_dir/orgmos_pacman.desktop"
-  
-  echo -e "${BLUE}Instalando ORGMOS Gestor de Paquetes...${NC}"
-  
-  # Create directories if they don't exist
-  mkdir -p "$bin_dir" "$apps_dir"
-  
-  # Install binary (force overwrite)
-  if [[ -f "$binary_source" ]]; then
-    if cp -f "$binary_source" "$binary_target"; then
-      chmod +x "$binary_target"
-      echo -e "${GREEN}  ✓ Binario instalado en $binary_target (sobrescrito)${NC}"
-    else
-      echo -e "${RED}  ✗ Error al instalar el binario${NC}"
-      return 1
-    fi
-  else
-    echo -e "${YELLOW}  ○ Binario orgmos_pacman no encontrado, saltando...${NC}"
-    return 0
-  fi
-  
-  # Install desktop file (force overwrite)
-  if [[ -f "$desktop_source" ]]; then
-    # Update the Exec path in the desktop file and overwrite existing
-    sed "s|^Exec=.*|Exec=$binary_target|" "$desktop_source" > "$desktop_target"
-    chmod +x "$desktop_target"
-    echo -e "${GREEN}  ✓ Archivo .desktop instalado (sobrescrito)${NC}"
-  else
-    echo -e "${YELLOW}  ○ Archivo .desktop no encontrado, saltando...${NC}"
-  fi
-  
-  # Update desktop database
-  if command -v update-desktop-database &>/dev/null; then
-    update-desktop-database "$apps_dir" 2>/dev/null
-  fi
-  
-  echo -e "${GREEN}✓ ORGMOS Gestor de Paquetes instalado${NC}"
-  echo
-}
-
 # Function to install ORGMOS desktop files
 install_orgmos_desktop_files() {
   local source_dir="$1"
@@ -381,7 +333,6 @@ install_orgmos_desktop_files() {
     "orgmos-webapp-creator.desktop"
     "orgmos-display-manager.desktop"
     "orgmos-wallpaper-selector.desktop"
-    "orgmos-pacman.desktop"
     "orgmos-game-mode.desktop"
     "orgmos-desktop-apps.desktop"
   )
@@ -502,9 +453,6 @@ main() {
   if install_configurations "$REPO_DIR" "false" "${configs_array[@]}"; then
     # Install individual config files (dolphinrc, kdeglobals, etc.)
     install_individual_config_files "$REPO_DIR" "false"
-    
-    # Install orgmos_pacman package manager
-    install_orgmos_pacman "$REPO_DIR"
     
     # Create/update webapp-creator desktop file
     create_webapp_creator_desktop

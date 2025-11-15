@@ -914,19 +914,16 @@ main_menu() {
     # Option 18 - ORGMOS Wallpaper Selector
     options+=("ORGMOS Wallpaper Selector - Change wallpapers")
     
-    # Option 19 - ORGMOS Gestor de Paquetes
-    options+=("ORGMOS Gestor de Paquetes - Package manager")
-    
-    # Option 20 - ORGMOS Modo Juego
+    # Option 19 - ORGMOS Modo Juego
     options+=("ORGMOS Modo Juego - Toggle game mode")
     
-    # Option 21 - ORGMOS Desktop Apps
+    # Option 20 - ORGMOS Desktop Apps
     options+=("ORGMOS Desktop Apps - Open applications directory")
     
-    # Option 22 - ORGMOS Video Downloader
+    # Option 21 - ORGMOS Video Downloader
     options+=("ORGMOS Video Downloader - Descargar videos de YouTube, Rumble, Filemon, etc.")
 
-    # Options 23 and 24
+    # Options 22 and 23
     options+=("Uninstall - Remove all installations")
     options+=("Exit")
 
@@ -938,7 +935,7 @@ main_menu() {
     if [[ "$HAS_GUM" == true ]]; then
       # Use Gum for interactive selection
       local selected
-      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 24)
+      selected=$(printf '%s\n' "${options[@]}" | gum choose --header "🛠️  Opciones de Instalación" --height 23)
       
       if [[ -n "$selected" ]]; then
         # Find index of selected option
@@ -969,7 +966,7 @@ main_menu() {
       done
       echo
       
-      printf "Select option (1-24): "
+      printf "Select option (1-23): "
       read -r choice_index
       
       if [[ -z "$choice_index" ]]; then
@@ -1170,18 +1167,15 @@ main_menu() {
       run_wallpaper_selector
       ;;
     19)
-      run_orgmos_pacman
-      ;;
-    20)
       run_game_mode
       ;;
-    21)
+    20)
       run_desktop_apps
       ;;
-    22)
+    21)
       run_video_downloader
       ;;
-    23)
+    22)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
       read -r confirm </dev/tty
@@ -1193,7 +1187,7 @@ main_menu() {
       echo
       read -p "Press Enter to continue..." </dev/tty
       ;;
-    24)
+    23)
       echo -e "${GREEN}¡Hasta luego!${NC}"
       exit 0
       ;;
@@ -1413,25 +1407,6 @@ run_wallpaper_selector() {
     "$HOME/.config/i3/scripts/wallpaper-selector.sh"
   else
     echo -e "${RED}✗ Wallpaper Selector no está instalado${NC}"
-    echo -e "${YELLOW}Instala primero las configuraciones del sistema desde el menú principal${NC}"
-  fi
-  
-  echo
-  read -p "Press Enter to continue..." </dev/tty
-}
-
-# Function to run ORGMOS Gestor de Paquetes
-run_orgmos_pacman() {
-  show_header
-  echo -e "${WHITE}ORGMOS Gestor de Paquetes${NC}"
-  echo -e "${WHITE}────────────────────────${NC}"
-  echo
-  
-  if [[ -f "$HOME/.local/bin/orgmos_pacman" ]]; then
-    echo -e "${BLUE}Ejecutando Gestor de Paquetes...${NC}"
-    "$HOME/.local/bin/orgmos_pacman"
-  else
-    echo -e "${RED}✗ Gestor de Paquetes no está instalado${NC}"
     echo -e "${YELLOW}Instala primero las configuraciones del sistema desde el menú principal${NC}"
   fi
   
