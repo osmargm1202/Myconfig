@@ -1478,12 +1478,8 @@ run_game_mode() {
   
   if [[ -f "$HOME/.config/i3/scripts/game-mode.sh" ]]; then
     echo -e "${BLUE}Ejecutando Modo Juego...${NC}"
-    if command -v kitty &>/dev/null; then
-      kitty -e "$HOME/.config/i3/scripts/game-mode.sh"
-    else
-      echo -e "${YELLOW}Kitty no está disponible, ejecutando en terminal actual...${NC}"
-      "$HOME/.config/i3/scripts/game-mode.sh"
-    fi
+    # Ejecutar sin terminal - el script maneja la ejecución en background
+    "$HOME/.config/i3/scripts/game-mode.sh"
   else
     echo -e "${RED}✗ Modo Juego no está instalado${NC}"
     echo -e "${YELLOW}Instala primero las configuraciones del sistema desde el menú principal${NC}"

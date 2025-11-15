@@ -7,6 +7,10 @@
 SCRIPT_NAME="Modo Juego"
 PICOM_CONFIG="$HOME/.config/picom/picom.conf"
 POLYBAR_CONFIG="$HOME/.config/polybar/config.ini"
+ROFI_SUDO_ASKPASS="$HOME/.config/i3/scripts/rofi-sudo-askpass.sh"
+
+# Configurar SUDO_ASKPASS para usar rofi
+export SUDO_ASKPASS="$ROFI_SUDO_ASKPASS"
 
 # Función para mostrar notificaciones
 notify() {
@@ -109,17 +113,17 @@ apply_game_optimizations() {
 
   # Cambiar governor de CPU a performance (si está disponible)
   if command -v cpupower &>/dev/null; then
-    sudo cpupower frequency-set -g performance 2>/dev/null &&
+    sudo -A cpupower frequency-set -g performance 2>/dev/null &&
       echo "⚡ CPU governor cambiado a performance"
   fi
 
   # Liberar caché del sistema
-  sync && echo 1 | sudo tee /proc/sys/vm/drop_caches >/dev/null 2>&1 &&
+  sync && echo 1 | sudo -A tee /proc/sys/vm/drop_caches >/dev/null 2>&1 &&
     echo "🧹 Caché del sistema liberado"
 
   # Desactivar actualizaciones automáticas temporalmente
   if systemctl is-active --quiet packagekit; then
-    sudo systemctl stop packagekit 2>/dev/null &&
+    sudo -A systemctl stop packagekit 2>/dev/null &&
       echo "📦 Actualizaciones automáticas pausadas"
   fi
 }
@@ -130,13 +134,13 @@ revert_game_optimizations() {
 
   # Restaurar governor de CPU a ondemand
   if command -v cpupower &>/dev/null; then
-    sudo cpupower frequency-set -g ondemand 2>/dev/null &&
+    sudo -A cpupower frequency-set -g ondemand 2>/dev/null &&
       echo "⚡ CPU governor restaurado a ondemand"
   fi
 
   # Reactivar actualizaciones automáticas
   if ! systemctl is-active --quiet packagekit; then
-    sudo systemctl start packagekit 2>/dev/null &&
+    sudo -A systemctl start packagekit 2>/dev/null &&
       echo "📦 Actualizaciones automáticas reactivadas"
   fi
 }
@@ -146,11 +150,6 @@ main() {
   local arg="$1"
   local picom_running=$(is_running picom && echo "true" || echo "false")
   local polybar_running=$(is_running polybar && echo "true" || echo "false")
-
-  echo "Estado actual:"
-  echo "  Picom: $($picom_running && echo "🟢 Activo" || echo "🔴 Inactivo")"
-  echo "  Polybar: $($polybar_running && echo "🟢 Activo" || echo "🔴 Inactivo")"
-  echo ""
 
   case "$arg" in
   "reload")
@@ -222,4 +221,15 @@ check_dependencies() {
 
 # Verificar dependencias y ejecutar
 check_dependencies
-main "$@"
+
+# Ejecutar función principal
+# Si se ejecuta desde .desktop sin terminal, se ejecuta directamente
+# Si se ejecuta desde terminal, se ejecuta en background para que no se cierre
+if [[ -t 0 ]]; then
+  # Ejecutado desde terminal - ejecutar en background
+  main "$@" &
+  disown
+else
+  # Ejecutado sin terminal (desde .desktop) - ejecutar normalmente
+  main "$@"
+fi
