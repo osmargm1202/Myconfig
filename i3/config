@@ -61,7 +61,8 @@ exec --no-startup-id gsettings set org.gnome.desktop.interface cursor-theme 'Bib
 # Lanzar Transmission Daemon y notificar en la terminal con color
 exec --no-startup-id transmission-daemon && notify-send -u normal -a "i3" "Transmission Daemon Torrent iniciado"
 exec --no-startup-id system-config-printer-applet && notify-send -u normal -a "i3" "Impresora configurada correctamente"
-exec --no-startup-id nextcloud && notify-send -u normal -a "i3" "Nextcloud iniciado correctamente"
+
+exec --no-startup-id dunst
 
 
 
@@ -323,9 +324,9 @@ assign [title="console.cloud.google.com"] 4
 
 
 assign [class="Cursor"] 2
-assign [class="dota2"] 14
-assign [class="Hollow Knight Silksong"] 14
-assign [class="steam"] 14
+assign [class="dota2"] 11
+assign [class="Hollow Knight Silksong"] 12
+# assign [class="steam"] 14
 assign [class="discord"] 14
 
 

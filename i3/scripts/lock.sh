@@ -32,22 +32,27 @@ elif command -v scrot &> /dev/null; then
     scrot -q 50 "$screenshot_path" 2>/dev/null && use_screenshot=true
 fi
 
-# Si tenemos screenshot, aplicar blur en background (no bloquea)
+# Si tenemos screenshot, aplicar blur y esperar a que termine
+blurred_path="/tmp/i3lock_blurred.png"
 if [[ "$use_screenshot" == true ]] && command -v convert &> /dev/null; then
-    blurred_path="/tmp/i3lock_blurred.png"
-    # Aplicar blur más rápido (menos intenso)
-    convert "$screenshot_path" -blur 0x4 "$blurred_path" 2>/dev/null &
-    blur_pid=$!
+    echo "[DEBUG] Aplicando blur a screenshot..." >&2
+    # Aplicar blur más intenso y esperar a que termine
+    convert "$screenshot_path" -blur 0x8 "$blurred_path" 2>/dev/null
+    if [[ -f "$blurred_path" ]]; then
+        echo "[DEBUG] Blur completado exitosamente" >&2
+    else
+        echo "[DEBUG] Error al aplicar blur" >&2
+    fi
 fi
 
 # Check if we have i3lock-color for advanced features
 if command -v i3lock-color &> /dev/null; then
     # Si tenemos screenshot con blur, usarlo, sino usar color sólido
     if [[ "$use_screenshot" == true ]] && [[ -f "$blurred_path" ]]; then
-        # Esperar un momento para que el blur termine (máximo 0.5 segundos)
-        wait $blur_pid 2>/dev/null || sleep 0.3
+        echo "[DEBUG] Usando imagen con blur para lock" >&2
         lock_image="$blurred_path"
     else
+        echo "[DEBUG] Usando color sólido (sin screenshot o blur falló)" >&2
         # Usar color sólido - mucho más rápido
         lock_image=""
     fi

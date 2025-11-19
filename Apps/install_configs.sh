@@ -335,6 +335,7 @@ install_orgmos_desktop_files() {
     "orgmos-wallpaper-selector.desktop"
     "orgmos-game-mode.desktop"
     "orgmos-desktop-apps.desktop"
+    "Video-Downloader.desktop"
   )
   
   echo -e "${BLUE}Instalando archivos .desktop de aplicaciones ORGMOS...${NC}"
@@ -343,13 +344,17 @@ install_orgmos_desktop_files() {
   mkdir -p "$apps_dir"
   
   local installed=0
+  # Obtener el directorio del repositorio desde el directorio padre de Apps
+  local repo_dir="$(dirname "$source_dir")"
+  
   for desktop_file in "${desktop_files[@]}"; do
     local source_file="$source_dir/$desktop_file"
     local target_file="$apps_dir/$desktop_file"
     
     if [[ -f "$source_file" ]]; then
       # Replace %h with $HOME in Exec and Icon paths
-      sed "s|%h|$HOME|g" "$source_file" > "$target_file"
+      # Also replace Myconfig with actual repo directory name if needed
+      sed -e "s|%h|$HOME|g" -e "s|Myconfig|$(basename "$repo_dir")|g" "$source_file" > "$target_file"
       chmod +x "$target_file"
       echo -e "${GREEN}  ✓ Instalado $desktop_file${NC}"
       ((installed++))
