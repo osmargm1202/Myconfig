@@ -1,0 +1,90 @@
+# ====================================================================================================
+# ORGMOS SERVER - Lista de paquetes para servidor
+# ====================================================================================================
+# Herramientas de shell, terminal, docker, y utilidades para servidor
+# Excluye paquetes de escritorio y GUI
+# ====================================================================================================
+
+# ====================================================================================================
+# SISTEMA BASE Y CRÍTICO
+# ====================================================================================================
+
+# --------------------------------------------------- // Sistema Base
+sudo                                                   # ejecutar comandos como root
+git                                                    # control de versiones
+openssh                                                # cliente/servidor SSH
+reflector                                              # actualizar mirrors de pacman
+rsync                                                  # sincronización de archivos
+
+# --------------------------------------------------- // Filesystems
+ntfs-3g                                                # soporte NTFS
+dosfstools                                             # herramientas FAT32
+exfatprogs                                             # soporte exFAT
+
+# --------------------------------------------------- // Documentación y Herramientas Base
+man-db                                                 # páginas de manual
+man-pages                                              # páginas de manual del sistema
+base-devel                                             # herramientas de desarrollo básicas
+pacman-contrib                                         # utilidades adicionales pacman
+
+# ====================================================================================================
+# CONECTIVIDAD
+# ====================================================================================================
+networkmanager                                         # gestor de red
+smbclient                                              # cliente SMB/CIFS
+
+# ====================================================================================================
+# HERRAMIENTAS DEL SISTEMA
+# ====================================================================================================
+btop                                                   # monitor del sistema
+fastfetch                                              # información del sistema
+ncdu                                                   # visor de uso de disco en terminal
+
+# ====================================================================================================
+# TERMINAL Y SHELL
+# ====================================================================================================
+fish                                                   # shell moderno
+kitty                                                  # emulador de terminal
+starship                                               # prompt personalizable
+eza                                                    # listado de archivos mejorado
+duf                                                    # información de discos mejorada
+zoxide                                                 # navegación de directorios inteligente
+fzf                                                    # buscador difuso
+ripgrep                                                # búsqueda en texto
+fd                                                     # búsqueda de archivos
+bat                                                    # cat mejorado
+dysk                                                   # información de discos
+
+# ====================================================================================================
+# EDITORES Y DESARROLLO
+# ====================================================================================================
+neovim                                                 # editor de texto avanzado
+nano                                                   # editor simple
+lazygit                                                # interfaz git
+lazydocker                                             # interfaz docker
+
+# ====================================================================================================
+# LENGUAJES Y RUNTIME
+# ====================================================================================================
+go                                                     # lenguaje Go
+nodejs                                                 # runtime JavaScript
+npm                                                    # gestor de paquetes Node.js
+uv                                                     # gestor de paquetes Python
+python-requests                                        # biblioteca HTTP para Python
+python-rich                                            # terminal mejorado con colores y formato
+
+# ====================================================================================================
+# HERRAMIENTAS Y UTILIDADES
+# ====================================================================================================
+unzip                                                  # extractor zip
+docker                                                 # contenedores
+jq                                                     # procesador JSON
+wget                                                   # descargador web
+curl                                                   # cliente web
+
+# ====================================================================================================
+# FUENTES
+# ====================================================================================================
+ttf-jetbrains-mono-nerd                                # fuente nerdfont
+ttf-jetbrains-mono                                     # fuente monospace
+

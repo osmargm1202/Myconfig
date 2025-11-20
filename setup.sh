@@ -606,6 +606,28 @@ install_gcloud() {
   read -p "Press Enter to continue..." </dev/tty
 }
 
+# Function to run ORGMOS Server installer
+install_server() {
+  show_header
+  echo -e "${WHITE}Install ORGMOS Server${NC}"
+  echo -e "${WHITE}────────────────────${NC}"
+  echo
+  
+  if [[ -f "$APPS_DIR/install_server.sh" ]]; then
+    echo -e "${BLUE}Running ORGMOS Server installer...${NC}"
+    echo -e "${YELLOW}Este instalador configurará herramientas de servidor, shell, docker, fish, starship y gcloud${NC}"
+    echo
+    chmod +x "$APPS_DIR/install_server.sh"
+    "$APPS_DIR/install_server.sh"
+  else
+    echo -e "${RED}✗ ORGMOS Server installer not found: $APPS_DIR/install_server.sh${NC}"
+    echo -e "${BLUE}Make sure the file exists in the Apps directory${NC}"
+  fi
+  
+  echo
+  read -p "Press Enter to continue..." </dev/tty
+}
+
 # Function to run Printer installer
 install_printer() {
   show_header
@@ -905,25 +927,32 @@ main_menu() {
       options+=("[DESHABILITADO] Install Google Cloud CLI - Falta directorio Apps")
     fi
 
-    # Option 16 - ORGMOS WebApp Creator
+    # Option 16 - ORGMOS Server
+    if [[ "$apps_available" == true ]]; then
+      options+=("Install ORGMOS Server - Server tools, shell, docker, fish, starship and gcloud")
+    else
+      options+=("[DESHABILITADO] Install ORGMOS Server - Falta directorio Apps")
+    fi
+
+    # Option 17 - ORGMOS WebApp Creator
     options+=("ORGMOS WebApp Creator - Create web applications")
     
-    # Option 17 - ORGMOS Display Manager
+    # Option 18 - ORGMOS Display Manager
     options+=("ORGMOS Display Manager - Manage screen configurations")
     
-    # Option 18 - ORGMOS Wallpaper Selector
+    # Option 19 - ORGMOS Wallpaper Selector
     options+=("ORGMOS Wallpaper Selector - Change wallpapers")
     
-    # Option 19 - ORGMOS Modo Juego
+    # Option 20 - ORGMOS Modo Juego
     options+=("ORGMOS Modo Juego - Toggle game mode")
     
-    # Option 20 - ORGMOS Desktop Apps
+    # Option 21 - ORGMOS Desktop Apps
     options+=("ORGMOS Desktop Apps - Open applications directory")
     
-    # Option 21 - ORGMOS Video Downloader
+    # Option 22 - ORGMOS Video Downloader
     options+=("ORGMOS Video Downloader - Descargar videos de YouTube, Rumble, Filemon, etc.")
 
-    # Options 22 and 23
+    # Options 23 and 24
     options+=("Uninstall - Remove all installations")
     options+=("Exit")
 
@@ -966,7 +995,7 @@ main_menu() {
       done
       echo
       
-      printf "Select option (1-23): "
+      printf "Select option (1-24): "
       read -r choice_index
       
       if [[ -z "$choice_index" ]]; then
@@ -1158,24 +1187,36 @@ main_menu() {
       fi
       ;;
     16)
-      run_webapp_creator
+      if [[ "$apps_available" == true ]]; then
+        install_server
+        echo
+        read -p "Press Enter to continue..."
+      else
+        echo
+        echo -e "${RED}Esta opción no está disponible. Falta el directorio Apps.${NC}"
+        echo
+        read -p "Press Enter to continue..."
+      fi
       ;;
     17)
-      run_display_manager
+      run_webapp_creator
       ;;
     18)
-      run_wallpaper_selector
+      run_display_manager
       ;;
     19)
-      run_game_mode
+      run_wallpaper_selector
       ;;
     20)
-      run_desktop_apps
+      run_game_mode
       ;;
     21)
-      run_video_downloader
+      run_desktop_apps
       ;;
     22)
+      run_video_downloader
+      ;;
+    23)
       echo
       echo -e "${YELLOW}Are you sure you want to uninstall? (y/N)${NC}"
       read -r confirm </dev/tty
@@ -1187,7 +1228,7 @@ main_menu() {
       echo
       read -p "Press Enter to continue..." </dev/tty
       ;;
-    23)
+    24)
       echo -e "${GREEN}¡Hasta luego!${NC}"
       exit 0
       ;;
