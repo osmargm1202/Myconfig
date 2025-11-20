@@ -44,9 +44,15 @@ end
 # Deshabilitar mensaje de ayuda de fish
 set -U fish_greeting ""
 
-# Ejecutar fastfetch con logo de Arch
+# Ejecutar fastfetch con configuración ORGMOS (logo orgm.png)
 if type -q fastfetch
-    fastfetch #--logo arch
+    if test -f ~/.config/fastfetch/config.jsonc
+        fastfetch --config ~/.config/fastfetch/config.jsonc
+    else if test -f ~/.config/fastfetch/orgm.png
+        fastfetch --logo-path ~/.config/fastfetch/orgm.png
+    else
+        fastfetch
+    end
 end
 
 # The next line updates PATH for the Google Cloud SDK.

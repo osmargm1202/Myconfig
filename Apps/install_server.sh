@@ -36,6 +36,40 @@ debug_log() {
   echo -e "${BLUE}[DEBUG]${NC} $1"
 }
 
+# Function to ask user to confirm each step (Enter=Yes, n=skip)
+confirm_step() {
+  local step_desc="$1"
+  local default_action="$2"
+  local prompt="→ $step_desc [Enter=continuar, n=omitir]: "
+
+  if [[ "$default_action" == "skip" ]]; then
+    prompt="→ $step_desc [y=ejecutar, Enter=omitir]: "
+  fi
+
+  echo -ne "${YELLOW}${prompt}${NC}"
+  local response
+  if read -r response </dev/tty; then
+    response="${response// /}"
+  else
+    response="n"
+  fi
+
+  if [[ "$default_action" == "skip" ]]; then
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+      return 0
+    fi
+    echo -e "${BLUE}→ Paso omitido${NC}"
+    return 1
+  fi
+
+  if [[ -z "$response" || "$response" =~ ^[Yy]$ ]]; then
+    return 0
+  fi
+
+  echo -e "${BLUE}→ Paso omitido${NC}"
+  return 1
+}
+
 # Function to install packages from pkg_server.lst
 install_server_packages() {
   local script_dir="$(dirname "$(realpath "$0")")"
@@ -419,9 +453,13 @@ main() {
   echo -e "${CYAN}Paso 1/9: Instalando paquetes${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
-  if ! install_server_packages; then
-    ((errors++))
-    echo -e "${RED}✗ Error en la instalación de paquetes${NC}"
+  if confirm_step "Instalar paquetes de servidor" "run"; then
+    if ! install_server_packages; then
+      ((errors++))
+      echo -e "${RED}✗ Error en la instalación de paquetes${NC}"
+    fi
+  else
+    echo -e "${BLUE}Saltando instalación de paquetes${NC}"
   fi
   echo
   
@@ -430,9 +468,13 @@ main() {
   echo -e "${CYAN}Paso 2/9: Configurando Fish Shell${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
-  if ! configure_fish_shell; then
-    ((errors++))
-    echo -e "${YELLOW}⚠ Advertencia: No se pudo configurar Fish Shell${NC}"
+  if confirm_step "Configurar Fish como shell predeterminado" "run"; then
+    if ! configure_fish_shell; then
+      ((errors++))
+      echo -e "${YELLOW}⚠ Advertencia: No se pudo configurar Fish Shell${NC}"
+    fi
+  else
+    echo -e "${BLUE}Saltando configuración de Fish Shell${NC}"
   fi
   echo
   
@@ -441,9 +483,13 @@ main() {
   echo -e "${CYAN}Paso 3/9: Copiando configuración de Fish${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
-  if ! copy_fish_config; then
-    ((errors++))
-    echo -e "${YELLOW}⚠ Advertencia: No se pudo copiar configuración de Fish${NC}"
+  if confirm_step "Copiar configuración de Fish (~/.config/fish)" "run"; then
+    if ! copy_fish_config; then
+      ((errors++))
+      echo -e "${YELLOW}⚠ Advertencia: No se pudo copiar configuración de Fish${NC}"
+    fi
+  else
+    echo -e "${BLUE}Saltando copia de configuración de Fish${NC}"
   fi
   echo
   
@@ -452,9 +498,13 @@ main() {
   echo -e "${CYAN}Paso 4/9: Copiando configuración de Fastfetch${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
-  if ! copy_fastfetch_config; then
-    ((errors++))
-    echo -e "${YELLOW}⚠ Advertencia: No se pudo copiar configuración de Fastfetch${NC}"
+  if confirm_step "Copiar configuración de Fastfetch (~/.config/fastfetch)" "run"; then
+    if ! copy_fastfetch_config; then
+      ((errors++))
+      echo -e "${YELLOW}⚠ Advertencia: No se pudo copiar configuración de Fastfetch${NC}"
+    fi
+  else
+    echo -e "${BLUE}Saltando copia de Fastfetch${NC}"
   fi
   echo
   
@@ -463,9 +513,13 @@ main() {
   echo -e "${CYAN}Paso 5/9: Verificando Starship${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
-  if ! verify_starship_installed; then
-    ((errors++))
-    echo -e "${YELLOW}⚠ Advertencia: Starship no está instalado${NC}"
+  if confirm_step "Verificar que Starship esté instalado" "run"; then
+    if ! verify_starship_installed; then
+      ((errors++))
+      echo -e "${YELLOW}⚠ Advertencia: Starship no está instalado${NC}"
+    fi
+  else
+    echo -e "${BLUE}Saltando verificación de Starship${NC}"
   fi
   echo
   
@@ -474,9 +528,13 @@ main() {
   echo -e "${CYAN}Paso 6/9: Copiando configuración de Starship${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
-  if ! copy_starship_config; then
-    ((errors++))
-    echo -e "${YELLOW}⚠ Advertencia: No se pudo copiar configuración de Starship${NC}"
+  if confirm_step "Copiar configuración de Starship (~/.config/starship.toml)" "run"; then
+    if ! copy_starship_config; then
+      ((errors++))
+      echo -e "${YELLOW}⚠ Advertencia: No se pudo copiar configuración de Starship${NC}"
+    fi
+  else
+    echo -e "${BLUE}Saltando copia de Starship${NC}"
   fi
   echo
   
@@ -485,9 +543,13 @@ main() {
   echo -e "${CYAN}Paso 7/9: Instalando Google Cloud CLI${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
-  if ! install_gcloud; then
-    ((errors++))
-    echo -e "${YELLOW}⚠ Advertencia: No se pudo instalar Google Cloud CLI${NC}"
+  if confirm_step "Instalar Google Cloud CLI (gcloud)" "run"; then
+    if ! install_gcloud; then
+      ((errors++))
+      echo -e "${YELLOW}⚠ Advertencia: No se pudo instalar Google Cloud CLI${NC}"
+    fi
+  else
+    echo -e "${BLUE}Saltando instalación de gcloud${NC}"
   fi
   echo
   
@@ -496,9 +558,13 @@ main() {
   echo -e "${CYAN}Paso 8/9: Configurando Docker${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
-  if ! configure_docker; then
-    ((errors++))
-    echo -e "${YELLOW}⚠ Advertencia: No se pudo configurar Docker${NC}"
+  if confirm_step "Configurar Docker (servicio y grupo)" "run"; then
+    if ! configure_docker; then
+      ((errors++))
+      echo -e "${YELLOW}⚠ Advertencia: No se pudo configurar Docker${NC}"
+    fi
+  else
+    echo -e "${BLUE}Saltando configuración de Docker${NC}"
   fi
   echo
   
@@ -507,9 +573,13 @@ main() {
   echo -e "${CYAN}Paso 9/9: Instalando comandos de terminal${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
-  if ! install_orgmos_commands; then
-    ((errors++))
-    echo -e "${YELLOW}⚠ Advertencia: No se pudieron instalar los comandos${NC}"
+  if confirm_step "Instalar comandos de terminal (orgmos / orgmos-server)" "run"; then
+    if ! install_orgmos_commands; then
+      ((errors++))
+      echo -e "${YELLOW}⚠ Advertencia: No se pudieron instalar los comandos${NC}"
+    fi
+  else
+    echo -e "${BLUE}Saltando instalación de comandos${NC}"
   fi
   echo
   
