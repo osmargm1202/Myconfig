@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# ORGMOS Server Command - Execute server installation directly
+# This command runs the ORGMOS server installation
+
+# Find the repository directory
+# Try multiple possible locations
+REPO_DIR=""
+
+# Check if we're in the repository
+if [[ -f "$(dirname "$0")/../setup.sh" ]]; then
+  REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+elif [[ -f "$HOME/Myconfig/setup.sh" ]]; then
+  REPO_DIR="$HOME/Myconfig"
+elif [[ -f "/opt/Myconfig/setup.sh" ]]; then
+  REPO_DIR="/opt/Myconfig"
+else
+  # Try to find it in common locations
+  for dir in "$HOME" "/opt" "/usr/local"; do
+    if [[ -f "$dir/Myconfig/setup.sh" ]]; then
+      REPO_DIR="$dir/Myconfig"
+      break
+    fi
+  done
+fi
+
+if [[ -z "$REPO_DIR" || ! -f "$REPO_DIR/Apps/install_server.sh" ]]; then
+  echo "Error: No se pudo encontrar el directorio de ORGMOS"
+  echo "Asegúrate de que Myconfig esté en ~/Myconfig o ejecuta desde el repositorio"
+  exit 1
+fi
+
+# Execute install_server.sh directly
+exec "$REPO_DIR/Apps/install_server.sh" "$@"
+

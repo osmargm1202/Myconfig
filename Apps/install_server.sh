@@ -339,6 +339,63 @@ configure_docker() {
   return 0
 }
 
+# Function to install ORGMOS terminal commands
+install_orgmos_commands() {
+  debug_log "Instalando comandos de terminal ORGMOS"
+  
+  local script_dir="$(dirname "$(realpath "$0")")"
+  local repo_dir="$(dirname "$script_dir")"
+  local bin_dir="$HOME/.local/bin"
+  
+  echo -e "${BLUE}Instalando comandos de terminal ORGMOS...${NC}"
+  
+  # Create bin directory if it doesn't exist
+  mkdir -p "$bin_dir"
+  
+  local installed=0
+  local commands=("orgmos" "orgmos-server")
+  
+  for cmd in "${commands[@]}"; do
+    local source_file="$script_dir/$cmd"
+    local target_file="$bin_dir/$cmd"
+    
+    if [[ -f "$source_file" ]]; then
+      if cp -f "$source_file" "$target_file"; then
+        chmod +x "$target_file"
+        echo -e "${GREEN}  ✓ Instalado comando: $cmd${NC}"
+        debug_log "Comando instalado: $cmd"
+        ((installed++))
+      else
+        echo -e "${RED}  ✗ Error al instalar $cmd${NC}"
+        debug_log "Error al instalar: $cmd"
+      fi
+    else
+      echo -e "${YELLOW}  ○ $cmd no encontrado, saltando...${NC}"
+      debug_log "Comando no encontrado: $cmd"
+    fi
+  done
+  
+  # Check if bin_dir is in PATH
+  if ! echo "$PATH" | grep -q "$bin_dir"; then
+    echo -e "${YELLOW}  ⚠ Advertencia: $bin_dir no está en tu PATH${NC}"
+    echo -e "${BLUE}  Agrega esta línea a tu ~/.bashrc, ~/.zshrc o ~/.config/fish/config.fish:${NC}"
+    echo -e "${GREEN}  export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
+    echo -e "${GREEN}  # Para fish: fish_add_path ~/.local/bin${NC}"
+    debug_log "Advertencia: $bin_dir no está en PATH"
+  else
+    debug_log "$bin_dir está en PATH"
+  fi
+  
+  if [[ $installed -gt 0 ]]; then
+    echo -e "${GREEN}✓ $installed comando(s) de terminal instalado(s)${NC}"
+    echo -e "${BLUE}  • Usa 'orgmos' para ejecutar el menú principal${NC}"
+    echo -e "${BLUE}  • Usa 'orgmos-server' para instalar el servidor${NC}"
+  fi
+  echo
+  
+  return 0
+}
+
 # Main execution
 main() {
   check_root
@@ -350,6 +407,7 @@ main() {
   echo -e "${BLUE}  • Fish shell como shell predeterminado${NC}"
   echo -e "${BLUE}  • Configuraciones: Fish, Fastfetch, Starship${NC}"
   echo -e "${BLUE}  • Google Cloud CLI${NC}"
+  echo -e "${BLUE}  • Comandos de terminal: orgmos, orgmos-server${NC}"
   echo
   echo -e "${YELLOW}Instalación automática iniciando...${NC}"
   echo
@@ -358,7 +416,7 @@ main() {
   
   # Step 1: Install packages
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 1/8: Instalando paquetes${NC}"
+  echo -e "${CYAN}Paso 1/9: Instalando paquetes${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
   if ! install_server_packages; then
@@ -369,7 +427,7 @@ main() {
   
   # Step 2: Configure fish shell
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 2/8: Configurando Fish Shell${NC}"
+  echo -e "${CYAN}Paso 2/9: Configurando Fish Shell${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
   if ! configure_fish_shell; then
@@ -380,7 +438,7 @@ main() {
   
   # Step 3: Copy fish configuration
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 3/8: Copiando configuración de Fish${NC}"
+  echo -e "${CYAN}Paso 3/9: Copiando configuración de Fish${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
   if ! copy_fish_config; then
@@ -391,7 +449,7 @@ main() {
   
   # Step 4: Copy fastfetch configuration
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 4/8: Copiando configuración de Fastfetch${NC}"
+  echo -e "${CYAN}Paso 4/9: Copiando configuración de Fastfetch${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
   if ! copy_fastfetch_config; then
@@ -402,7 +460,7 @@ main() {
   
   # Step 5: Verify starship is installed
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 5/8: Verificando Starship${NC}"
+  echo -e "${CYAN}Paso 5/9: Verificando Starship${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
   if ! verify_starship_installed; then
@@ -413,7 +471,7 @@ main() {
   
   # Step 6: Copy starship configuration
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 6/8: Copiando configuración de Starship${NC}"
+  echo -e "${CYAN}Paso 6/9: Copiando configuración de Starship${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
   if ! copy_starship_config; then
@@ -424,7 +482,7 @@ main() {
   
   # Step 7: Install gcloud
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 7/8: Instalando Google Cloud CLI${NC}"
+  echo -e "${CYAN}Paso 7/9: Instalando Google Cloud CLI${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
   if ! install_gcloud; then
@@ -435,12 +493,23 @@ main() {
   
   # Step 8: Configure docker
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 8/8: Configurando Docker${NC}"
+  echo -e "${CYAN}Paso 8/9: Configurando Docker${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
   if ! configure_docker; then
     ((errors++))
     echo -e "${YELLOW}⚠ Advertencia: No se pudo configurar Docker${NC}"
+  fi
+  echo
+  
+  # Step 9: Install ORGMOS terminal commands
+  echo -e "${CYAN}════════════════════════════════════════${NC}"
+  echo -e "${CYAN}Paso 9/9: Instalando comandos de terminal${NC}"
+  echo -e "${CYAN}════════════════════════════════════════${NC}"
+  echo
+  if ! install_orgmos_commands; then
+    ((errors++))
+    echo -e "${YELLOW}⚠ Advertencia: No se pudieron instalar los comandos${NC}"
   fi
   echo
   
@@ -458,6 +527,10 @@ main() {
     echo -e "${BLUE}  • Si agregaste tu usuario al grupo docker, también necesitas cerrar sesión${NC}"
     echo -e "${BLUE}  • Configura gcloud con: gcloud init${NC}"
     echo -e "${BLUE}  • Autentica gcloud con: gcloud auth login${NC}"
+    echo
+    echo -e "${WHITE}Comandos disponibles:${NC}"
+    echo -e "${GREEN}  • orgmos${NC} - Ejecuta el menú principal de ORGMOS"
+    echo -e "${GREEN}  • orgmos-server${NC} - Ejecuta la instalación del servidor"
   else
     echo -e "${YELLOW}⚠ Instalación completada con $errors advertencia(s)${NC}"
     echo -e "${BLUE}Revisa los mensajes anteriores para más detalles${NC}"

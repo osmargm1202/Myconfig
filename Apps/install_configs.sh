@@ -369,6 +369,52 @@ EOF
   echo
 }
 
+# Function to install ORGMOS terminal commands
+install_orgmos_commands() {
+  local source_dir="$1"
+  local bin_dir="$HOME/.local/bin"
+  
+  echo -e "${BLUE}Instalando comandos de terminal ORGMOS...${NC}"
+  
+  # Create bin directory if it doesn't exist
+  mkdir -p "$bin_dir"
+  
+  local installed=0
+  local commands=("orgmos" "orgmos-server")
+  
+  for cmd in "${commands[@]}"; do
+    local source_file="$source_dir/$cmd"
+    local target_file="$bin_dir/$cmd"
+    
+    if [[ -f "$source_file" ]]; then
+      if cp -f "$source_file" "$target_file"; then
+        chmod +x "$target_file"
+        echo -e "${GREEN}  ✓ Instalado comando: $cmd${NC}"
+        ((installed++))
+      else
+        echo -e "${RED}  ✗ Error al instalar $cmd${NC}"
+      fi
+    else
+      echo -e "${YELLOW}  ○ $cmd no encontrado, saltando...${NC}"
+    fi
+  done
+  
+  # Check if bin_dir is in PATH
+  if ! echo "$PATH" | grep -q "$bin_dir"; then
+    echo -e "${YELLOW}  ⚠ Advertencia: $bin_dir no está en tu PATH${NC}"
+    echo -e "${BLUE}  Agrega esta línea a tu ~/.bashrc, ~/.zshrc o ~/.config/fish/config.fish:${NC}"
+    echo -e "${GREEN}  export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
+    echo -e "${GREEN}  # Para fish: fish_add_path ~/.local/bin${NC}"
+  fi
+  
+  if [[ $installed -gt 0 ]]; then
+    echo -e "${GREEN}✓ $installed comando(s) de terminal instalado(s)${NC}"
+    echo -e "${BLUE}  • Usa 'orgmos' para ejecutar el menú principal${NC}"
+    echo -e "${BLUE}  • Usa 'orgmos-server' para instalar el servidor${NC}"
+  fi
+  echo
+}
+
 # Function to install ORGMOS desktop files
 install_orgmos_desktop_files() {
   local source_dir="$1"
@@ -508,6 +554,9 @@ main() {
     
     # Create/update webapp-creator desktop file
     create_webapp_creator_desktop
+    
+    # Install ORGMOS terminal commands
+    install_orgmos_commands "$REPO_DIR/Apps"
     
     # Install ORGMOS desktop files
     install_orgmos_desktop_files "$REPO_DIR/Apps"
