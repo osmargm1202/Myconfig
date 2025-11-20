@@ -2,6 +2,10 @@ if status is-interactive
     # Commands to run in interactive sessions can go here
 end
 
+if status --is-login
+    set -gx PATH $PATH ~/linux/bin
+end
+
 # PATH
 set -gx PATH $HOME/.local/bin $PATH
 
@@ -18,8 +22,8 @@ alias cd="z"
 
 # eza (ls mejorado)
 alias ls="eza --group-directories-first --icons"
-alias ll="eza -l --group-directories-first --icons"
-alias la="eza -la --group-directories-first --icons"
+alias ll="eza -la --group-directories-first --icons"
+alias lt="eza --tree --group-directories-first --icons"
 
 # ripgrep (buscar rápido)
 alias rg="rg --hidden --glob '!.git/*'"
@@ -42,7 +46,7 @@ set -U fish_greeting ""
 
 # Ejecutar fastfetch con logo de Arch
 if type -q fastfetch
-    fastfetch --logo arch
+    fastfetch #--logo arch
 end
 
 # The next line updates PATH for the Google Cloud SDK.

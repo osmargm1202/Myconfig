@@ -119,29 +119,139 @@ configure_fish_shell() {
   return 0
 }
 
-# Function to install and configure starship
-install_starship() {
-  debug_log "Instalando y configurando Starship"
+# Function to copy configuration directory
+copy_config_directory() {
+  local config_name="$1"
+  local source_dir="$2"
+  local target_dir="$3"
   
-  local script_dir="$(dirname "$(realpath "$0")")"
-  local repo_dir="$(dirname "$script_dir")"
+  debug_log "Copiando configuración de $config_name"
   
-  if [[ -f "${script_dir}/install_starship.sh" ]]; then
-    echo -e "${BLUE}Instalando configuración de Starship...${NC}"
-    debug_log "Ejecutando install_starship.sh con flag -y"
-    "${script_dir}/install_starship.sh" -y
-    if [[ $? -eq 0 ]]; then
-      echo -e "${GREEN}✓ Starship configurado exitosamente${NC}"
-      debug_log "Starship instalado y configurado"
-      return 0
-    else
-      echo -e "${YELLOW}⚠ Advertencia: Error al configurar Starship${NC}"
-      return 1
-    fi
-  else
-    echo -e "${YELLOW}⚠ Script install_starship.sh no encontrado${NC}"
+  if [[ ! -d "$source_dir" ]]; then
+    echo -e "${YELLOW}⚠ Directorio $config_name no encontrado en repositorio: $source_dir${NC}"
+    debug_log "Directorio $config_name no encontrado: $source_dir"
     return 1
   fi
+  
+  echo -e "${BLUE}Copiando configuración de $config_name...${NC}"
+  debug_log "Origen: $source_dir"
+  debug_log "Destino: $target_dir"
+  
+  # Create target directory if it doesn't exist
+  mkdir -p "$target_dir"
+  
+  # Backup existing config if it exists
+  if [[ -d "$target_dir" && -n "$(ls -A "$target_dir" 2>/dev/null)" ]]; then
+    local backup_dir="$target_dir.backup.$(date +%Y%m%d_%H%M%S)"
+    echo -e "${YELLOW}  • Creando backup de configuración existente...${NC}"
+    if cp -r "$target_dir" "$backup_dir" 2>/dev/null; then
+      echo -e "${GREEN}  ✓ Backup creado: $(basename "$backup_dir")${NC}"
+      debug_log "Backup creado: $backup_dir"
+    fi
+  fi
+  
+  # Copy configuration
+  if cp -rf "$source_dir"/* "$target_dir"/ 2>/dev/null; then
+    echo -e "${GREEN}✓ Configuración de $config_name copiada exitosamente${NC}"
+    debug_log "Configuración de $config_name copiada exitosamente"
+    
+    # Count files copied
+    local file_count=$(find "$target_dir" -type f 2>/dev/null | wc -l)
+    echo -e "${BLUE}  • Archivos copiados: $file_count${NC}"
+    
+    return 0
+  else
+    echo -e "${RED}✗ Error al copiar configuración de $config_name${NC}"
+    debug_log "Error al copiar configuración de $config_name"
+    return 1
+  fi
+}
+
+# Function to copy fish configuration
+copy_fish_config() {
+  local script_dir="$(dirname "$(realpath "$0")")"
+  local repo_dir="$(dirname "$script_dir")"
+  local fish_source="$repo_dir/fish"
+  local fish_target="$HOME/.config/fish"
+  
+  copy_config_directory "Fish" "$fish_source" "$fish_target"
+}
+
+# Function to copy fastfetch configuration
+copy_fastfetch_config() {
+  local script_dir="$(dirname "$(realpath "$0")")"
+  local repo_dir="$(dirname "$script_dir")"
+  local fastfetch_source="$repo_dir/fastfetch"
+  local fastfetch_target="$HOME/.config/fastfetch"
+  
+  copy_config_directory "Fastfetch" "$fastfetch_source" "$fastfetch_target"
+}
+
+# Function to copy starship configuration
+copy_starship_config() {
+  local script_dir="$(dirname "$(realpath "$0")")"
+  local repo_dir="$(dirname "$script_dir")"
+  local starship_source="$repo_dir/starship"
+  local starship_toml_source="$starship_source/starship.toml"
+  local starship_toml_target="$HOME/.config/starship.toml"
+  
+  debug_log "Copiando configuración de Starship"
+  
+  if [[ ! -d "$starship_source" ]]; then
+    echo -e "${YELLOW}⚠ Directorio starship no encontrado en repositorio: $starship_source${NC}"
+    debug_log "Directorio starship no encontrado: $starship_source"
+    return 1
+  fi
+  
+  if [[ ! -f "$starship_toml_source" ]]; then
+    echo -e "${YELLOW}⚠ Archivo starship.toml no encontrado: $starship_toml_source${NC}"
+    debug_log "Archivo starship.toml no encontrado: $starship_toml_source"
+    return 1
+  fi
+  
+  echo -e "${BLUE}Copiando configuración de Starship...${NC}"
+  debug_log "Origen: $starship_toml_source"
+  debug_log "Destino: $starship_toml_target"
+  
+  # Backup existing config if it exists
+  if [[ -f "$starship_toml_target" ]]; then
+    local backup_file="$starship_toml_target.backup.$(date +%Y%m%d_%H%M%S)"
+    echo -e "${YELLOW}  • Creando backup de configuración existente...${NC}"
+    if cp "$starship_toml_target" "$backup_file" 2>/dev/null; then
+      echo -e "${GREEN}  ✓ Backup creado: $(basename "$backup_file")${NC}"
+      debug_log "Backup creado: $backup_file"
+    fi
+  fi
+  
+  # Copy starship.toml
+  if cp -f "$starship_toml_source" "$starship_toml_target" 2>/dev/null; then
+    echo -e "${GREEN}✓ Configuración de Starship copiada exitosamente${NC}"
+    debug_log "Configuración de Starship copiada exitosamente"
+    echo -e "${BLUE}  • Archivo: $starship_toml_target${NC}"
+    return 0
+  else
+    echo -e "${RED}✗ Error al copiar configuración de Starship${NC}"
+    debug_log "Error al copiar configuración de Starship"
+    return 1
+  fi
+}
+
+# Function to verify starship is installed
+verify_starship_installed() {
+  debug_log "Verificando que Starship esté instalado"
+  
+  if ! command -v starship &>/dev/null; then
+    echo -e "${YELLOW}⚠ Starship no está instalado${NC}"
+    echo -e "${BLUE}Starship debería haberse instalado con los paquetes${NC}"
+    debug_log "Starship no encontrado en PATH"
+    return 1
+  fi
+  
+  local starship_version=$(starship --version 2>/dev/null | head -n 1)
+  echo -e "${GREEN}✓ Starship está instalado${NC}"
+  echo -e "${BLUE}  • Versión: $starship_version${NC}"
+  debug_log "Starship verificado: $starship_version"
+  return 0
 }
 
 # Function to install and configure gcloud
@@ -238,7 +348,7 @@ main() {
   echo -e "${BLUE}  • Herramientas de shell y terminal${NC}"
   echo -e "${BLUE}  • Docker y configuración${NC}"
   echo -e "${BLUE}  • Fish shell como shell predeterminado${NC}"
-  echo -e "${BLUE}  • Starship prompt${NC}"
+  echo -e "${BLUE}  • Configuraciones: Fish, Fastfetch, Starship${NC}"
   echo -e "${BLUE}  • Google Cloud CLI${NC}"
   echo
   echo -e "${YELLOW}Instalación automática iniciando...${NC}"
@@ -248,7 +358,7 @@ main() {
   
   # Step 1: Install packages
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 1/5: Instalando paquetes${NC}"
+  echo -e "${CYAN}Paso 1/8: Instalando paquetes${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
   if ! install_server_packages; then
@@ -259,7 +369,7 @@ main() {
   
   # Step 2: Configure fish shell
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 2/5: Configurando Fish Shell${NC}"
+  echo -e "${CYAN}Paso 2/8: Configurando Fish Shell${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
   if ! configure_fish_shell; then
@@ -268,20 +378,53 @@ main() {
   fi
   echo
   
-  # Step 3: Install starship
+  # Step 3: Copy fish configuration
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 3/5: Instalando Starship${NC}"
+  echo -e "${CYAN}Paso 3/8: Copiando configuración de Fish${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
-  if ! install_starship; then
+  if ! copy_fish_config; then
     ((errors++))
-    echo -e "${YELLOW}⚠ Advertencia: No se pudo instalar Starship${NC}"
+    echo -e "${YELLOW}⚠ Advertencia: No se pudo copiar configuración de Fish${NC}"
   fi
   echo
   
-  # Step 4: Install gcloud
+  # Step 4: Copy fastfetch configuration
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 4/5: Instalando Google Cloud CLI${NC}"
+  echo -e "${CYAN}Paso 4/8: Copiando configuración de Fastfetch${NC}"
+  echo -e "${CYAN}════════════════════════════════════════${NC}"
+  echo
+  if ! copy_fastfetch_config; then
+    ((errors++))
+    echo -e "${YELLOW}⚠ Advertencia: No se pudo copiar configuración de Fastfetch${NC}"
+  fi
+  echo
+  
+  # Step 5: Verify starship is installed
+  echo -e "${CYAN}════════════════════════════════════════${NC}"
+  echo -e "${CYAN}Paso 5/8: Verificando Starship${NC}"
+  echo -e "${CYAN}════════════════════════════════════════${NC}"
+  echo
+  if ! verify_starship_installed; then
+    ((errors++))
+    echo -e "${YELLOW}⚠ Advertencia: Starship no está instalado${NC}"
+  fi
+  echo
+  
+  # Step 6: Copy starship configuration
+  echo -e "${CYAN}════════════════════════════════════════${NC}"
+  echo -e "${CYAN}Paso 6/8: Copiando configuración de Starship${NC}"
+  echo -e "${CYAN}════════════════════════════════════════${NC}"
+  echo
+  if ! copy_starship_config; then
+    ((errors++))
+    echo -e "${YELLOW}⚠ Advertencia: No se pudo copiar configuración de Starship${NC}"
+  fi
+  echo
+  
+  # Step 7: Install gcloud
+  echo -e "${CYAN}════════════════════════════════════════${NC}"
+  echo -e "${CYAN}Paso 7/8: Instalando Google Cloud CLI${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
   if ! install_gcloud; then
@@ -290,9 +433,9 @@ main() {
   fi
   echo
   
-  # Step 5: Configure docker
+  # Step 8: Configure docker
   echo -e "${CYAN}════════════════════════════════════════${NC}"
-  echo -e "${CYAN}Paso 5/5: Configurando Docker${NC}"
+  echo -e "${CYAN}Paso 8/8: Configurando Docker${NC}"
   echo -e "${CYAN}════════════════════════════════════════${NC}"
   echo
   if ! configure_docker; then

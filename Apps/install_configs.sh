@@ -52,8 +52,9 @@ list_configurations() {
     if [[ -d "$config_dir" ]]; then
       local dir_name=$(basename "$config_dir")
       
-      # Skip Apps, Launcher, sddm, Wallpapers, Icons, and chromium directories
-      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" || "$dir_name" == "sddm" || "$dir_name" == "Wallpapers" || "$dir_name" == "Icons" || "$dir_name" == "chromium" ]]; then
+      # Skip Apps, Launcher, sddm, Wallpapers, Icons, chromium, and starship directories
+      # (starship is handled separately to copy starship.toml directly to ~/.config/starship.toml)
+      if [[ "$dir_name" == "Apps" || "$dir_name" == "Launcher" || "$dir_name" == "sddm" || "$dir_name" == "Wallpapers" || "$dir_name" == "Icons" || "$dir_name" == "chromium" || "$dir_name" == "starship" ]]; then
         continue
       fi
       
@@ -219,6 +220,49 @@ install_configurations() {
   fi
   
   return $failed
+}
+
+# Function to install starship configuration
+install_starship_config() {
+  local source_dir="$1"
+  local make_backup="$2"
+  
+  local starship_source="$source_dir/starship"
+  local starship_toml_source="$starship_source/starship.toml"
+  local starship_toml_target="$HOME/.config/starship.toml"
+  
+  echo -e "${BLUE}Instalando configuración de Starship...${NC}"
+  
+  if [[ ! -d "$starship_source" ]]; then
+    echo -e "${YELLOW}  ○ Directorio starship no encontrado, saltando...${NC}"
+    return 0
+  fi
+  
+  if [[ ! -f "$starship_toml_source" ]]; then
+    echo -e "${YELLOW}  ○ Archivo starship.toml no encontrado, saltando...${NC}"
+    return 0
+  fi
+  
+  # Handle existing file
+  if [[ -f "$starship_toml_target" ]]; then
+    if [[ "$make_backup" == "true" ]]; then
+      local backup_file="$starship_toml_target.backup.$(date +%Y%m%d_%H%M%S)"
+      if cp "$starship_toml_target" "$backup_file"; then
+        echo -e "${YELLOW}  • Backup creado: $(basename "$backup_file")${NC}"
+      fi
+    else
+      echo -e "${YELLOW}  • Reemplazando archivo existente${NC}"
+    fi
+  fi
+  
+  # Copy starship.toml directly to ~/.config/starship.toml (not in a subdirectory)
+  if cp -f "$starship_toml_source" "$starship_toml_target"; then
+    echo -e "${GREEN}  ✓ Instalado starship.toml en ~/.config/starship.toml${NC}"
+    return 0
+  else
+    echo -e "${RED}  ✗ Error al instalar starship.toml${NC}"
+    return 1
+  fi
 }
 
 # Function to install individual config files (like dolphinrc, kdeglobals)
@@ -456,6 +500,9 @@ main() {
   
   # Install configurations
   if install_configurations "$REPO_DIR" "false" "${configs_array[@]}"; then
+    # Install starship configuration (special handling - copy directly to ~/.config/starship.toml)
+    install_starship_config "$REPO_DIR" "false"
+    
     # Install individual config files (dolphinrc, kdeglobals, etc.)
     install_individual_config_files "$REPO_DIR" "false"
     
