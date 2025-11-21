@@ -129,8 +129,14 @@ bindsym $mod+Mod1+g exec --no-startup-id ~/.config/i3/scripts/game-mode.sh
 # Reload servicios con Mod+Alt+R (opcional)
 bindsym $mod+Mod1+r exec --no-startup-id ~/.config/i3/scripts/game-mode.sh reload
 
-# Bloquear pantalla con Mod+Ctrl+L
-bindsym $mod+Ctrl+l exec --no-startup-id ~/.config/i3/scripts/lock.sh
+# Bloquear pantalla con Mod+Shift+L
+bindsym $mod+Shift+l exec --no-startup-id i3lock --blur 5
+
+# Toggle modo cafeína con Mod+Shift+C
+bindsym $mod+Shift+c exec --no-startup-id ~/.config/i3/scripts/caffeine.sh toggle
+
+# Apagar pantalla inmediatamente con Mod+Alt+P
+bindsym $mod+Mod1+p exec --no-startup-id xset dpms force off
 
 # Gestor de configuraciones de pantalla con Mod+Shift+P
 bindsym $mod+Shift+p exec $term -e ~/.config/i3/scripts/display-manager.sh
@@ -159,7 +165,7 @@ bindsym $mod+Right focus right
 # move focused window
 bindsym $mod+Shift+j move left
 bindsym $mod+Shift+k move down
-bindsym $mod+Shift+l move up
+# $mod+Shift+l ahora se usa para lock screen
 bindsym $mod+Shift+semicolon move right
 
 # alternatively, you can use the cursor keys:
@@ -245,7 +251,7 @@ bindsym $mod+Shift+F3 move container to workspace number $wsF3
 bindsym $mod+Shift+F4 move container to workspace number $wsF4
 
 # reload the configuration file
-bindsym $mod+Shift+c reload
+bindsym $mod+Shift+BackSpace reload
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+r restart
 # exit i3 (logs you out of your X session)

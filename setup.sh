@@ -1517,6 +1517,12 @@ run_video_downloader() {
   read -p "Press Enter to continue..." </dev/tty
 }
 
+# Parse --config flag - if present, execute install_configs_auto and exit
+if [[ "$1" == "--config" ]]; then
+  install_configs_auto
+  exit $?
+fi
+
 echo
 echo -e "${BLUE}Presiona Enter para continuar al menú principal...${NC}"
 read -r </dev/tty

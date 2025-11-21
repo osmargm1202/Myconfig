@@ -22,11 +22,9 @@ case $chosen in
         systemctl reboot
         ;;
     $lock)
-        # Verifica si i3lock-color está disponible, si no usa i3lock normal
-        if command -v i3lock-color &> /dev/null; then
-            ~/.config/i3/scripts/lock.sh
-        elif command -v i3lock &> /dev/null; then
-            i3lock -c 1a1b26
+        # Usar i3lock con blur
+        if command -v i3lock &> /dev/null; then
+            i3lock --blur 5
         else
             notify-send "Error" "i3lock no está instalado"
         fi

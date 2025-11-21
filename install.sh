@@ -233,6 +233,7 @@ setup_repository() {
 # Function to run setup script
 run_setup() {
   local setup_script="$REPO_DIR/setup.sh"
+  local setup_args=("$@")
   
   if [[ ! -f "$setup_script" ]]; then
     echo -e "${RED}✗ Script setup.sh no encontrado en: $setup_script${NC}"
@@ -247,8 +248,8 @@ run_setup() {
   echo -e "${CYAN}→ Ejecutando configurador principal...${NC}"
   echo
   
-  # Execute setup script
-  "$setup_script"
+  # Execute setup script with all arguments
+  "$setup_script" "${setup_args[@]}"
   local exit_code=$?
   
   echo
@@ -281,8 +282,8 @@ main() {
     echo
   fi
   
-  # Run setup script
-  run_setup
+  # Run setup script with all arguments
+  run_setup "$@"
 }
 
 # Execute main function

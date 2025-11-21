@@ -30,6 +30,6 @@ if [[ -z "$REPO_DIR" || ! -f "$REPO_DIR/setup.sh" ]]; then
   exit 1
 fi
 
-# Execute setup.sh
+# Execute setup.sh with all arguments (including --config flag)
 exec "$REPO_DIR/setup.sh" "$@"
 
