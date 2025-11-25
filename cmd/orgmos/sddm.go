@@ -42,7 +42,7 @@ func runSddmInstall(cmd *cobra.Command, args []string) {
 	var confirm bool
 	var enableAutologin bool
 
-	form := huh.NewForm(
+	form := ui.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title("Instalar SDDM con tema ORGMOS").

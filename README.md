@@ -164,6 +164,39 @@ orgmos-{comando}-{timestamp}.log
 - ✅ **Logs automáticos** de todas las operaciones
 - ✅ **Sin confirmaciones excesivas** - UI simple y directa
 
+## 🎛️ Barras Wayland (Polybar ➜ Waybar)
+
+- Waybar replica los mismos módulos críticos de la configuración de Polybar (workspaces, título de ventana, fecha/hora, filesystem, audio, batería, CPU/RAM/temperaturas, estado del teclado, café/hotkeys/powermenu y contador de actualizaciones Paru/Flatpak).
+- Los scripts existentes (`orgmos script …`) alimentan los módulos personalizados para mantener el mismo flujo de trabajo en i3, Hyprland y Niri.
+- El tema aplica la misma paleta **Tokyo Night** (fondos translúcidos + acentos lila/cian) y simplifica la carpeta `waybar/` eliminando generadores automáticos que ya no eran necesarios.
+
+## ⌨️ Atajos unificados
+
+| Acción / App | i3 (X11) | Hyprland (Wayland) | Niri (Wayland) |
+|--------------|----------|--------------------|----------------|
+| Terminal | `Mod+Enter` → `kitty` | `Mod+Enter` → `$TERMINAL` (kitty) | `Mod+Enter` → `kitty` |
+| Lanzador de apps | `Mod+m` → `rofi -show drun` | `Mod+m` → `rofi -show drun` | `Mod+m` → `rofi -show drun` |
+| Cambiar ventana | `Mod+Tab` → `rofi -show window` | `Mod+Tab` → `rofi -show window` | `Mod+Tab` → `rofi -show window` |
+| Gestor de archivos | `Mod+e` → Dolphin | `Mod+E` → `$EXPLORER` (Dolphin) | `Mod+E` → Dolphin |
+| Navegador | `Mod+w` → Chromium | `Mod+W` → `$BROWSER` | `Mod+W` → Chromium |
+| Editor (Cursor) | `Mod+c` → Cursor | `Mod+C` → `$EDITOR` | `Mod+C` → Cursor |
+| Steam | `Mod+Shift+s` | `Mod+Shift+S` | `Mod+Shift+S` |
+| Discord | `Mod+Shift+d` | `Mod+Shift+D` | `Mod+Shift+D` |
+| Portapapeles | `Mod+v` → `clipmenu` | `Mod+V` → `clipmenu`¹ | `Mod+V` → `clipmenu` |
+| Screenshot GUI | `Mod+p` → Flameshot | `Mod+P` → Flameshot | `Mod+P` → Flameshot |
+| Wallpaper aleatorio | `Mod+Alt+space` → `orgmos script change-wallpaper random` | igual | igual |
+| Selector de wallpaper | `Mod+Shift+w` → script de i3 | igual (usa mismo script) | igual |
+| Selector de íconos | `Mod+Shift+i` → script de i3 | igual | igual |
+| Bloquear pantalla | `Mod+Shift+l` → `orgmos script lock` | igual | igual |
+| Cafeína | `Mod+Shift+c` → `orgmos script caffeine toggle` | igual | igual |
+| Modo juego | `Mod+Alt+g` → `orgmos script game-mode` | igual | igual |
+| Reload modo juego | `Mod+Alt+r` → `orgmos script game-mode reload` | igual | igual |
+| Suspender | `Mod+Shift+o` → `systemctl suspend` | igual | igual |
+| Apagar | `Mod+Alt+o` → `poweroff` | igual | igual |
+| Ayuda de atajos | `Mod+/` → `orgmos script hotkey` | igual | igual |
+
+¹ Hyprland sigue usando `cliphist` como gestor avanzado con `Mod+Shift+V`, pero `Mod+V` respeta el flujo de i3 (`clipmenu` con Rofi).
+
 ## 🛠️ Desarrollo
 
 ### Compilar

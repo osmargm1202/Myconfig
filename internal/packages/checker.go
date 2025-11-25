@@ -131,7 +131,7 @@ func CheckParuInstalled() bool {
 // OfferInstallParu ofrece instalar paru
 func OfferInstallParu() bool {
 	var install bool
-	form := huh.NewForm(
+	form := ui.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title("Paru no está instalado").

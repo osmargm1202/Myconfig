@@ -1,0 +1,106 @@
+@import "theme.css";
+
+* {
+  border: none;
+  border-radius: 0;
+  font-family: "JetBrainsMono Nerd Font", "JetBrainsMono Nerd Font";
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 0;
+}
+
+window#waybar {
+  background: @bar-bg;
+  color: @main-fg;
+  padding: 4px 12px;
+  margin: 6px 12px;
+  border-radius: 14px;
+}
+
+tooltip {
+  background: @main-bg;
+  color: @main-fg;
+  border-radius: 8px;
+}
+
+#wlr-workspaces {
+  margin: 0 8px;
+}
+
+#wlr-workspaces button {
+  background: transparent;
+  color: @main-fg;
+  padding: 0 6px;
+  margin: 4px 2px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+#wlr-workspaces button.focused,
+#wlr-workspaces button.active {
+  background: @accent;
+  color: @bar-bg;
+}
+
+#wlr-workspaces button:hover {
+  background: @accent2;
+  color: @bar-bg;
+}
+
+#window {
+  min-width: 120px;
+  color: @main-fg;
+}
+
+#window,
+#clock,
+#custom-date,
+#custom-filesystem,
+#pulseaudio,
+#pulseaudio.microphone,
+#custom-paru,
+#custom-flatpak,
+#battery,
+#memory,
+#cpu,
+#temperature,
+#custom-gpu_temp,
+#language,
+#custom-caffeine,
+#custom-hotkeys,
+#tray,
+#custom-powermenu {
+  background: @main-bg;
+  padding: 4px 10px;
+  margin: 4px 4px;
+  border-radius: 10px;
+}
+
+#clock {
+  background: @background-light;
+}
+
+#custom-date {
+  background: @background-alt;
+}
+
+#battery.warning,
+#battery.critical {
+  background: @alert-bg;
+  color: @bar-bg;
+}
+
+#custom-powermenu {
+  background: @alert;
+  color: #1a1b26;
+}
+
+#tray {
+  padding-right: 2px;
+}
+
+#language,
+#custom-caffeine,
+#custom-hotkeys {
+  font-weight: 700;
+}

@@ -58,7 +58,7 @@ func runConfigCopy(cmd *cobra.Command, args []string) {
 
 	// Confirmación
 	var confirm bool
-	form := huh.NewForm(
+	form := ui.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title(fmt.Sprintf("Se copiarán %d archivos a ~/.config", fileCount)).

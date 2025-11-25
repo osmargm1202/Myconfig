@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
@@ -9,6 +12,7 @@ import (
 	"orgmos/internal/logger"
 	"orgmos/internal/packages"
 	"orgmos/internal/ui"
+	"orgmos/internal/utils"
 )
 
 var archPackages = []string{
@@ -65,14 +69,6 @@ func runArchInstall(cmd *cobra.Command, args []string) {
 	logger.Init("arch")
 	defer logger.Close()
 
-	// Verificar paru antes de continuar
-	if !packages.CheckParuInstalled() {
-		if !packages.OfferInstallParu() {
-			fmt.Println(ui.Warning("Instalación cancelada. Paru es necesario para instalar paquetes AUR."))
-			return
-		}
-	}
-
 	fmt.Println(ui.Title("Herramientas de Terminal - Arch Linux"))
 
 	// Verificar paquetes instalados
@@ -88,12 +84,13 @@ func runArchInstall(cmd *cobra.Command, args []string) {
 
 	if len(toInstall) == 0 {
 		fmt.Println(ui.Success("Todas las herramientas ya están instaladas"))
+		offerFishShellSwitch()
 		return
 	}
 
 	// Confirmación
 	var confirm bool
-	form := huh.NewForm(
+	form := ui.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title(fmt.Sprintf("Se instalarán %d paquetes", len(toInstall))).
@@ -116,7 +113,60 @@ func runArchInstall(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Println(ui.Success("Herramientas instaladas correctamente"))
-	fmt.Println(ui.Info("Ejecuta 'chsh -s /usr/bin/fish' para cambiar a fish shell"))
+	offerFishShellSwitch()
 	logger.Info("Instalación Arch completada")
+}
+
+func offerFishShellSwitch() {
+	fishPath, err := exec.LookPath("fish")
+	if err != nil {
+		return
+	}
+
+	currentShell := os.Getenv("SHELL")
+	if currentShell == fishPath {
+		fmt.Println(ui.Dim("Fish ya es tu shell por defecto"))
+		return
+	}
+
+	var confirm bool
+	form := ui.NewForm(
+		huh.NewGroup(
+			huh.NewConfirm().
+				Title("¿Deseas usar fish como shell por defecto?").
+				Description("Se ejecutarán los comandos recomendados para registrarlo y actualizar tu shell de login.").
+				Affirmative("Sí, cambiar").
+				Negative("No, luego").
+				Value(&confirm),
+		),
+	)
+
+	if err := form.Run(); err != nil || !confirm {
+		fmt.Println(ui.Dim("Puedes ejecutar 'chsh -s " + fishPath + "' más tarde."))
+		return
+	}
+
+	ensureFishRegistered(fishPath)
+	if err := utils.RunCommand("chsh", "-s", fishPath); err != nil {
+		fmt.Println(ui.Error("No se pudo cambiar el shell automáticamente. Ejecuta: chsh -s " + fishPath))
+		return
+	}
+
+	fmt.Println(ui.Success("Shell predeterminado actualizado a fish"))
+}
+
+func ensureFishRegistered(fishPath string) {
+	data, err := os.ReadFile("/etc/shells")
+	if err == nil && strings.Contains(string(data), fishPath) {
+		return
+	}
+
+	cmd := exec.Command("bash", "-c", "command -v fish | sudo tee -a /etc/shells >/dev/null")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	if err := cmd.Run(); err != nil {
+		fmt.Println(ui.Warning("No se pudo registrar fish en /etc/shells automáticamente"))
+	}
 }
 

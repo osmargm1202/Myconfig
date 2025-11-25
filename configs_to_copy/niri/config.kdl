@@ -280,8 +280,26 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     // Suggested binds for running programs: terminal, app launcher, screen locker.
-    Mod+T hotkey-overlay-title="Open a Terminal: alacritty" { spawn "alacritty"; }
-    Mod+D hotkey-overlay-title="Run an Application: fuzzel" { spawn "fuzzel"; }
+    Mod+Return hotkey-overlay-title="Abrir terminal (kitty)" { spawn "kitty"; }
+    Mod+M hotkey-overlay-title="Lanzador de apps (rofi)" { spawn "rofi" "-show" "drun" "-show-icons"; }
+    Mod+E hotkey-overlay-title="Gestor de archivos" { spawn "dolphin"; }
+    Mod+W hotkey-overlay-title="Navegador" { spawn "chromium"; }
+    Mod+Shift+S hotkey-overlay-title="Steam" { spawn "steam"; }
+    Mod+Shift+D hotkey-overlay-title="Discord" { spawn "discord"; }
+    Mod+C hotkey-overlay-title="Editor Cursor" { spawn "cursor"; }
+    Mod+V hotkey-overlay-title="Historial portapapeles" { spawn-sh "CM_LAUNCHER=rofi clipmenu -p 'Portapapeles'"; }
+    Mod+P hotkey-overlay-title="Flameshot GUI" { spawn "flameshot" "gui"; }
+    Mod+Tab hotkey-overlay-title="Cambiar ventana (rofi)" { spawn "rofi" "-show" "window"; }
+    Mod+Slash hotkey-overlay-title="Lista de atajos" { spawn-sh "orgmos script hotkey"; }
+    Mod+Shift+C hotkey-overlay-title="Modo cafeína" { spawn-sh "orgmos script caffeine toggle"; }
+    Mod+Shift+L hotkey-overlay-title="Bloquear pantalla" { spawn-sh "orgmos script lock"; }
+    Mod+Alt+G hotkey-overlay-title="Modo juego" { spawn-sh "orgmos script game-mode"; }
+    Mod+Alt+R hotkey-overlay-title="Reload modo juego" { spawn-sh "orgmos script game-mode reload"; }
+    Mod+Alt+Space hotkey-overlay-title="Wallpaper aleatorio" { spawn-sh "orgmos script change-wallpaper random"; }
+    Mod+Shift+W hotkey-overlay-title="Selector de wallpaper" { spawn-sh "~/.config/i3/scripts/wallpaper-selector.sh"; }
+    Mod+Shift+I hotkey-overlay-title="Selector de íconos" { spawn-sh "~/.config/i3/scripts/icon-selector.sh"; }
+    Mod+Shift+O hotkey-overlay-title="Suspender equipo" { spawn "systemctl" "suspend"; }
+    Mod+Alt+O hotkey-overlay-title="Apagar equipo" { spawn "poweroff"; }
     Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
 
     // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
@@ -501,8 +519,8 @@ binds {
     Mod+Shift+Equal { set-window-height "+10%"; }
 
     // Move the focused window between the floating and the tiling layout.
-    Mod+V       { toggle-window-floating; }
-    Mod+Shift+V { switch-focus-between-floating-and-tiling; }
+    Mod+Shift+Space       { toggle-window-floating; }
+    Mod+Ctrl+Shift+Space { switch-focus-between-floating-and-tiling; }
 
     // Toggle tabbed column display mode.
     // Windows in this column will appear as vertical tabs,

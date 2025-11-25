@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -32,7 +33,7 @@ func runMenu(cmd *cobra.Command, args []string) {
 		fmt.Println()
 
 		var choice string
-		form := huh.NewForm(
+		form := ui.NewForm(
 			huh.NewGroup(
 				huh.NewSelect[string]().
 					Title("Selecciona una opción").
@@ -57,6 +58,10 @@ func runMenu(cmd *cobra.Command, args []string) {
 		)
 
 		if err := form.Run(); err != nil {
+			if errors.Is(err, huh.ErrUserAborted) {
+				continue
+			}
+			fmt.Println(ui.Error("Error mostrando el menú"))
 			return
 		}
 
@@ -101,7 +106,7 @@ func runMenu(cmd *cobra.Command, args []string) {
 
 func runScriptsMenu() {
 	var script string
-	form := huh.NewForm(
+	form := ui.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Title("Selecciona un script").

@@ -10,6 +10,26 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
+log_status() {
+    local level="$1"; shift
+    local message="$*"
+    local color="$BLUE"
+    local gum_color="33"
+
+    case "$level" in
+        success) color="$GREEN"; gum_color="42" ;;
+        warn)    color="$YELLOW"; gum_color="214" ;;
+        error)   color="$RED"; gum_color="204" ;;
+        info|*)  color="$CYAN"; gum_color="39" ;;
+    esac
+
+    if command -v gum >/dev/null 2>&1; then
+        gum style --border normal --border-foreground "$gum_color" --padding "0 1" --foreground "$gum_color" "$message"
+    else
+        echo -e "${color}${message}${NC}"
+    fi
+}
+
 REPO_URL="https://github.com/osmargm1202/Myconfig.git"
 REPO_DIR="$HOME/Myconfig"
 
@@ -35,9 +55,32 @@ echo -e "${GREEN}✓ Go instalado: $(go version)${NC}"
 
 # Clonar o actualizar repositorio
 if [ -d "$REPO_DIR" ]; then
-    echo -e "${BLUE}Actualizando repositorio existente...${NC}"
+    log_status info "Repositorio detectado, verificando estado local..."
     cd "$REPO_DIR"
-    git pull origin master || git pull origin main || true
+
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        if [ -n "$(git status --porcelain)" ]; then
+            log_status warn "Estás en el proyecto madre con cambios locales sin comprometer. Haz commit/push antes de actualizar."
+            log_status warn "Se omitió git pull para no sobrescribir tu trabajo local."
+        else
+            BEFORE_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "desconocido")
+            if pull_output=$(git pull --ff-only 2>&1); then
+                AFTER_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "desconocido")
+                if [ "$BEFORE_COMMIT" = "$AFTER_COMMIT" ]; then
+                    log_status success "Repositorio ya estaba al día (commit $AFTER_COMMIT)."
+                else
+                    log_status success "Repositorio actualizado de $BEFORE_COMMIT a $AFTER_COMMIT."
+                    [ -n "$pull_output" ] && echo "$pull_output"
+                fi
+            else
+                log_status error "No se pudo actualizar el repositorio automáticamente:"
+                [ -n "$pull_output" ] && echo "$pull_output"
+                log_status error "Revisa la conexión o resuelve los conflictos y vuelve a ejecutar el script."
+            fi
+        fi
+    else
+        log_status warn "Directorio existente, pero no es un repositorio Git válido. Se continuará sin actualizar."
+    fi
 else
     echo -e "${BLUE}Clonando repositorio...${NC}"
     git clone "$REPO_URL" "$REPO_DIR"

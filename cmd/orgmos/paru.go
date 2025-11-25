@@ -41,7 +41,7 @@ func runParuInstall(cmd *cobra.Command, args []string) {
 
 	// Confirmación
 	var confirm bool
-	form := huh.NewForm(
+	form := ui.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title("Instalar Paru AUR Helper").

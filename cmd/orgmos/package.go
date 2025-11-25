@@ -86,7 +86,7 @@ func runPackageInstall(cmd *cobra.Command, args []string) {
 		}
 
 		var selected []string
-		form := huh.NewForm(
+		form := ui.NewForm(
 			huh.NewGroup(
 				huh.NewMultiSelect[string]().
 					Title(group.Name).
@@ -110,7 +110,7 @@ func runPackageInstall(cmd *cobra.Command, args []string) {
 
 	// Confirmación final
 	var confirm bool
-	huh.NewForm(
+	ui.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title(fmt.Sprintf("Se instalarán %d paquetes", len(selectedPackages))).

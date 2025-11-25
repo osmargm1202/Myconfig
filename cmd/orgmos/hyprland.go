@@ -81,7 +81,7 @@ func runHyprlandInstall(cmd *cobra.Command, args []string) {
 		}
 	}
 	
-	form := huh.NewForm(
+	form := ui.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title(fmt.Sprintf("Se instalarán %d paquetes", len(toInstall))).
