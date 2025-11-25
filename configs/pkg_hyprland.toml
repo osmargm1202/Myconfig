@@ -1,0 +1,59 @@
+# Paquetes específicos para Hyprland (Wayland)
+
+["HYPRLAND CORE"]
+packages = [
+    "hyprland",           # compositor Wayland
+    "xdg-desktop-portal-hyprland", # portal para Wayland
+    "hyprlock",           # pantalla de bloqueo
+    "hypridle",           # gestor de inactividad
+    "hyprpaper",          # gestor de wallpapers
+]
+
+["BARRAS Y LANZADORES"]
+packages = [
+    "waybar",             # barra del sistema recomendada en Wayland
+    "wofi",               # lanzador para Wayland
+    "rofi-wayland",       # rofi con soporte Wayland
+    "mako",               # daemon de notificaciones Wayland
+]
+
+["NOCTALIA SHELL"]
+packages = [
+    "noctalia-shell",     # shell basada en Waybar (paru -S noctalia-shell)
+]
+
+["CLIPBOARD Y CAPTURA"]
+packages = [
+    "wl-clipboard",       # gestor de portapapeles Wayland
+    "cliphist",           # historial de portapapeles
+    "grim",               # capturas de pantalla
+    "slurp",              # selección de área
+    "swappy",             # editor de capturas
+]
+
+["GESTIÓN DE PANTALLAS"]
+packages = [
+    "nwg-displays",       # gestión de monitores GUI
+    "wlr-randr",          # configuración de pantallas CLI
+]
+
+["SOPORTE QT/WAYLAND"]
+packages = [
+    "qt5-wayland",        # soporte Qt5 para Wayland
+    "qt6-wayland",        # soporte Qt6 para Wayland
+    "polkit-kde-agent",   # autenticación GUI
+]
+
+["APLICACIONES RECOMENDADAS"]
+packages = [
+    "kitty",              # terminal con soporte Wayland nativo
+    "dolphin",            # gestor de archivos
+    "alacritty",          # terminal alternativo (también usado en Niri)
+]
+
+["UTILIDADES ADICIONALES"]
+packages = [
+    "matugen",            # generador de colores (compartido con Niri)
+    "cava",               # visualizador de audio
+]
+

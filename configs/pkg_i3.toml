@@ -1,0 +1,47 @@
+# Paquetes específicos para i3 Window Manager
+
+["I3 CORE"]
+packages = [
+    "i3-wm",              # window manager
+    "i3lock-color",       # pantalla de bloqueo mejorada
+    "i3status",           # barra de estado básica
+]
+
+["COMPOSITOR Y EFECTOS"]
+packages = [
+    "picom",              # compositor para transparencias
+]
+
+["BARRAS Y LANZADORES"]
+packages = [
+    "polybar",            # barra del sistema
+    "rofi",               # lanzador de aplicaciones
+    "dunst",              # daemon de notificaciones
+]
+
+["WALLPAPER Y VISUAL"]
+packages = [
+    "feh",                # gestor de wallpapers
+    "xwallpaper",         # gestor de wallpapers con soporte multi-monitor
+]
+
+["HERRAMIENTAS X11"]
+packages = [
+    "xorg-xrandr",        # configuración de pantallas
+    "xorg-xinput",        # configuración de entrada
+    "xorg-xsetroot",      # configuración de root window
+    "arandr",             # GUI para configurar pantallas
+    "autorandr",          # gestión automática de configuraciones de pantalla
+]
+
+["UTILIDADES"]
+packages = [
+    "brightnessctl",      # control de brillo
+    "udiskie",            # montaje automático de medios
+    "scrot",              # capturas para lock screen
+    "maim",               # capturas rápidas (más rápido que scrot)
+    "xclip",              # gestor de portapapeles
+    "clipmenu",           # menú de portapapeles
+    "flameshot",          # herramienta de capturas
+]
+

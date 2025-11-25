@@ -1,0 +1,67 @@
+# Paquetes específicos para Niri (Wayland)
+
+["NIRI CORE"]
+packages = [
+    "niri",                      # compositor Wayland
+    "xwayland-satellite",        # soporte X11
+    "xdg-desktop-portal-gnome",  # portal para Wayland
+    "xdg-desktop-portal-gtk",    # portal GTK
+]
+
+["SHELL Y GESTIÓN"]
+packages = [
+    "dms-shell-bin",             # shell para Niri (AUR)
+]
+
+["UTILIDADES DE COLOR"]
+packages = [
+    "matugen",                   # generador de colores (AUR)
+]
+
+["CLIPBOARD Y CAPTURA"]
+packages = [
+    "wl-clipboard",              # gestor de portapapeles Wayland
+    "cliphist",                  # historial de portapapeles
+    "grim",                      # capturas de pantalla
+    "slurp",                     # selección de área
+    "swappy",                    # editor de capturas
+]
+
+["WALLPAPER"]
+packages = [
+    "swaybg",                    # fondo de pantalla estático Wayland
+]
+
+["AUDIO Y MULTIMEDIA"]
+packages = [
+    "cava",                      # visualizador de audio (AUR)
+    "qt6-multimedia-ffmpeg",     # soporte multimedia Qt6
+]
+
+["TERMINAL Y APLICACIONES"]
+packages = [
+    "alacritty",                 # terminal recomendado
+    "kitty",                     # terminal alternativo
+    "dolphin",                   # gestor de archivos
+]
+
+["BARRAS Y LANZADORES"]
+packages = [
+    "waybar",                    # barra del sistema recomendada
+    "wofi",                      # lanzador para Wayland
+    "rofi-wayland",              # rofi con soporte Wayland
+    "mako",                      # daemon de notificaciones Wayland
+]
+
+["NOCTALIA SHELL"]
+packages = [
+    "noctalia-shell",            # shell basada en Waybar (paru -S noctalia-shell)
+]
+
+["SOPORTE QT/WAYLAND"]
+packages = [
+    "qt5-wayland",               # soporte Qt5 para Wayland
+    "qt6-wayland",               # soporte Qt6 para Wayland
+    "polkit-kde-agent",          # autenticación GUI
+]
+

@@ -1,264 +1,233 @@
-# Qué son estos dotfiles / “Myconfig”
+# ORGMOS - Sistema de Configuración para Arch Linux
 
-Este repositorio contiene mi configuración completa para un entorno i3 (window manager) + herramientas afines en sistemas basados en Arch Linux.
-Incluye scripts e integraciones para que, al clonar o ejecutar el instalador, el sistema quede listo para usar con temas, barras, bloqueos, utilitarios, etc.
+Sistema de configuración completo para i3wm, Hyprland, polybar, rofi y aplicaciones web con tema Tokyo Night.
 
-## Funcionalidades principales
-
-Algunas de las cosas que este conjunto de dotfiles / scripts permite hacer:
-
-## Módulo / Componente Qué hace / qué configura
-
-**install.sh** Instalador simple: descarga/actualiza repositorio y ejecuta setup.sh (compatible con curl).
-**setup.sh** Configurador completo: menú interactivo con Gum, instaladores modulares, todas las opciones.
-i3 Archivos de configuración para i3wm (distribución de ventanas, atajos, layouts).
-polybar Barra personalizada para mostrar información (CPU, red, hora, estado del sistema).
-rofi Menús visuales, launcher de aplicaciones, selector de ventanas.
-picom Compositor para sombras, transparencia, efectos visuales.
-kitty Configuración del emulador de terminal.
-dunst Notificaciones visuales y estéticas.
-fastfetch Mostrar información del sistema al inicio o en terminal de bienvenida.
-**Wallpapers** Fondos de pantalla aleatorios para i3WM con sistema de memoria y atajo Super+Alt+Space.
-Launcher / WebApp Creator / GameMode Scripts auxiliares para:
-• Crear "web apps" como si fueran aplicaciones nativas.
-• Activar modo de optimización para juegos.
-• Un lanzador personalizado de scripts/aplicaciones.
-**System76 Power** Gestión avanzada de energía con:
-• Daemon de optimización de batería.
-• Interfaz gráfica para perfiles de energía.
-• Click en icono de batería en polybar para acceso rápido.
-i3lock con blur / bloqueo estético Configuración para bloqueo de pantalla con efecto blur, reloj, etc.
-
-# Myconfig
-
-Sistema de configuración completo para i3wm, polybar, rofi y aplicaciones web con Tokyo Night theme.
-
-### Instalación Rápida con curl (Una sola línea)
+## 🚀 Instalación Rápida (Una línea)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/osmargm1202/Myconfig/master/install.sh | bash -x
-
+curl -fsSL https://raw.githubusercontent.com/osmargm1202/Myconfig/master/install.sh | bash
 ```
 
+Este comando:
+- ✅ Clona/actualiza el repositorio en `~/Myconfig`
+- ✅ Instala Go si no está disponible
+- ✅ Compila el binario `orgmos`
+- ✅ Crea symlink en `/usr/local/bin/orgmos`
+- ✅ Crea entrada de escritorio
+
+## 📦 Instalación Manual
+
+### 1. Clonar repositorio
+
 ```bash
-curl -fsSL https://custom.or-gm.com/arch.sh | bash
+git clone https://github.com/osmargm1202/Myconfig.git ~/Myconfig
+cd ~/Myconfig
 ```
 
-Este comando ejecuta el instalador en dos fases:
+### 2. Instalar dependencias
 
-**Fase 1 (install.sh):**
-- Descarga/actualiza el repositorio en ~/Myconfig
-- Es simple y compatible con curl | bash  
-- No requiere TTY ni dependencias complejas
+**Requisitos:**
+- Go 1.21+ (se instala automáticamente si falta)
+- Git
+- Make (opcional, pero recomendado)
 
-**Fase 2 (setup.sh):**
-- Muestra menú interactivo con interfaz moderna (Gum)
-- Instaladores modulares organizados en Apps/
-- Opciones: WebApp Creator, SDDM, Plymouth, Wallpapers, etc.
-- Colores azul cielo y navegación con flechas
-
-### Instalación Automática (Método tradicional)
-
+**En Arch Linux:**
 ```bash
-git clone https://github.com/osmargm1202/Myconfig.git
-cd Myconfig
-chmod +x install.sh
-./install.sh
+sudo pacman -S go git make
 ```
 
-El instalador incluye las siguientes opciones:
-
-- **Opción 1**: Instalación Completa Automática
-- **Opción 2**: Instalar WebApp Creator + System Configs
-- **Opción 3**: Instalar AUR Helper
-- **Opción 4**: Instalar Paquetes
-- **Opción 5**: Instalar SDDM Theme (Corners)
-- **Opción 6**: Instalar Plymouth Themes
-- **Opción 7**: Setup Wallpapers
-- **Opción 8**: Instalar System76 Power - Gestión de energía
-- **Opción 9**: Desinstalar todo
-- **Opción 10**: Salir
-
-### Instalación Manual
-
-#### 1. Clonar repositorio
-
+**En Ubuntu/Debian:**
 ```bash
-git clone https://github.com/osmargm1202/Myconfig.git
-cd Myconfig
+sudo apt update && sudo apt install -y golang-go git make
 ```
 
-#### 2. Instalar dependencias
+### 3. Compilar e instalar
+
+**Importante:** El Makefile se usa con el comando `make`, no ejecutándolo directamente.
 
 ```bash
-# Para el AUR helper (yay)
-chmod +x Apps/install_aur.sh
-./Apps/install_aur.sh
-
-# Para los paquetes del sistema
-chmod +x Apps/install_pkg.sh
-./Apps/install_pkg.sh
+make install
 ```
 
-#### 3. Copiar configuraciones
-
+O manualmente:
 ```bash
-cp -r i3 ~/.config/
-cp -r polybar ~/.config/
-cp -r rofi ~/.config/
-cp -r picom ~/.config/
-cp -r kitty ~/.config/
-cp -r dunst ~/.config/
-cp -r fastfetch ~/.config/
-cp -r kvantum ~/.config/
+go build -o orgmos ./cmd/orgmos
+sudo ln -s $(pwd)/orgmos /usr/local/bin/orgmos
 ```
 
-#### 4. Configurar WebApp Creator y GameMode
+**Nota:** Si ejecutas `./Makefile` directamente, obtendrás errores. Siempre usa `make [target]` (por ejemplo: `make build`, `make install`, `make run`).
+
+## 🎯 Uso
+
+### Menú Interactivo
 
 ```bash
-mkdir -p ~/.local/bin
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-
-# Copiar scripts
-cp Launcher/webapp-creator.sh ~/.local/bin/webapp-creator
-cp Launcher/launcher.sh ~/.local/bin/
-cp Launcher/game-mode.sh ~/.local/bin/
-chmod +x ~/.local/bin/*
+orgmos menu
 ```
 
-### Comandos Importantes
+### Comandos Disponibles
 
-#### Polybar
+| Comando | Descripción |
+|---------|-------------|
+| `orgmos i3` | Instalar i3 Window Manager y componentes |
+| `orgmos hyprland` | Instalar Hyprland y componentes Wayland |
+| `orgmos niri` | Instalar Niri Window Manager y componentes |
+| `orgmos package` | Instalador interactivo de paquetes |
+| `orgmos flatpak` | Instalador de aplicaciones Flatpak |
+| `orgmos paru` | Instalar Paru AUR Helper |
+| `orgmos sddm` | Instalar y configurar SDDM |
+| `orgmos config` | Copiar configuraciones a ~/.config |
+| `orgmos assets` | Copiar iconos y wallpapers |
+| `orgmos arch` | Herramientas de terminal para Arch |
+| `orgmos ubuntu` | Herramientas de terminal para Ubuntu |
+| `orgmos script [cmd]` | Ejecutar scripts de automatización |
+| `orgmos webapp` | WebApp Creator |
+| `orgmos menu` | Menú interactivo principal |
+
+### Ejemplos
 
 ```bash
-# Iniciar polybar
-polybar modern &
+# Instalar i3 completo
+orgmos i3
 
-# Reiniciar polybar
-pkill polybar && polybar modern &
+# Instalar Hyprland
+orgmos hyprland
+
+# Instalar Niri
+orgmos niri
+
+# Instalar paquetes interactivamente
+orgmos package
+
+# Instalar Paru AUR Helper
+orgmos paru
+
+# Copiar todas las configuraciones
+orgmos config
+
+# Copiar iconos y wallpapers
+orgmos assets
+
+# Ejecutar script de modo juego
+orgmos script game-mode
 ```
 
-#### i3lock (requiere i3lock-color)
+## 📁 Estructura del Proyecto
 
-```bash
-# Instalar i3lock-color desde AUR
-yay -S i3lock-color
-
-# Usar comando de bloqueo
-i3lock --blur 5 --clock --date-str "%A, %B %d" --time-str "%I:%M %p"
+```
+Myconfig/
+├── cmd/orgmos/          # Código fuente Go
+├── internal/            # Módulos internos
+│   ├── ui/             # Estilos y UI
+│   ├── packages/       # Gestión de paquetes
+│   ├── logger/         # Sistema de logs
+│   └── utils/          # Utilidades
+├── configs/            # Archivos TOML de paquetes
+│   ├── pkg_general.toml
+│   ├── pkg_i3.toml
+│   ├── pkg_hyprland.toml
+│   ├── pkg_niri.toml
+│   └── pkg_flatpak.toml
+├── configs_to_copy/    # Configuraciones para ~/.config
+├── Icons/              # Iconos del sistema
+├── Wallpapers/         # Fondos de pantalla
+├── sddm/               # Tema SDDM
+└── webapp/             # WebApp Creator
 ```
 
-#### System76 Power
+## 🔧 Actualización
 
 ```bash
-# Instalar System76 Power
-./Apps/install_system76.sh
-
-# Abrir interfaz gráfica
-system76-power-gui-x11
-
-# Ver estado actual de energía
-system76-power profile
-
-# Cambiar perfil de energía (battery/balanced/performance)
-system76-power profile battery
-system76-power profile balanced
-system76-power profile performance
-```
-
-**Características:**
-- Click en el icono de batería en polybar para abrir la GUI
-- Daemon se inicia automáticamente con i3
-- Gestión inteligente de energía para laptops
-- Perfiles optimizados para batería/rendimiento
-
-#### WebApp Creator
-
-```bash
-# Crear nueva webapp
-webapp-creator
-
-# Launcher con aplicaciones
-launcher.sh
-
-# Activar modo gaming
-game-mode.sh
-```
-
-### Actualizaciones
-
-```bash
-cd Myconfig
+cd ~/Myconfig
 git pull origin master
-cp -r ./* ~/.config/
-# Reiniciar i3: Mod+Shift+R
+make install
 ```
 
-## 🚀 Funcionalidades Modernas
+El binario se actualiza automáticamente al ejecutar cualquier comando.
 
-### 🎨 Interfaz Visual con Gum
-- **Menús interactivos** con navegación de flechas
-- **Colores azul cielo** personalizados  
-- **Confirmaciones visuales** estilo moderno
-- **Fallback automático** a interfaz clásica
+## 📝 Logs
 
-### 🖼️ Sistema de Wallpapers Inteligente
-- **Copia automática** de wallpapers a ~/Wallpapers
-- **Wallpaper aleatorio** al iniciar i3 (recordado entre sesiones)
-- **Atajo Super+Alt+Space** para cambiar wallpaper
-- **Sistema de memoria** mantiene último wallpaper usado
+Los logs se guardan en `~/.orgmoslog/` con formato:
+```
+orgmos-{comando}-{timestamp}.log
+```
 
-### 🎭 Temas de Arranque y Login
-- **SDDM Theme Corners** con configuración automática de /etc/sddm.conf
-- **Plymouth Themes** con 11 temas curados y logo de Arch Linux
-- **Autologin opcional** para SDDM
+## 🎨 Características
 
-### 📦 Instaladores Modulares
-- **install_configs.sh** - Configuraciones del sistema
-- **install_webapp.sh** - WebApp Creator completo
-- **install_sddm.sh** - Tema de login SDDM
-- **install_plymouth.sh** - Temas de arranque Plymouth  
-- **install_wallpapers.sh** - Sistema de fondos de pantalla
-- **install_aur.sh** - AUR helper
-- **install_pkg.sh** - Paquetes del sistema
-- **install_npm.sh** - Paquetes npm globales (Claude CLI, etc.)
+- ✅ **Interfaz moderna** con Huh y Lipgloss
+- ✅ **Colores personalizados** (azul, verde, amarillo, rojo)
+- ✅ **Instalación interactiva** por grupos
+- ✅ **Detección automática** de paquetes instalados
+- ✅ **Preselección inteligente** - paquetes instalados aparecen marcados
+- ✅ **Soporte AUR** con Paru
+- ✅ **Gestión de Flatpak**
+- ✅ **Logs automáticos** de todas las operaciones
+- ✅ **Sin confirmaciones excesivas** - UI simple y directa
 
-### 🤖 Herramientas de IA y Desarrollo
+## 🛠️ Desarrollo
 
-El sistema incluye **Claude CLI** (@anthropic-ai/claude-code) instalado globalmente vía npm.
-
-#### Instalación Manual de Paquetes npm
+### Compilar
 
 ```bash
-# Ejecutar el instalador de npm (requiere nodejs y npm)
-chmod +x Apps/install_npm.sh
-./Apps/install_npm.sh
+make build
 ```
 
-Los paquetes npm están listados en `Apps/pkg_npm.lst` y se instalan automáticamente con la opción de instalación completa.
+### Ejecutar sin instalar
 
-### Requisitos del Sistema
+```bash
+make run
+# o
+go run ./cmd/orgmos menu
+```
+
+### Limpiar
+
+```bash
+make clean
+```
+
+## 📋 Requisitos del Sistema
 
 - **Sistema**: Arch Linux (o basado en Arch)
-- **WM**: i3-gaps
+- **WM**: i3-gaps, Hyprland o Niri
 - **Fuentes**: JetBrainsMono Nerd Font
-- **Compositor**: picom
-- **Terminal**: kitty
-- **Launcher**: rofi
-- **Bar**: polybar
+- **Terminal**: kitty o alacritty
+- **Launcher**: rofi o wofi
 
-### Características
+## 🎯 Comandos de Scripts
 
-- **Tema**: Tokyo Night con transparencias
-- **Power Menu**: Botones de apagar, suspender y bloquear en polybar
-- **WebApp Creator**: Crear aplicaciones web como apps nativas
-- **Game Mode**: Optimización para juegos
-- **i3lock**: Bloqueo con blur y transparencia
-- **Configuración completa**: Todo listo para usar
+Los scripts de automatización están disponibles vía `orgmos script`:
 
+- `orgmos script game-mode` - Activar/desactivar modo juego
+- `orgmos script caffeine` - Prevenir suspensión
+- `orgmos script wallpaper` - Cambiar wallpaper
+- `orgmos script display` - Gestión de monitores (rofi)
+- `orgmos script lock` - Bloquear pantalla
+- `orgmos script powermenu` - Menú de energía
 
-### Code Server
+## 🔐 Paru AUR Helper
 
-sudo nano /etc/fstab
-//10.0.0.13/Code /mnt/Code cifs username=osmarg,password=1202,uid=1000,gid=1000,file_mode=0755,dir_mode=0755 0
+Paru es necesario para instalar paquetes desde AUR. El sistema lo detecta automáticamente y ofrece instalarlo si falta:
+
+```bash
+orgmos paru
+```
+
+O se instalará automáticamente cuando sea necesario al ejecutar `orgmos package` o `orgmos arch`.
+
+## 📄 Licencia
+
+Este proyecto es de uso personal. Siéntete libre de usarlo como base para tus propias configuraciones.
+
+## 🤝 Contribuciones
+
+Las contribuciones son bienvenidas. Por favor:
+1. Fork el repositorio
+2. Crea una rama para tu feature
+3. Commit tus cambios
+4. Push a la rama
+5. Abre un Pull Request
+
+---
+
+**Nota**: Este proyecto reemplaza los scripts bash anteriores con un binario Go más robusto y mantenible.

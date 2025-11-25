@@ -1,0 +1,131 @@
+# Lista de paquetes generales del sistema (compartidos entre i3 y Hyprland)
+
+["SISTEMA BASE Y CRÍTICO"]
+packages = [
+    "git",                # control de versiones
+    "openssh",            # cliente/servidor SSH
+    "rsync",              # sincronización de archivos
+    "ntfs-3g",            # soporte NTFS
+    "dosfstools",         # herramientas FAT32
+    "exfatprogs",         # soporte exFAT
+    "man-db",             # páginas de manual
+    "man-pages",          # páginas de manual del sistema
+    "base-devel",         # herramientas de desarrollo básicas
+    "pacman-contrib",     # utilidades adicionales pacman
+]
+
+["AUDIO Y MULTIMEDIA"]
+packages = [
+    "pipewire",           # servidor de audio/video
+    "pipewire-alsa",      # compatibilidad ALSA
+    "pipewire-pulse",     # compatibilidad PulseAudio
+    "pavucontrol",        # control de volumen GUI
+    "pamixer",            # control de volumen CLI
+    "playerctl",          # controles multimedia
+    "mpv",                # reproductor multimedia
+    "antimicrox",         # mapeador de controles/gamepads
+]
+
+["CONECTIVIDAD"]
+packages = [
+    "networkmanager",     # gestor de red
+    "network-manager-applet",  # applet de red para systray
+    "bluez",              # stack bluetooth
+    "bluez-utils",        # utilidades bluetooth CLI
+    "blueman",            # gestor bluetooth GUI
+    "smbclient",          # cliente SMB/CIFS
+    "gvfs-smb",           # integración SMB con gestores de archivos
+]
+
+["DISPLAY MANAGER"]
+packages = [
+    "sddm",               # display manager
+    "qt5-quickcontrols",  # elementos UI para sddm
+    "qt5-quickcontrols2", # elementos UI para sddm
+    "qt5-graphicaleffects", # efectos para sddm
+    "polkit-gnome",       # autenticación GUI para polkit
+]
+
+["HERRAMIENTAS DEL SISTEMA"]
+packages = [
+    "btop",               # monitor del sistema
+    "fastfetch",          # información del sistema
+    "ncdu",               # visor de uso de disco en terminal
+    "gum",                # herramienta CLI interactiva
+]
+
+["TERMINAL Y SHELL"]
+packages = [
+    "fish",               # shell moderno
+    "kitty",              # emulador de terminal
+    "alacritty",          # terminal alternativo
+    "starship",           # prompt personalizable
+    "eza",                # listado de archivos mejorado
+    "duf",                # información de discos mejorada
+    "zoxide",             # navegación de directorios inteligente
+    "fzf",                # buscador difuso
+    "ripgrep",            # búsqueda en texto
+    "fd",                 # búsqueda de archivos
+    "bat",                # cat mejorado
+    "dysk",               # información de discos
+]
+
+["EDITORES Y DESARROLLO"]
+packages = [
+    "neovim",             # editor de texto avanzado
+    "nano",               # editor simple
+    "cursor-bin",         # IDE moderno
+    "lazygit",            # interfaz git
+    "lazydocker",         # interfaz docker
+]
+
+["LENGUAJES Y RUNTIME"]
+packages = [
+    "go",                 # lenguaje Go
+    "nodejs",             # runtime JavaScript
+    "npm",                # gestor de paquetes Node.js
+    "uv",                 # gestor de paquetes Python
+    "python-requests",    # biblioteca HTTP para Python
+    "python-rich",        # terminal mejorado con colores
+    "yt-dlp",             # descargador de videos
+]
+
+["APLICACIONES GRÁFICAS"]
+packages = [
+    "chromium",           # navegador web
+    "dolphin",            # gestor de archivos
+    "kate",               # editor de texto KDE
+    "okular",             # visor de documentos
+    "gnome-calculator",   # calculadora
+    "inkscape",           # editor gráfico vectorial
+    "gimp",               # editor de imágenes
+    "imagemagick",        # utilidades de conversión de imágenes
+]
+
+["HERRAMIENTAS Y UTILIDADES"]
+packages = [
+    "ark",                # archivador
+    "unzip",              # extractor zip
+    "docker",             # contenedores
+    "localsend",          # transferencia de archivos local
+    "pacseek",            # explorador de paquetes
+    "jq",                 # procesador JSON
+    "wget",               # descargador web
+    "curl",               # cliente web
+    "gnome-keyring",      # gestor de claves y contraseñas
+    "libsecret",          # biblioteca para acceso a keyring
+    "seahorse",           # gestor gráfico de llaveros
+]
+
+["THEMING Y CONFIGURACIÓN"]
+packages = [
+    "nwg-look",           # configuración GTK
+    "qt5ct",              # configuración Qt5
+    "qt6ct",              # configuración Qt6
+    "kvantum",            # motor de temas Qt6
+    "kvantum-qt5",        # motor de temas Qt5
+    "noto-fonts-emoji",   # fuente emoji
+    "ttf-jetbrains-mono-nerd",  # fuente nerdfont
+    "ttf-jetbrains-mono", # fuente monospace
+    "ttf-roboto",         # fuente sans-serif
+]
