@@ -1,101 +1,62 @@
-# Paquetes específicos para Niri (Wayland)
-
 ["NIRI CORE"]
 packages = [
-    "niri",                      # compositor Wayland
-    "xwayland-satellite",        # soporte X11
-    "xdg-desktop-portal",        # portal base para Wayland (requerido por Noctalia)
-    "xdg-desktop-portal-gnome",  # portal para Wayland
-    "xdg-desktop-portal-gtk",    # portal GTK
+    "niri",
+    "xwayland-satellite",
+    "xdg-desktop-portal",
+    "xdg-desktop-portal-gnome",
 ]
 
-["SHELL Y GESTIÓN"]
+["DMS SHELL Y DEPENDENCIAS"]
 packages = [
-    "dms-shell-bin",             # shell para Niri (AUR)
+    "dms-shell-niri-git",
+    "quickshell",
+    "matugen-git",
+    "dgop",
+    "dsearch",
+    "hyprpicker",
 ]
 
-["UTILIDADES DE COLOR"]
+["CLIPBOARD"]
 packages = [
-    "matugen-git",               # generador de colores Material You (AUR) - requerido por Noctalia
-]
-
-["CLIPBOARD Y CAPTURA"]
-packages = [
-    "wl-clipboard",              # gestor de portapapeles Wayland
-    "cliphist",                  # historial de portapapeles
-    "grim",                      # capturas de pantalla
-    "slurp",                     # selección de área
-    "swappy",                    # editor de capturas
-]
-
-["WALLPAPER"]
-packages = [
-    "swaybg",                    # fondo de pantalla estático Wayland
-]
-
-["BLOQUEO Y NOTIFICACIONES"]
-packages = [
-    "swaylock",                  # pantalla de bloqueo Wayland
-    "swayidle",                  # gestor de inactividad Wayland
-    "swaync",                    # centro de notificaciones Wayland
-    "libnotify",                 # notify-send para notificaciones
+    "wl-paste",
+    "cliphist",
 ]
 
 ["AUDIO Y MULTIMEDIA"]
 packages = [
-    "cava",                      # visualizador de audio (AUR)
-    "qt6-multimedia-ffmpeg",     # soporte multimedia Qt6
-    "wireplumber",               # gestor de sesión PipeWire (wpctl)
-    "playerctl",                 # control de reproductores multimedia
+    "wireplumber",
+    "playerctl",
 ]
 
 ["TERMINAL Y APLICACIONES"]
 packages = [
-    "alacritty",                 # terminal recomendado
-    "kitty",                     # terminal alternativo
-    "foot",                      # terminal ligero para Wayland
-    "dolphin",                   # gestor de archivos
+    "alacritty",
+    "dolphin",
 ]
 
-["BARRAS Y LANZADORES"]
+["FUENTES Y EXTRAS"]
 packages = [
-    "waybar",                    # barra del sistema recomendada
-    "wofi",                      # lanzador para Wayland
-    "rofi-wayland",              # rofi con soporte Wayland
-]
-
-["NOCTALIA SHELL"]
-packages = [
-    "noctalia-shell",            # shell basada en Waybar (AUR)
-    "quickshell",                # framework core para Noctalia (AUR)
-    "ttf-roboto",                # fuente UI por defecto
-    "inter-font",                # fuente para headers (reloj en LockScreen, etc.)
-    "gpu-screen-recorder",       # funcionalidad de grabación de pantalla (AUR)
-    "ddcutil",                   # control de brillo para monitores de escritorio (⚠️ puede causar inestabilidad)
-    "wlsunset",                  # funcionalidad de luz nocturna
-    "python3",                   # para eventos de calendario
-    "evolution-data-server",     # para eventos de calendario
+    "ttf-roboto",
+    "inter-font",
+    "gpu-screen-recorder",
+    "wlsunset",
 ]
 
 ["SOPORTE QT/WAYLAND"]
 packages = [
-    "qt5-wayland",               # soporte Qt5 para Wayland
-    "qt6-wayland",               # soporte Qt6 para Wayland
-    "qt5ct-kde",                 # configuración Qt5 para KDE
-    "qt6ct-kde",                 # configuración Qt6 para KDE
-    "polkit-kde-agent",          # autenticación GUI
+    "qt5-wayland",
+    "qt6-wayland",
+    "polkit-kde-agent",
 ]
 
-["UTILIDADES ORGMOS"]
+["UTILIDADES"]
 packages = [
-    "brightnessctl",             # control de brillo (usado en keybindings)
-    "inotify-tools",             # herramientas para monitorear cambios en archivos
-    "app2unit",                  # convertir aplicaciones a unidades systemd
-    "trash-cli",                 # utilidad CLI para la papelera
+    "brightnessctl",
+    "trash-cli",
 ]
 
 ["TEMAS Y APARIENCIA"]
 packages = [
-    "adw-gtk-theme",             # tema GTK Adwaita mejorado
-    "papirus-icon-theme",        # tema de iconos Papirus
+    "papirus-icon-theme",
+    "bibata-cursor-theme",         # tema de cursor minimalista
 ]

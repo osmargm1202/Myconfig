@@ -87,19 +87,49 @@ else
     cd "$REPO_DIR"
 fi
 
-# Compilar binario
+# Compilar binario en directorio temporal
 echo -e "${BLUE}Compilando binario...${NC}"
+TEMP_BINARY=$(mktemp)
+BIN_DIR="$HOME/.local/bin"
+mkdir -p "$BIN_DIR"
+
 if command -v make &> /dev/null; then
-    make install
+    # Usar make pero compilar a directorio temporal
+    cd "$REPO_DIR"
+    go build -o "$TEMP_BINARY" ./cmd/orgmos
+    mv "$TEMP_BINARY" "$BIN_DIR/orgmos"
+    chmod +x "$BIN_DIR/orgmos"
+    echo -e "${GREEN}✓ Binario compilado en $BIN_DIR/orgmos${NC}"
+    
+    # Crear desktop entry si no existe
+    mkdir -p ~/.local/share/applications
+    if [ ! -f ~/.local/share/applications/orgmos.desktop ]; then
+        cat > ~/.local/share/applications/orgmos.desktop << 'EOF'
+[Desktop Entry]
+Name=ORGMOS
+Comment=Sistema de configuración ORGMOS
+Exec=orgmos menu
+Terminal=true
+Type=Application
+Icon=orgmos
+Categories=System;Utility;
+EOF
+        chmod +x ~/.local/share/applications/orgmos.desktop
+        echo -e "${GREEN}✓ Desktop entry creado${NC}"
+    fi
 else
     # Fallback sin make
-    go build -o "$REPO_DIR/orgmos" ./cmd/orgmos
-    REPO_DIR_ABS="$(cd "$REPO_DIR" && pwd)"
-    if [ -L /usr/local/bin/orgmos ] || [ -f /usr/local/bin/orgmos ]; then
-        sudo rm /usr/local/bin/orgmos
-    fi
-    sudo ln -s "$REPO_DIR_ABS/orgmos" /usr/local/bin/orgmos
-    echo -e "${GREEN}✓ Symlink creado${NC}"
+    cd "$REPO_DIR"
+    go build -o "$TEMP_BINARY" ./cmd/orgmos
+    mv "$TEMP_BINARY" "$BIN_DIR/orgmos"
+    chmod +x "$BIN_DIR/orgmos"
+    echo -e "${GREEN}✓ Binario compilado en $BIN_DIR/orgmos${NC}"
+fi
+
+# Verificar que ~/.local/bin esté en PATH
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+    log_status warn "~/.local/bin no está en PATH. Agrégalo a tu shell profile:"
+    echo -e "${YELLOW}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
 fi
 
 echo
@@ -107,6 +137,7 @@ echo -e "${GREEN}╔════════════════════
 echo -e "${GREEN}║   ¡Instalación completada!            ║${NC}"
 echo -e "${GREEN}╚════════════════════════════════════════╝${NC}"
 echo
+echo -e "${BLUE}Binario instalado en:${NC} $BIN_DIR/orgmos"
 echo -e "${BLUE}Ejecuta:${NC} orgmos menu"
 echo -e "${BLUE}O visita:${NC} $REPO_DIR"
 echo

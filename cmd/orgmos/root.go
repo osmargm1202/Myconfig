@@ -18,23 +18,10 @@ var (
 		Use:   "orgmos",
 		Short: "ORGMOS - Sistema de configuración para Arch Linux",
 		Long: `ORGMOS es una herramienta de configuración y automatización
-para sistemas Arch Linux con i3 o Hyprland.
+para sistemas Arch Linux con i3, Hyprland o Niri.
 
-Comandos disponibles:
-  i3        - Instalar i3 y componentes
-  hyprland  - Instalar Hyprland y componentes
-  niri      - Instalar Niri Window Manager
-  package   - Instalador interactivo de paquetes
-  flatpak   - Instalador de aplicaciones Flatpak
-  paru      - Instalar Paru AUR Helper
-  sddm      - Instalar y configurar SDDM
-  config    - Copiar configuraciones a ~/.config
-  assets    - Copiar iconos y wallpapers
-  arch      - Herramientas de terminal para Arch
-  ubuntu    - Herramientas de terminal para Ubuntu
-  script    - Ejecutar scripts de automatización
-  webapp    - WebApp Creator
-  menu      - Menú interactivo`,
+Usa 'orgmos menu' para acceder al menú interactivo o ejecuta
+'orgmos [comando] --help' para ver la ayuda de un comando específico.`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			// Actualizar repo al iniciar
 			utils.UpdateRepo()

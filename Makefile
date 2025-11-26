@@ -2,34 +2,30 @@
 
 # Variables
 BINARY_NAME=orgmos
-BUILD_DIR=.
 CMD_DIR=./cmd/orgmos
 
-# Build the binary
+# Build the binary to temporary location
 build:
 	@echo "Building $(BINARY_NAME)..."
-	@go build -o $(BUILD_DIR)/$(BINARY_NAME) $(CMD_DIR)
-	@echo "Build complete: $(BUILD_DIR)/$(BINARY_NAME)"
+	@TEMP_BINARY=$$(mktemp); \
+	BIN_DIR=$$HOME/.local/bin; \
+	go build -o $$TEMP_BINARY $(CMD_DIR); \
+	mkdir -p $$BIN_DIR; \
+	mv $$TEMP_BINARY $$BIN_DIR/$(BINARY_NAME); \
+	chmod +x $$BIN_DIR/$(BINARY_NAME); \
+	echo "Build complete: $$BIN_DIR/$(BINARY_NAME)"
 
-# Install: create symlink to binary in Myconfig
+# Install: build and create desktop entry
 install: build
-	@echo "Creating symlink to $(BINARY_NAME)..."
-	@REPO_DIR=$$(cd $(BUILD_DIR) && pwd); \
-	if [ -L /usr/local/bin/$(BINARY_NAME) ] || [ -f /usr/local/bin/$(BINARY_NAME) ]; then \
-		sudo rm /usr/local/bin/$(BINARY_NAME); \
-	fi; \
-	sudo ln -s $$REPO_DIR/$(BINARY_NAME) /usr/local/bin/$(BINARY_NAME); \
-	echo "Symlink created: /usr/local/bin/$(BINARY_NAME) -> $$REPO_DIR/$(BINARY_NAME)"
 	@echo "Creating desktop entry..."
 	@mkdir -p ~/.local/share/applications
 	@echo '[Desktop Entry]\nName=ORGMOS\nComment=Sistema de configuración ORGMOS\nExec=orgmos menu\nTerminal=true\nType=Application\nIcon=orgmos\nCategories=System;Utility;' > ~/.local/share/applications/orgmos.desktop
 	@chmod +x ~/.local/share/applications/orgmos.desktop
-	@echo "Installation complete!"
+	@echo "Installation complete! Binary installed to ~/.local/bin/$(BINARY_NAME)"
 
-# Clean build artifacts
+# Clean build artifacts (no longer needed as we build to temp, but keep for compatibility)
 clean:
 	@echo "Cleaning..."
-	@rm -f $(BUILD_DIR)/$(BINARY_NAME)
 	@go clean
 	@echo "Clean complete"
 

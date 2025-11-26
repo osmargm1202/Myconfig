@@ -63,26 +63,26 @@ func runFlatpakInstall(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	var selectedPackages []string
-
-	// Iterar por cada grupo
+	// Combinar todos los paquetes en una sola lista
+	var allOptions []huh.Option[string]
+	
 	for _, group := range groups {
-		var options []huh.Option[string]
-
 		for _, pkg := range group.Packages {
 			// Obtener información de la aplicación
 			name, desc := packages.GetFlatpakInfo(pkg)
 			
-			// Crear etiqueta con nombre real y descripción
+			// Crear etiqueta con nombre real, descripción y categoría
 			label := pkg
 			if name != "" && name != pkg {
 				if desc != "" {
-					label = fmt.Sprintf("%s - %s (%s)", name, desc, pkg)
+					label = fmt.Sprintf("[%s] %s - %s (%s)", group.Name, name, desc, pkg)
 				} else {
-					label = fmt.Sprintf("%s (%s)", name, pkg)
+					label = fmt.Sprintf("[%s] %s (%s)", group.Name, name, pkg)
 				}
 			} else if desc != "" {
-				label = fmt.Sprintf("%s - %s", pkg, desc)
+				label = fmt.Sprintf("[%s] %s - %s", group.Name, pkg, desc)
+			} else {
+				label = fmt.Sprintf("[%s] %s", group.Name, pkg)
 			}
 			
 			opt := huh.NewOption(label, pkg)
@@ -91,25 +91,26 @@ func runFlatpakInstall(cmd *cobra.Command, args []string) {
 			} else {
 				opt = opt.Selected(false) // No instalado, no preseleccionar
 			}
-			options = append(options, opt)
+			allOptions = append(allOptions, opt)
 		}
+	}
 
-		var selected []string
-		form := ui.NewForm(
-			huh.NewGroup(
-				huh.NewMultiSelect[string]().
-					Title(group.Name).
-					Description("Ya instalados aparecen marcados").
-					Options(options...).
-					Value(&selected),
-			),
-		)
+	// Crear un solo formulario con todos los paquetes
+	var selectedPackages []string
+	form := ui.NewForm(
+		huh.NewGroup(
+			huh.NewMultiSelect[string]().
+				Title("Aplicaciones Flatpak").
+				Description("Selecciona las aplicaciones a instalar. Las ya instaladas aparecen marcadas. Usa las flechas para navegar y Espacio para seleccionar.").
+				Options(allOptions...).
+				Value(&selectedPackages).
+				Height(20), // Altura para hacer scrollable
+		),
+	)
 
-		if err := form.Run(); err != nil {
-			continue
-		}
-
-		selectedPackages = append(selectedPackages, selected...)
+	if err := form.Run(); err != nil {
+		fmt.Println(ui.Warning("Selección cancelada"))
+		return
 	}
 
 	if len(selectedPackages) == 0 {

@@ -2,22 +2,31 @@ spawn-at-startup "bash" "-lc" "gnome-keyring-daemon --start --components=pkcs11,
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "/usr/lib/xdg-desktop-portal-xapp"
 spawn-at-startup "xwayland-satellite"
-spawn-at-startup "waybar"
-spawn-at-startup "qs" "-c" "noctalia-shell"
+//spawn-at-startup "waybar"
+//spawn-at-startup "qs" "-c" "noctalia-shell"
 spawn-at-startup "nm-applet"
 spawn-at-startup "blueman-applet"
-spawn-at-startup "bash" "-lc" "pkill -f 'wl-paste --type text --watch cliphist store' 2>/dev/null || true; wl-paste --type text --watch cliphist store"
-spawn-at-startup "bash" "-lc" "pkill -f 'wl-paste --type image --watch cliphist store' 2>/dev/null || true; wl-paste --type image --watch cliphist store"
+//spawn-at-startup "bash" "-lc" "pkill -f 'wl-paste --type text --watch cliphist store' 2>/dev/null || true; wl-paste --type text --watch cliphist store"
+//spawn-at-startup "bash" "-lc" "pkill -f 'wl-paste --type image --watch cliphist store' 2>/dev/null || true; wl-paste --type image --watch cliphist store"
 spawn-at-startup "system-config-printer-applet"
-spawn-at-startup "swayidle" "-w" "timeout" "900" "swaylock"
-spawn-at-startup "swaync"
-spawn-at-startup "bash" "-lc" "orgmos script change-wallpaper restore"
+//spawn-at-startup "swayidle" "-w" "timeout" "900" "swaylock"
+//spawn-at-startup "swaync"
+spawn-at-startup "nextcloud"
+spawn-at-startup "sh" "-c" "wl-paste -t text --watch cliphist store & wl-paste -t image/png --watch cliphist store"
 
 workspace "1"
 workspace "2"
 workspace "3"
+workspace "4"
+workspace "5"
+
 
 prefer-no-csd
+
+environment {
+    ELECTRON_OZONE_PLATFORM_HINT "auto"
+}
+
 
 hotkey-overlay {
     skip-at-startup
@@ -197,6 +206,19 @@ window-rule {
     open-floating true
 }
 
+window-rule {
+    match app-id="Bricscad"
+    open-focused false
+    open-maximized true
+    open-floating true
+    tiled-state false
+    opacity 1.0
+}
+
+window-rule {
+    match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
+    default-floating-position x=10 y=10 relative-to="bottom-right"
+}
 
 window-rule {
     match app-id="Kitty$"
@@ -222,17 +244,29 @@ overview {
 }
 
 binds {
-    Mod+Shift+Slash { show-hotkey-overlay; }
+    Mod+Slash { show-hotkey-overlay; }
     Mod+Return hotkey-overlay-title="Abrir terminal (kitty)" { spawn "kitty"; }
-    Mod+M hotkey-overlay-title="Lanzador de apps (rofi)" { spawn "rofi" "-show" "drun" "-show-icons"; }
+    //Mod+M hotkey-overlay-title="Lanzador de apps (rofi)" { spawn "rofi" "-show" "drun" "-show-icons"; }
+    //Mod+Alt+L hotkey-overlay-title="Lock the Screen: swaylock (transparente + blur)" { spawn "swaylock" "--grace" "0" "--daemonize" "--screenshots" "--effect-blur" "7x3" "--effect-vignette" "0.3:0.3" "--fade-in" "0.2"; }
     Mod+E hotkey-overlay-title="Gestor de archivos" { spawn "dolphin"; }
     Mod+W hotkey-overlay-title="Navegador" { spawn "chromium"; }
     Mod+Tab hotkey-overlay-title="Cambiar ventana (rofi)" { spawn "rofi" "-show" "window"; }
-    Mod+Slash hotkey-overlay-title="Lista de atajos" { spawn-sh "orgmos script hotkey"; }
-    Mod+Alt+G hotkey-overlay-title="Modo juego" { spawn-sh "orgmos script game-mode"; }
-    Mod+Alt+Space hotkey-overlay-title="Wallpaper aleatorio" { spawn-sh "orgmos script change-wallpaper random"; }
-    Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
-    Super+Alt+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
+
+    //noctalia-shell (comentados para usar dms)
+    //Mod+Y hotkey-overlay-title="Historial del portapapeles" { spawn-sh "qs -c noctalia-shell ipc call launcher clipboard"; }
+    //Mod+Alt+E hotkey-overlay-title="Menú de sesión (apagar, suspender, desloguiar)" { spawn-sh "qs -c noctalia-shell ipc call sessionMenu toggle"; }
+    //Mod+M hotkey-overlay-title="Lanzador de apps (noctalia)" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
+    //Mod+Alt+L hotkey-overlay-title="Bloquear y suspender" { spawn-sh "qs -c noctalia-shell ipc call sessionMenu lockAndSuspend"; }
+
+    // dms (usan gum e interacción en CLI, con colores en la terminal)
+    Mod+Y hotkey-overlay-title="Historial del portapapeles" { spawn-sh "dms ipc call clipboard open"; }
+    Mod+Alt+E hotkey-overlay-title="Menú de sesión (apagar, suspender, cerrar sesión)" { spawn-sh "dms ipc call powermenu toggle"; }
+    Mod+M hotkey-overlay-title="Lanzador de aplicaciones" { spawn-sh "dms ipc call spotlight toggle"; }
+    Super+Alt+L hotkey-overlay-title="Bloquear sesión" { spawn-sh "dms ipc call lock lock"; }
+    Mod+N hotkey-overlay-title="Bloc de notas" { spawn-sh "dms ipc call notepad toggle"; }
+    Super+Alt+W hotkey-overlay-title="Cambiar fondo de pantalla" { spawn-sh "dms ipc call wallpaper next"; }
+
+
 
     XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
     XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-"; }

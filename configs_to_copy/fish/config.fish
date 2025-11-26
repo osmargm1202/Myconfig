@@ -6,6 +6,13 @@ if status --is-login
     set -gx PATH $PATH ~/linux/bin
 end
 
+# Iniciar Niri automáticamente al hacer login en TTY1
+if status is-login
+    if test -z "$DISPLAY" -a "$XDG_VTNR" -eq 1
+        exec niri-session
+    end
+end
+
 # PATH
 set -gx PATH $HOME/.local/bin $PATH
 
