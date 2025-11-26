@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
+	"path/filepath"
 
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
@@ -113,6 +115,9 @@ func runNiriInstall(cmd *cobra.Command, args []string) {
 	// Habilitar servicio de usuario
 	enableNiriService()
 
+	// Instalar Noctalia Shell manualmente
+	installNoctaliaShell()
+
 	fmt.Println(ui.Success("Niri y componentes instalados correctamente"))
 	fmt.Println(ui.Info("Reinicia tu sesión o ejecuta: systemctl --user start niri.service"))
 	logger.Info("Instalación Niri completada")
@@ -133,5 +138,65 @@ func enableNiriService() {
 		fmt.Println(ui.Success("Servicio Niri configurado"))
 		logger.Info("Servicio Niri habilitado con dms")
 	}
+}
+
+func installNoctaliaShell() {
+	fmt.Println(ui.Info("Instalando Noctalia Shell..."))
+
+	// Obtener directorio home del usuario
+	usr, err := user.Current()
+	if err != nil {
+		fmt.Println(ui.Warning("No se pudo obtener el directorio home del usuario"))
+		logger.Warn("Error obteniendo usuario: %v", err)
+		return
+	}
+
+	noctaliaDir := filepath.Join(usr.HomeDir, ".config", "quickshell", "noctalia-shell")
+
+	// Verificar si ya está instalado
+	if _, err := os.Stat(noctaliaDir); err == nil {
+		fmt.Println(ui.Warning("Noctalia Shell ya está instalado en " + noctaliaDir))
+		fmt.Println(ui.Info("Para reinstalar, elimina el directorio manualmente"))
+		logger.Info("Noctalia Shell ya instalado, omitiendo descarga")
+		return
+	}
+
+	// Crear directorio
+	if err := os.MkdirAll(noctaliaDir, 0755); err != nil {
+		fmt.Println(ui.Error(fmt.Sprintf("Error creando directorio: %v", err)))
+		logger.Error("Error creando directorio Noctalia: %v", err)
+		return
+	}
+
+	// Descargar e instalar Noctalia
+	fmt.Println(ui.Info("Descargando Noctalia Shell desde GitHub..."))
+	curlCmd := exec.Command("curl", "-sL", "https://github.com/noctalia-dev/noctalia-shell/releases/latest/download/noctalia-latest.tar.gz")
+	tarCmd := exec.Command("tar", "-xz", "--strip-components=1", "-C", noctaliaDir)
+
+	// Conectar curl a tar
+	tarCmd.Stdin, _ = curlCmd.StdoutPipe()
+	tarCmd.Stderr = os.Stderr
+
+	if err := tarCmd.Start(); err != nil {
+		fmt.Println(ui.Error(fmt.Sprintf("Error iniciando tar: %v", err)))
+		logger.Error("Error iniciando tar: %v", err)
+		return
+	}
+
+	if err := curlCmd.Run(); err != nil {
+		fmt.Println(ui.Error(fmt.Sprintf("Error descargando Noctalia: %v", err)))
+		logger.Error("Error descargando Noctalia: %v", err)
+		tarCmd.Process.Kill()
+		return
+	}
+
+	if err := tarCmd.Wait(); err != nil {
+		fmt.Println(ui.Error(fmt.Sprintf("Error extrayendo Noctalia: %v", err)))
+		logger.Error("Error extrayendo Noctalia: %v", err)
+		return
+	}
+
+	fmt.Println(ui.Success("Noctalia Shell instalado correctamente en " + noctaliaDir))
+	logger.Info("Noctalia Shell instalado en: %s", noctaliaDir)
 }
 

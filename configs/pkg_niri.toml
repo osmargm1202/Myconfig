@@ -4,6 +4,7 @@
 packages = [
     "niri",                      # compositor Wayland
     "xwayland-satellite",        # soporte X11
+    "xdg-desktop-portal",        # portal base para Wayland (requerido por Noctalia)
     "xdg-desktop-portal-gnome",  # portal para Wayland
     "xdg-desktop-portal-gtk",    # portal GTK
 ]
@@ -15,7 +16,7 @@ packages = [
 
 ["UTILIDADES DE COLOR"]
 packages = [
-    "matugen",                   # generador de colores (AUR)
+    "matugen-git",               # generador de colores Material You (AUR) - requerido por Noctalia
 ]
 
 ["CLIPBOARD Y CAPTURA"]
@@ -65,7 +66,15 @@ packages = [
 
 ["NOCTALIA SHELL"]
 packages = [
-    "noctalia-shell",            # shell basada en Waybar (paru -S noctalia-shell)
+    "noctalia-shell",            # shell basada en Waybar (AUR)
+    "quickshell",                # framework core para Noctalia (AUR)
+    "ttf-roboto",                # fuente UI por defecto
+    "inter-font",                # fuente para headers (reloj en LockScreen, etc.)
+    "gpu-screen-recorder",       # funcionalidad de grabación de pantalla (AUR)
+    "ddcutil",                   # control de brillo para monitores de escritorio (⚠️ puede causar inestabilidad)
+    "wlsunset",                  # funcionalidad de luz nocturna
+    "python3",                   # para eventos de calendario
+    "evolution-data-server",     # para eventos de calendario
 ]
 
 ["SOPORTE QT/WAYLAND"]
