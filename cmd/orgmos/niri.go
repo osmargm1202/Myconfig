@@ -25,8 +25,7 @@ func init() {
 }
 
 func runNiriInstall(cmd *cobra.Command, args []string) {
-	logger.Init("niri")
-	defer logger.Close()
+	logger.InitOnError("niri")
 
 	// Verificar paru antes de continuar
 	if !packages.CheckParuInstalled() {

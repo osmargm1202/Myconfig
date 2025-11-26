@@ -25,8 +25,7 @@ func init() {
 }
 
 func runFlatpakInstall(cmd *cobra.Command, args []string) {
-	logger.Init("flatpak")
-	defer logger.Close()
+	logger.InitOnError("flatpak")
 
 	fmt.Println(ui.Title("Instalador de Flatpak"))
 
@@ -71,7 +70,22 @@ func runFlatpakInstall(cmd *cobra.Command, args []string) {
 		var options []huh.Option[string]
 
 		for _, pkg := range group.Packages {
-			opt := huh.NewOption(pkg, pkg)
+			// Obtener información de la aplicación
+			name, desc := packages.GetFlatpakInfo(pkg)
+			
+			// Crear etiqueta con nombre real y descripción
+			label := pkg
+			if name != "" && name != pkg {
+				if desc != "" {
+					label = fmt.Sprintf("%s - %s (%s)", name, desc, pkg)
+				} else {
+					label = fmt.Sprintf("%s (%s)", name, pkg)
+				}
+			} else if desc != "" {
+				label = fmt.Sprintf("%s - %s", pkg, desc)
+			}
+			
+			opt := huh.NewOption(label, pkg)
 			if installedMap[pkg] {
 				opt = opt.Selected(true) // Ya instalado, preseleccionar
 			} else {

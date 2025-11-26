@@ -12,34 +12,6 @@ import (
 	"orgmos/internal/utils"
 )
 
-var ubuntuPackages = []string{
-	// Sistema base
-	"git",
-	"openssh-client",
-	"rsync",
-	"ntfs-3g",
-	"dosfstools",
-	"exfatprogs",
-	"man-db",
-	"build-essential",
-	// Terminal
-	"fish",
-	"kitty",
-	"alacritty",
-	// Herramientas (algunas pueden no estar en repos)
-	"fzf",
-	"ripgrep",
-	"fd-find",
-	"bat",
-	// Editores
-	"neovim",
-	"nano",
-	// Utilidades
-	"jq",
-	"curl",
-	"wget",
-}
-
 // Paquetes que requieren instalación especial en Ubuntu
 var ubuntuSpecialPackages = map[string]string{
 	"starship": "curl -sS https://starship.rs/install.sh | sh -s -- -y",
@@ -60,8 +32,7 @@ func init() {
 }
 
 func runUbuntuInstall(cmd *cobra.Command, args []string) {
-	logger.Init("ubuntu")
-	defer logger.Close()
+	logger.InitOnError("ubuntu")
 
 	fmt.Println(ui.Title("Herramientas de Terminal - Ubuntu"))
 
@@ -69,6 +40,20 @@ func runUbuntuInstall(cmd *cobra.Command, args []string) {
 	if !utils.CommandExists("apt") {
 		fmt.Println(ui.Error("Este comando es solo para sistemas basados en Debian/Ubuntu"))
 		return
+	}
+
+	// Cargar paquetes desde TOML
+	groups, err := packages.ParseTOML("pkg_ubuntu.toml")
+	if err != nil {
+		fmt.Println(ui.Error(fmt.Sprintf("Error cargando paquetes: %v", err)))
+		logger.Error("Error parseando TOML: %v", err)
+		return
+	}
+
+	// Obtener todos los paquetes
+	var ubuntuPackages []string
+	for _, g := range groups {
+		ubuntuPackages = append(ubuntuPackages, g.Packages...)
 	}
 
 	// Confirmación

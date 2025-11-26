@@ -46,8 +46,7 @@ func init() {
 }
 
 func runI3Install(cmd *cobra.Command, args []string) {
-	logger.Init("i3")
-	defer logger.Close()
+	logger.InitOnError("i3")
 
 	fmt.Println(ui.Title("Instalación de i3 Window Manager"))
 

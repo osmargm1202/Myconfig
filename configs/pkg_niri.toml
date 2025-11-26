@@ -32,16 +32,27 @@ packages = [
     "swaybg",                    # fondo de pantalla estático Wayland
 ]
 
+["BLOQUEO Y NOTIFICACIONES"]
+packages = [
+    "swaylock",                  # pantalla de bloqueo Wayland
+    "swayidle",                  # gestor de inactividad Wayland
+    "swaync",                    # centro de notificaciones Wayland
+    "libnotify",                 # notify-send para notificaciones
+]
+
 ["AUDIO Y MULTIMEDIA"]
 packages = [
     "cava",                      # visualizador de audio (AUR)
     "qt6-multimedia-ffmpeg",     # soporte multimedia Qt6
+    "wireplumber",               # gestor de sesión PipeWire (wpctl)
+    "playerctl",                 # control de reproductores multimedia
 ]
 
 ["TERMINAL Y APLICACIONES"]
 packages = [
     "alacritty",                 # terminal recomendado
     "kitty",                     # terminal alternativo
+    "foot",                      # terminal ligero para Wayland
     "dolphin",                   # gestor de archivos
 ]
 
@@ -50,7 +61,6 @@ packages = [
     "waybar",                    # barra del sistema recomendada
     "wofi",                      # lanzador para Wayland
     "rofi-wayland",              # rofi con soporte Wayland
-    "mako",                      # daemon de notificaciones Wayland
 ]
 
 ["NOCTALIA SHELL"]
@@ -62,6 +72,21 @@ packages = [
 packages = [
     "qt5-wayland",               # soporte Qt5 para Wayland
     "qt6-wayland",               # soporte Qt6 para Wayland
+    "qt5ct-kde",                 # configuración Qt5 para KDE
+    "qt6ct-kde",                 # configuración Qt6 para KDE
     "polkit-kde-agent",          # autenticación GUI
 ]
 
+["UTILIDADES ORGMOS"]
+packages = [
+    "brightnessctl",             # control de brillo (usado en keybindings)
+    "inotify-tools",             # herramientas para monitorear cambios en archivos
+    "app2unit",                  # convertir aplicaciones a unidades systemd
+    "trash-cli",                 # utilidad CLI para la papelera
+]
+
+["TEMAS Y APARIENCIA"]
+packages = [
+    "adw-gtk-theme",             # tema GTK Adwaita mejorado
+    "papirus-icon-theme",        # tema de iconos Papirus
+]

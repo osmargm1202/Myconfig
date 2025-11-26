@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"orgmos/internal/logger"
 	"orgmos/internal/ui"
@@ -33,11 +34,50 @@ func UpdateRepo() error {
 	output, err := RunCommandSilent("git", "pull", "--rebase")
 	if err != nil {
 		logger.Error("Error actualizando repo: %s", output)
+		
+		// Analizar el tipo de error
+		outputLower := strings.ToLower(output)
+		
+		// Detectar errores de conexión
+		if strings.Contains(outputLower, "could not resolve host") ||
+			strings.Contains(outputLower, "connection refused") ||
+			strings.Contains(outputLower, "failed to connect") ||
+			strings.Contains(outputLower, "network is unreachable") ||
+			strings.Contains(outputLower, "no route to host") ||
+			strings.Contains(outputLower, "name or service not known") {
+			fmt.Println(ui.Warning("No se pudo actualizar: sin conexión a internet"))
+			return nil
+		}
+		
+		// Detectar si ya está actualizado (a veces git devuelve error pero está actualizado)
+		if strings.Contains(outputLower, "already up to date") ||
+			strings.Contains(outputLower, "ya está actualizado") {
+			fmt.Println(ui.Dim("Repositorio ya actualizado"))
+			return nil
+		}
+		
+		// Detectar conflictos o cambios locales que necesitan atención
+		if strings.Contains(outputLower, "your local changes") ||
+			strings.Contains(outputLower, "tus cambios locales") ||
+			strings.Contains(outputLower, "cannot pull with rebase") ||
+			strings.Contains(outputLower, "conflict") ||
+			strings.Contains(outputLower, "unmerged paths") ||
+			strings.Contains(outputLower, "needs merge") {
+			fmt.Println(ui.Warning("No se pudo actualizar: hay cambios locales que necesitan ser actualizados primero"))
+			fmt.Println(ui.Dim("Ejecuta 'git status' para ver los cambios y resuélvelos manualmente"))
+			return nil
+		}
+		
+		// Error genérico
 		fmt.Println(ui.Warning("No se pudo actualizar el repositorio"))
 		return nil // No es error fatal
 	}
 
-	if output == "Already up to date." || output == "Ya está actualizado." {
+	// Verificar si ya estaba actualizado
+	outputLower := strings.ToLower(output)
+	if strings.Contains(outputLower, "already up to date") ||
+		strings.Contains(outputLower, "ya está actualizado") ||
+		output == "" {
 		fmt.Println(ui.Dim("Repositorio ya actualizado"))
 	} else {
 		fmt.Println(ui.Success("Repositorio actualizado"))
@@ -45,6 +85,7 @@ func UpdateRepo() error {
 	}
 
 	return nil
+
 }
 
 // CreateDesktopFile crea el archivo .desktop para orgmos

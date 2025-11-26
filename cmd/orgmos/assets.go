@@ -16,8 +16,8 @@ import (
 
 var assetsCmd = &cobra.Command{
 	Use:   "assets",
-	Short: "Copiar iconos y wallpapers",
-	Long:  `Copia los iconos a ~/.local/share/icons y los wallpapers a ~/Pictures/Wallpapers`,
+	Short: "Copiar wallpapers",
+	Long:  `Copia los wallpapers a ~/Pictures/Wallpapers`,
 	Run:   runAssetsCopy,
 }
 
@@ -26,31 +26,18 @@ func init() {
 }
 
 func runAssetsCopy(cmd *cobra.Command, args []string) {
-	logger.Init("assets")
-	defer logger.Close()
+	logger.InitOnError("assets")
 
-	fmt.Println(ui.Title("Copiar Iconos y Wallpapers"))
+	fmt.Println(ui.Title("Copiar Wallpapers"))
 
 	repoDir := utils.GetRepoDir()
 	homeDir, _ := os.UserHomeDir()
 
-	iconsSource := filepath.Join(repoDir, "Icons")
 	wallpapersSource := filepath.Join(repoDir, "Wallpapers")
-
-	iconsDest := filepath.Join(homeDir, ".local", "share", "icons")
 	wallpapersDest := filepath.Join(homeDir, "Pictures", "Wallpapers")
 
 	// Contar archivos
-	var iconCount, wallpaperCount int
-
-	if _, err := os.Stat(iconsSource); err == nil {
-		filepath.WalkDir(iconsSource, func(path string, d fs.DirEntry, err error) error {
-			if err == nil && !d.IsDir() {
-				iconCount++
-			}
-			return nil
-		})
-	}
+	var wallpaperCount int
 
 	if _, err := os.Stat(wallpapersSource); err == nil {
 		filepath.WalkDir(wallpapersSource, func(path string, d fs.DirEntry, err error) error {
@@ -61,13 +48,18 @@ func runAssetsCopy(cmd *cobra.Command, args []string) {
 		})
 	}
 
+	if wallpaperCount == 0 {
+		fmt.Println(ui.Warning("No se encontraron wallpapers para copiar"))
+		return
+	}
+
 	// Confirmación
 	var confirm bool
 	form := ui.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
-				Title(fmt.Sprintf("Se copiarán %d iconos y %d wallpapers", iconCount, wallpaperCount)).
-				Description(fmt.Sprintf("Destinos:\n• Iconos: %s\n• Wallpapers: %s", iconsDest, wallpapersDest)).
+				Title(fmt.Sprintf("Se copiarán %d wallpapers", wallpaperCount)).
+				Description(fmt.Sprintf("Destino: %s", wallpapersDest)).
 				Affirmative("Copiar").
 				Negative("Cancelar").
 				Value(&confirm),
@@ -79,31 +71,15 @@ func runAssetsCopy(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	var totalCopied, totalFailed int
-
-	// Copiar iconos
-	if iconCount > 0 {
-		fmt.Println(ui.Info("Copiando iconos..."))
-		copied, failed := copyDirectory(iconsSource, iconsDest)
-		totalCopied += copied
-		totalFailed += failed
-		fmt.Println(ui.Success(fmt.Sprintf("Iconos copiados: %d", copied)))
-	}
-
 	// Copiar wallpapers
-	if wallpaperCount > 0 {
-		fmt.Println(ui.Info("Copiando wallpapers..."))
-		copied, failed := copyDirectory(wallpapersSource, wallpapersDest)
-		totalCopied += copied
-		totalFailed += failed
-		fmt.Println(ui.Success(fmt.Sprintf("Wallpapers copiados: %d", copied)))
+	fmt.Println(ui.Info("Copiando wallpapers..."))
+	copied, failed := copyDirectory(wallpapersSource, wallpapersDest)
+	
+	fmt.Println(ui.Success(fmt.Sprintf("Wallpapers copiados: %d", copied)))
+	if failed > 0 {
+		fmt.Println(ui.Warning(fmt.Sprintf("Fallidos: %d archivos", failed)))
 	}
-
-	fmt.Println(ui.Success(fmt.Sprintf("Total copiados: %d archivos", totalCopied)))
-	if totalFailed > 0 {
-		fmt.Println(ui.Warning(fmt.Sprintf("Fallidos: %d archivos", totalFailed)))
-	}
-	logger.Info("Assets copiados: %d copiados, %d fallidos", totalCopied, totalFailed)
+	logger.Info("Wallpapers copiados: %d copiados, %d fallidos", copied, failed)
 }
 
 func copyDirectory(src, dst string) (copied, failed int) {

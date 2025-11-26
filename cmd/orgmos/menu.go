@@ -24,8 +24,7 @@ func init() {
 }
 
 func runMenu(cmd *cobra.Command, args []string) {
-	logger.Init("menu")
-	defer logger.Close()
+	logger.InitOnError("menu")
 
 	for {
 		fmt.Print("\033[H\033[2J") // Clear screen

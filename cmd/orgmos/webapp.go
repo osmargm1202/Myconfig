@@ -45,8 +45,7 @@ type webApp struct {
 }
 
 func runWebapp(cmd *cobra.Command, args []string) {
-	logger.Init("webapp")
-	defer logger.Close()
+	logger.InitOnError("webapp")
 
 	if err := ensureWebappEnv(); err != nil {
 		fmt.Println(ui.Error(err.Error()))
@@ -85,8 +84,7 @@ func runWebapp(cmd *cobra.Command, args []string) {
 }
 
 func runWebappInstall(cmd *cobra.Command, args []string) {
-	logger.Init("webapp")
-	defer logger.Close()
+	logger.InitOnError("webapp")
 
 	fmt.Println(ui.Title("Instalar WebApp Creator"))
 

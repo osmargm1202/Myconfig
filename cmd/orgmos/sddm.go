@@ -33,8 +33,7 @@ func init() {
 }
 
 func runSddmInstall(cmd *cobra.Command, args []string) {
-	logger.Init("sddm")
-	defer logger.Close()
+	logger.InitOnError("sddm")
 
 	fmt.Println(ui.Title("Instalación de SDDM"))
 

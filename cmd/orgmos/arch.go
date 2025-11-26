@@ -15,45 +15,6 @@ import (
 	"orgmos/internal/utils"
 )
 
-var archPackages = []string{
-	// Sistema base
-	"git",
-	"openssh",
-	"rsync",
-	"ntfs-3g",
-	"dosfstools",
-	"exfatprogs",
-	"man-db",
-	"man-pages",
-	"base-devel",
-	"pacman-contrib",
-	// Terminal
-	"fish",
-	"kitty",
-	"alacritty",
-	"starship",
-	// Herramientas modernas
-	"eza",
-	"duf",
-	"zoxide",
-	"fzf",
-	"ripgrep",
-	"fd",
-	"bat",
-	"dysk",
-	// Editores
-	"neovim",
-	"nano",
-	// Git/Docker UI
-	"lazygit",
-	"lazydocker",
-	// Utilidades
-	"jq",
-	"curl",
-	"wget",
-	"gum",
-}
-
 var archCmd = &cobra.Command{
 	Use:   "arch",
 	Short: "Instalar herramientas de terminal para Arch",
@@ -66,10 +27,31 @@ func init() {
 }
 
 func runArchInstall(cmd *cobra.Command, args []string) {
-	logger.Init("arch")
-	defer logger.Close()
+	logger.InitOnError("arch")
 
 	fmt.Println(ui.Title("Herramientas de Terminal - Arch Linux"))
+
+	// Verificar paru antes de continuar
+	if !packages.CheckParuInstalled() {
+		if !packages.OfferInstallParu() {
+			fmt.Println(ui.Warning("Instalación cancelada. Paru es necesario para instalar paquetes AUR."))
+			return
+		}
+	}
+
+	// Cargar paquetes desde TOML
+	groups, err := packages.ParseTOML("pkg_arch.toml")
+	if err != nil {
+		fmt.Println(ui.Error(fmt.Sprintf("Error cargando paquetes: %v", err)))
+		logger.Error("Error parseando TOML: %v", err)
+		return
+	}
+
+	// Obtener todos los paquetes
+	var archPackages []string
+	for _, g := range groups {
+		archPackages = append(archPackages, g.Packages...)
+	}
 
 	// Verificar paquetes instalados
 	fmt.Println(ui.Info("Verificando paquetes..."))

@@ -200,3 +200,92 @@ func OfferInstallParu() bool {
 	return false
 }
 
+// GetFlatpakInfo obtiene el nombre y descripción de una aplicación Flatpak
+func GetFlatpakInfo(appID string) (name string, description string) {
+	// Intentar obtener información de la app instalada primero
+	output, err := utils.RunCommandSilent("flatpak", "info", appID)
+	if err == nil {
+		lines := strings.Split(output, "\n")
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, "Name:") {
+				name = strings.TrimSpace(strings.TrimPrefix(line, "Name:"))
+			}
+			if strings.HasPrefix(line, "Description:") {
+				description = strings.TrimSpace(strings.TrimPrefix(line, "Description:"))
+			}
+		}
+		if name != "" {
+			return name, description
+		}
+	}
+
+	// Si no está instalada, buscar información en Flathub usando remote-info
+	output, err = utils.RunCommandSilent("flatpak", "remote-info", "flathub", appID)
+	if err == nil {
+		lines := strings.Split(output, "\n")
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, "Name:") {
+				name = strings.TrimSpace(strings.TrimPrefix(line, "Name:"))
+			}
+			if strings.HasPrefix(line, "Description:") {
+				description = strings.TrimSpace(strings.TrimPrefix(line, "Description:"))
+			}
+		}
+		if name != "" {
+			return name, description
+		}
+	}
+
+	// Fallback: intentar con search
+	output, err = utils.RunCommandSilent("flatpak", "search", "--columns=name,description", appID)
+	if err == nil {
+		lines := strings.Split(output, "\n")
+		for _, line := range lines {
+			if strings.Contains(line, appID) {
+				parts := strings.Split(line, "\t")
+				if len(parts) >= 2 {
+					name = strings.TrimSpace(parts[0])
+					description = strings.TrimSpace(parts[1])
+					if name != "" {
+						return name, description
+					}
+				}
+			}
+		}
+	}
+
+	// Fallback: usar el ID como nombre
+	return appID, ""
+}
+
+// GetPackageDescription obtiene la descripción de un paquete Arch
+func GetPackageDescription(pkg string) string {
+	// Intentar con pacman primero
+	output, err := utils.RunCommandSilent("pacman", "-Si", pkg)
+	if err == nil {
+		lines := strings.Split(output, "\n")
+		for _, line := range lines {
+			if strings.HasPrefix(line, "Description     :") {
+				return strings.TrimSpace(strings.TrimPrefix(line, "Description     :"))
+			}
+		}
+	}
+
+	// Intentar con paru (AUR)
+	if utils.CommandExists("paru") {
+		output, err = utils.RunCommandSilent("paru", "-Si", pkg)
+		if err == nil {
+			lines := strings.Split(output, "\n")
+			for _, line := range lines {
+				if strings.HasPrefix(line, "Description     :") {
+					return strings.TrimSpace(strings.TrimPrefix(line, "Description     :"))
+				}
+			}
+		}
+	}
+
+	return ""
+}
+

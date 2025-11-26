@@ -26,8 +26,7 @@ func init() {
 }
 
 func runParuInstall(cmd *cobra.Command, args []string) {
-	logger.Init("paru")
-	defer logger.Close()
+	logger.InitOnError("paru")
 
 	fmt.Println(ui.Title("Instalación de Paru AUR Helper"))
 

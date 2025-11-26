@@ -24,8 +24,7 @@ func init() {
 }
 
 func runPackageInstall(cmd *cobra.Command, args []string) {
-	logger.Init("package")
-	defer logger.Close()
+	logger.InitOnError("package")
 
 	// Verificar paru antes de continuar
 	if !packages.CheckParuInstalled() {
@@ -75,7 +74,16 @@ func runPackageInstall(cmd *cobra.Command, args []string) {
 		var preSelected []string
 
 		for _, pkg := range group.Packages {
-			opt := huh.NewOption(pkg, pkg)
+			// Obtener descripción del paquete
+			desc := packages.GetPackageDescription(pkg)
+			
+			// Crear etiqueta con descripción si está disponible
+			label := pkg
+			if desc != "" {
+				label = fmt.Sprintf("%s - %s", pkg, desc)
+			}
+			
+			opt := huh.NewOption(label, pkg)
 			if installedMap[pkg] {
 				opt = opt.Selected(true) // Ya instalado, preseleccionar
 				preSelected = append(preSelected, pkg)

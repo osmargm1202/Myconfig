@@ -68,6 +68,41 @@ func CommandExists(cmd string) bool {
 	return err == nil
 }
 
+// CheckDependency verifica si una dependencia existe y notifica si falta
+func CheckDependency(cmd string) bool {
+	return CommandExists(cmd)
+}
+
+// NotifyMissingDependency notifica que falta una dependencia usando swaync o notify-send
+// Si ninguno está disponible, escribe en logs
+func NotifyMissingDependency(cmd string) {
+	msg := fmt.Sprintf("Dependencia faltante: %s. Instálala con tu gestor de paquetes.", cmd)
+
+	// Intentar con swaync-client primero
+	if CommandExists("swaync-client") {
+		exec.Command("swaync-client", "-t", msg).Run()
+		return
+	}
+
+	// Fallback a notify-send
+	if CommandExists("notify-send") {
+		exec.Command("notify-send", "-u", "critical", "orgmos", msg).Run()
+		return
+	}
+
+	// Si no hay sistema de notificaciones, solo loguear
+	logger.Error("Dependencia faltante: %s (no se pudo notificar, swaync y notify-send no disponibles)", cmd)
+}
+
+// RequireDependency verifica una dependencia y notifica si falta, retorna false si no existe
+func RequireDependency(cmd string) bool {
+	if CheckDependency(cmd) {
+		return true
+	}
+	NotifyMissingDependency(cmd)
+	return false
+}
+
 // GetRepoDir obtiene el directorio del repositorio
 func GetRepoDir() string {
 	// Primero intenta encontrar el directorio desde el ejecutable

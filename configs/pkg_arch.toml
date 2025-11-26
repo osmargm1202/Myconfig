@@ -1,0 +1,72 @@
+# Lista de herramientas de terminal para Arch Linux
+
+["SISTEMA BASE"]
+packages = [
+    "git",                # control de versiones
+    "openssh",            # cliente/servidor SSH
+    "rsync",              # sincronización de archivos
+    "ntfs-3g",            # soporte NTFS
+    "dosfstools",         # herramientas FAT32
+    "exfatprogs",         # soporte exFAT
+    "man-db",             # páginas de manual
+    "man-pages",          # páginas de manual del sistema
+    "base-devel",         # herramientas de desarrollo básicas
+    "pacman-contrib",     # utilidades adicionales pacman
+]
+
+["TERMINAL Y SHELL"]
+packages = [
+    "fish",               # shell moderno
+    "kitty",              # emulador de terminal
+    "alacritty",          # terminal alternativo
+    "starship",           # prompt personalizable
+]
+
+["HERRAMIENTAS MODERNAS"]
+packages = [
+    "eza",                # listado de archivos mejorado
+    "duf",                # información de discos mejorada
+    "zoxide",             # navegación de directorios inteligente
+    "fzf",                # buscador difuso
+    "ripgrep",            # búsqueda en texto
+    "fd",                 # búsqueda de archivos
+    "bat",                # cat mejorado
+    "dysk",               # información de discos
+    "watchexec",          # ejecuta comandos cuando detecta cambios en archivos
+]
+
+["EDITORES"]
+packages = [
+    "neovim",             # editor de texto avanzado
+    "nano",               # editor simple
+]
+
+["GIT Y DOCKER UI"]
+packages = [
+    "lazygit",            # interfaz git
+    "lazydocker",         # interfaz docker
+]
+
+["UTILIDADES"]
+packages = [
+    "jq",                 # procesador JSON
+    "curl",               # cliente web
+    "wget",               # descargador web
+    "gum",                # herramienta CLI interactiva
+    "unzip",              # extractor zip
+    "smbclient",          # cliente SMB/CIFS
+]
+
+["MONITORES Y SISTEMA"]
+packages = [
+    "btop",               # monitor del sistema
+    "fastfetch",          # información del sistema
+    "ncdu",               # visor de uso de disco en terminal
+    "pacseek",            # explorador de paquetes
+]
+
+["CONTENEDORES"]
+packages = [
+    "docker",             # contenedores
+]
+

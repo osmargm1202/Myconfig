@@ -206,8 +206,7 @@ func writeJSONState(path string, value any) error {
 // ============ CAFFEINE ============
 
 func runCaffeine(cmd *cobra.Command, args []string) {
-	logger.Init("caffeine")
-	defer logger.Close()
+	logger.InitOnError("caffeine")
 
 	action := "toggle"
 	if len(args) > 0 {
@@ -366,8 +365,7 @@ func runCaffeineWayland(wm windowManager, action string) {
 // ============ GAME MODE ============
 
 func runGameMode(cmd *cobra.Command, args []string) {
-	logger.Init("game-mode")
-	defer logger.Close()
+	logger.InitOnError("game-mode")
 
 	wm := detectWindowManager()
 	fmt.Println(ui.Info(fmt.Sprintf("Window Manager detectado: %s", strings.ToUpper(string(wm)))))
@@ -568,10 +566,25 @@ func runGameModeNiri(args []string) {
 // ============ LOCK ============
 
 func runLock(cmd *cobra.Command, args []string) {
-	logger.Init("lock")
-	defer logger.Close()
+	logger.InitOnError("lock")
 
 	wm := detectWindowManager()
+
+	// Verificar dependencias según el WM
+	switch wm {
+	case wmHyprland, wmNiri:
+		if !utils.CheckDependency("swaylock") && !utils.CheckDependency("hyprlock") && !utils.CheckDependency("gtklock") {
+			utils.NotifyMissingDependency("swaylock")
+			fmt.Println(ui.Error("Dependencia faltante: swaylock, hyprlock o gtklock. Instala una con: sudo pacman -S swaylock"))
+			return
+		}
+	default:
+		if !utils.RequireDependency("i3lock") {
+			fmt.Println(ui.Error("Dependencia faltante: i3lock. Instálala con: sudo pacman -S i3lock-color"))
+			return
+		}
+	}
+
 	if caffeineActive(wm) {
 		fmt.Println(ui.Warning("Cafeína está activada, no se bloqueará la pantalla"))
 		return
@@ -633,16 +646,27 @@ func lockWayland(wm windowManager) {
 // ============ CHANGE WALLPAPER ============
 
 func runChangeWallpaper(cmd *cobra.Command, args []string) {
-	logger.Init("change-wallpaper")
-	defer logger.Close()
-
+	logger.InitOnError("change-wallpaper")
 	homeDir, _ := os.UserHomeDir()
 	wm := detectWindowManager()
 
-	lastWallpaperFile := filepath.Join(homeDir, ".config", "i3", "last_wallpaper")
-	if wm != wmI3 {
-		lastWallpaperFile = orgmosStatePath(fmt.Sprintf("last_wallpaper_%s", wm))
+	// Verificar dependencias según el WM
+	switch wm {
+	case wmHyprland, wmNiri:
+		if !utils.RequireDependency("swaybg") {
+			fmt.Println(ui.Error("Dependencia faltante: swaybg. Instálala con: sudo pacman -S swaybg"))
+			return
+		}
+	default:
+		if !utils.CheckDependency("xwallpaper") && !utils.CheckDependency("feh") {
+			utils.NotifyMissingDependency("xwallpaper o feh")
+			fmt.Println(ui.Error("Dependencia faltante: xwallpaper o feh. Instala una con: sudo pacman -S xwallpaper"))
+			return
+		}
 	}
+
+	// Usar siempre ~/.lastwallpaper para todos los WMs
+	lastWallpaperFile := filepath.Join(homeDir, ".lastwallpaper")
 
 	picturesDir := filepath.Join(homeDir, "Pictures", "Wallpapers")
 	repoDir := utils.GetRepoDir()
@@ -707,7 +731,32 @@ func runChangeWallpaper(cmd *cobra.Command, args []string) {
 	case "restore":
 		data, err := os.ReadFile(lastWallpaperFile)
 		if err != nil {
-			fmt.Println(ui.Warning("No hay wallpaper anterior guardado"))
+			fmt.Println(ui.Warning("No hay wallpaper anterior guardado, seleccionando uno aleatorio..."))
+			// Fallback a wallpaper aleatorio
+			entries, err := os.ReadDir(wallpaperDir)
+			if err != nil {
+				fmt.Println(ui.Error("No se encontró el directorio de wallpapers"))
+				return
+			}
+
+			var wallpapers []string
+			for _, e := range entries {
+				if !e.IsDir() {
+					ext := strings.ToLower(filepath.Ext(e.Name()))
+					if ext == ".jpg" || ext == ".jpeg" || ext == ".png" {
+						wallpapers = append(wallpapers, filepath.Join(wallpaperDir, e.Name()))
+					}
+				}
+			}
+
+			if len(wallpapers) == 0 {
+				fmt.Println(ui.Error("No hay wallpapers disponibles"))
+				return
+			}
+
+			// Seleccionar aleatorio
+			idx := time.Now().UnixNano() % int64(len(wallpapers))
+			setWallpaper(wallpapers[idx])
 			return
 		}
 		setWallpaper(strings.TrimSpace(string(data)))
@@ -721,8 +770,7 @@ func runChangeWallpaper(cmd *cobra.Command, args []string) {
 // ============ HOTKEY ============
 
 func runHotkey(cmd *cobra.Command, args []string) {
-	logger.Init("hotkey")
-	defer logger.Close()
+	logger.InitOnError("hotkey")
 
 	wm := detectWindowManager()
 	switch wm {
@@ -875,8 +923,7 @@ func showNiriHotkeys() {
 // ============ MONITOR WATCHER ============
 
 func runMonitorWatcher(cmd *cobra.Command, args []string) {
-	logger.Init("monitor-watcher")
-	defer logger.Close()
+	logger.InitOnError("monitor-watcher")
 
 	wm := detectWindowManager()
 	fmt.Println(ui.Info(fmt.Sprintf("Monitoreando cambios de monitores (%s)...", strings.ToUpper(string(wm)))))
@@ -1128,8 +1175,7 @@ func runFlatpakUpdates(cmd *cobra.Command, args []string) {
 // ============ POWER MENU ============
 
 func runPowerMenu(cmd *cobra.Command, args []string) {
-	logger.Init("powermenu")
-	defer logger.Close()
+	logger.InitOnError("powermenu")
 
 	options := "⏻ Apagar\n⟳ Reiniciar\n⏾ Suspender\n🔒 Bloquear\n⇥ Cerrar sesión"
 	
@@ -1191,8 +1237,7 @@ func runMemory(cmd *cobra.Command, args []string) {
 // ============ KEYBOARD TOGGLE ============
 
 func runKeyboardToggle(cmd *cobra.Command, args []string) {
-	logger.Init("keyboard-toggle")
-	defer logger.Close()
+	logger.InitOnError("keyboard-toggle")
 
 	// Obtener layout actual
 	output, _ := exec.Command("setxkbmap", "-query").Output()

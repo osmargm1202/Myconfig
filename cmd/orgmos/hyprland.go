@@ -47,8 +47,7 @@ func init() {
 }
 
 func runHyprlandInstall(cmd *cobra.Command, args []string) {
-	logger.Init("hyprland")
-	defer logger.Close()
+	logger.InitOnError("hyprland")
 
 	fmt.Println(ui.Title("Instalación de Hyprland"))
 
