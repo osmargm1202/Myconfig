@@ -44,9 +44,7 @@ alias ipinfo="curl -s ipinfo.io"
 # peaclock (reloj digital con configuración personalizada)
 if type -q peaclock
     if test -f ~/.config/peaclock/config
-        alias clock="peaclock --config ~/.config/peaclock/config"
-    else if test -f ~/.peaclock/config
-        alias clock="peaclock --config ~/.peaclock/config"
+        alias clock="peaclock --config-dir ~/.config/peaclock"
     else
         alias clock="peaclock"
     end
@@ -65,7 +63,6 @@ end
 
 # Deshabilitar mensaje de ayuda de fish
 set -U fish_greeting ""
-
 
 
 function cheat

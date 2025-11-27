@@ -1,9 +1,0 @@
-@define-color bar-bg rgba(26, 27, 38, 0.60);
-@define-color main-bg rgba(48, 52, 70, 0.92);
-@define-color background-alt rgba(56, 60, 78, 0.95);
-@define-color background-light rgba(64, 72, 102, 0.95);
-@define-color main-fg #c0caf5;
-@define-color accent #7aa2f7;
-@define-color accent2 #bb9af7;
-@define-color alert #f7768e;
-@define-color alert-bg rgba(247, 118, 142, 0.85);

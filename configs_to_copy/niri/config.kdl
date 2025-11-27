@@ -2,15 +2,10 @@ spawn-at-startup "bash" "-lc" "gnome-keyring-daemon --start --components=pkcs11,
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "/usr/lib/xdg-desktop-portal-xapp"
 spawn-at-startup "xwayland-satellite"
-//spawn-at-startup "waybar"
-//spawn-at-startup "qs" "-c" "noctalia-shell"
 spawn-at-startup "nm-applet"
 spawn-at-startup "blueman-applet"
-//spawn-at-startup "bash" "-lc" "pkill -f 'wl-paste --type text --watch cliphist store' 2>/dev/null || true; wl-paste --type text --watch cliphist store"
-//spawn-at-startup "bash" "-lc" "pkill -f 'wl-paste --type image --watch cliphist store' 2>/dev/null || true; wl-paste --type image --watch cliphist store"
 spawn-at-startup "system-config-printer-applet"
-//spawn-at-startup "swayidle" "-w" "timeout" "900" "swaylock"
-//spawn-at-startup "swaync"
+
 spawn-at-startup "nextcloud"
 spawn-at-startup "sh" "-c" "wl-paste -t text --watch cliphist store & wl-paste -t image/png --watch cliphist store"
 
@@ -19,22 +14,45 @@ workspace "2"
 workspace "3"
 workspace "4"
 workspace "5"
-
+workspace "6"
+workspace "7"
+workspace "8"
+workspace "9"
 
 prefer-no-csd
 
-environment {
-    ELECTRON_OZONE_PLATFORM_HINT "auto"
-}
 
+environment {
+    // Wayland
+    OZONE_PLATFORM "wayland"
+    QT_QPA_PLATFORM "wayland"
+    GDK_BACKEND "wayland"
+    
+    // NVIDIA específico
+    __GLX_VENDOR_LIBRARY_NAME "nvidia"
+    LIBVA_DRIVER_NAME "nvidia"
+    VDPAU_DRIVER "nvidia"
+    NVD_BACKEND "direct"
+    
+    // GPU optimization
+    __NV_PRIME_RENDER_OFFLOAD "1"
+    LIBGL_ALWAYS_INDIRECT "0"
+    
+    // Electron apps
+    ELECTRON_OZONE_PLATFORM_HINT "auto"
+    
+    // Performance
+    MESA_NO_ERROR "1"
+    EGL_PLATFORM "wayland"
+}
 
 hotkey-overlay {
     skip-at-startup
 }
 
 cursor {
-    xcursor-theme "catppuccin-mocha-mauve-cursors"
-    xcursor-size 25
+    xcursor-theme "Bibata-Modern-Ice"
+    xcursor-size 20
     hide-when-typing
     hide-after-inactive-ms 5000
 }
@@ -46,6 +64,7 @@ input {
         repeat-rate 30
         xkb {
             layout "us,latam"
+            variant "altgr-intl,"
             options "ctrl:nocaps"
         }
     }
@@ -249,7 +268,7 @@ binds {
     //Mod+M hotkey-overlay-title="Lanzador de apps (rofi)" { spawn "rofi" "-show" "drun" "-show-icons"; }
     //Mod+Alt+L hotkey-overlay-title="Lock the Screen: swaylock (transparente + blur)" { spawn "swaylock" "--grace" "0" "--daemonize" "--screenshots" "--effect-blur" "7x3" "--effect-vignette" "0.3:0.3" "--fade-in" "0.2"; }
     Mod+E hotkey-overlay-title="Gestor de archivos" { spawn "dolphin"; }
-    Mod+W hotkey-overlay-title="Navegador" { spawn "chromium"; }
+    Mod+W hotkey-overlay-title="Navegador" { spawn "chromium --ozone-platform=wayland --enable-wayland-ime"; }
 
     //noctalia-shell (comentados para usar dms)
     //Mod+Y hotkey-overlay-title="Historial del portapapeles" { spawn-sh "qs -c noctalia-shell ipc call launcher clipboard"; }
@@ -362,6 +381,7 @@ binds {
     Mod+7 { focus-workspace 7; }
     Mod+8 { focus-workspace 8; }
     Mod+9 { focus-workspace 9; }
+    Mod+0 { focus-workspace 10; }
     Mod+Shift+1 { move-column-to-workspace 1; }
     Mod+Shift+2 { move-column-to-workspace 2; }
     Mod+Shift+3 { move-column-to-workspace 3; }
@@ -371,6 +391,7 @@ binds {
     Mod+Shift+7 { move-column-to-workspace 7; }
     Mod+Shift+8 { move-column-to-workspace 8; }
     Mod+Shift+9 { move-column-to-workspace 9; }
+    Mod+Shift+0 { move-column-to-workspace 10; }
 
     Mod+BracketLeft  { consume-or-expel-window-left; }
     Mod+BracketRight { consume-or-expel-window-right; }
