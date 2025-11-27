@@ -6,7 +6,9 @@
 exec systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK
 exec hash dbus-update-activation-environment 2>/dev/null && \
      dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK
+exec nextcloud --background
 exec dms run
+exec sh -c 'wl-paste -t text --watch cliphist store & wl-paste -t image/png --watch cliphist store'
 
 set $browser chromium
 set $file-manager dolphin
@@ -60,10 +62,10 @@ tiling_drag modifier titlebar
 bindsym $mod+Return exec $term
 
 # kill focused window
-bindsym $mod+Shift+q kill
+bindsym $mod+q kill
 
 # dms-shell keybindings (usando spawn-sh equivalente: exec sh -c)
-bindsym $mod+Y exec sh -c "dms ipc call clipboard open"
+bindsym $mod+v exec sh -c "dms ipc call clipboard open"
 bindsym $mod+Mod1+E exec sh -c "dms ipc call powermenu toggle"
 bindsym $mod+M exec sh -c "dms ipc call spotlight toggle"
 bindsym Mod4+Mod1+L exec sh -c "dms ipc call lock lock"
@@ -76,27 +78,18 @@ bindsym $mod+W exec chromium --ozone-platform=wayland --enable-wayland-ime
 bindsym $mod+Shift+s exec steam
 bindsym $mod+Shift+d exec discord
 bindsym $mod+c exec $editor
-bindsym $mod+v exec CM_LAUNCHER=rofi clipmenu -p "Portapapeles"
+
 bindsym $mod+p exec grim -g "$(slurp)" - | wl-copy
 bindsym $mod+Shift+o exec systemctl suspend
 bindsym $mod+Mod1+o exec poweroff
 bindsym $mod+k exec orgmos script keyboard-toggle
 bindsym $mod+Tab exec "rofi -show window"
 
-# Modo juego con Mod+Alt+G
-bindsym $mod+Mod1+g exec orgmos script game-mode
 
-# Reload servicios con Mod+Alt+R (opcional)
-bindsym $mod+Mod1+r exec orgmos script game-mode reload
 
 # Bloquear pantalla con Mod+Shift+L (usando dms)
 bindsym $mod+Shift+l exec sh -c "dms ipc call lock lock"
 
-# Toggle modo cafeína con Mod+Shift+C
-bindsym $mod+Shift+c exec orgmos script caffeine toggle
-
-# Apagar pantalla inmediatamente con Mod+Alt+P
-bindsym $mod+Mod1+p exec swaymsg "output * dpms off"
 
 # change focus
 bindsym $mod+Left focus left

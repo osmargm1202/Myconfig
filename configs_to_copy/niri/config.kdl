@@ -2,11 +2,13 @@ spawn-at-startup "bash" "-lc" "gnome-keyring-daemon --start --components=pkcs11,
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "/usr/lib/xdg-desktop-portal-xapp"
 spawn-at-startup "xwayland-satellite"
-spawn-at-startup "nm-applet"
-spawn-at-startup "blueman-applet"
-spawn-at-startup "system-config-printer-applet"
+//spawn-at-startup "nm-applet"
+//spawn-at-startup "blueman-applet"
+//spawn-at-startup "system-config-printer-applet"
+spawn-at-startup "dms" "run"
 
-spawn-at-startup "nextcloud"
+
+spawn-at-startup "nextcloud --background"
 spawn-at-startup "sh" "-c" "wl-paste -t text --watch cliphist store & wl-paste -t image/png --watch cliphist store"
 
 workspace "1"
