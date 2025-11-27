@@ -54,6 +54,8 @@ packages = [
     "kate",               # editor de texto KDE
     "gnome-calculator",   # calculadora
     "imagemagick",        # utilidades de conversión de imágenes
+    "system-config-printer-applet", # applet para impresoras (CONFIRMADO)
+    "system-config-printer",        # herramientas de configuración de impresoras (CONFIRMADO)
 ]
 
 ["HERRAMIENTAS Y UTILIDADES"]
