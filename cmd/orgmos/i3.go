@@ -67,6 +67,11 @@ var (
 		Short: "Imprimir uso de memoria",
 		Run:   runMemory,
 	}
+	i3ReloadCmd = &cobra.Command{
+		Use:   "reload",
+		Short: "Recargar i3 y polybar",
+		Run:   runReload,
+	}
 )
 
 func init() {
@@ -76,6 +81,7 @@ func init() {
 	i3Cmd.AddCommand(i3HotkeyCmd)
 	i3Cmd.AddCommand(i3PowermenuCmd)
 	i3Cmd.AddCommand(i3MemoryCmd)
+	i3Cmd.AddCommand(i3ReloadCmd)
 }
 
 func runI3Install(cmd *cobra.Command, args []string) {

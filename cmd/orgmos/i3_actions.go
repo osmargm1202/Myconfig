@@ -110,13 +110,40 @@ func listWallpapers(dir string) ([]string, error) {
 }
 
 func applyI3Wallpaper(path string) error {
+	// Usar pywal para generar colores
+	if !utils.CheckDependency("wal") {
+		return fmt.Errorf("pywal no está instalado. Instala con: sudo pacman -S python-pywal")
+	}
+
+	// Generar colores con pywal (sin aplicar wallpaper, solo colores)
+	if err := exec.Command("wal", "-i", path, "-n").Run(); err != nil {
+		return fmt.Errorf("error ejecutando wal: %w", err)
+	}
+
+	// Aplicar wallpaper con xwallpaper o feh
 	if utils.CheckDependency("xwallpaper") {
-		return exec.Command("xwallpaper", "--zoom", path).Run()
+		if err := exec.Command("xwallpaper", "--zoom", path).Run(); err != nil {
+			return fmt.Errorf("error aplicando wallpaper con xwallpaper: %w", err)
+		}
+	} else if utils.CheckDependency("feh") {
+		if err := exec.Command("feh", "--bg-fill", path).Run(); err != nil {
+			return fmt.Errorf("error aplicando wallpaper con feh: %w", err)
+		}
+	} else {
+		return fmt.Errorf("instala xwallpaper o feh para aplicar wallpapers")
 	}
-	if utils.CheckDependency("feh") {
-		return exec.Command("feh", "--bg-fill", path).Run()
+
+	// Cargar colores en xrdb para polybar
+	homeDir, _ := os.UserHomeDir()
+	xresourcesPath := filepath.Join(homeDir, ".cache", "wal", "colors.Xresources")
+	if _, err := os.Stat(xresourcesPath); err == nil {
+		exec.Command("xrdb", "-merge", xresourcesPath).Run()
 	}
-	return fmt.Errorf("instala xwallpaper o feh para aplicar wallpapers")
+
+	// Recargar polybar
+	exec.Command("polybar-msg", "cmd", "restart").Run()
+
+	return nil
 }
 
 // ============ LOCK ============
@@ -149,22 +176,31 @@ func showI3Hotkeys() {
 		return
 	}
 
-	fmt.Println(ui.Title("Atajos de Teclado i3"))
-	fmt.Println()
-
+	var hotkeys []string
 	lines := strings.Split(string(data), "\n")
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "bindsym") {
+		if strings.HasPrefix(line, "bindsym") && !strings.HasPrefix(line, "#") {
 			parts := strings.SplitN(line, " ", 3)
 			if len(parts) >= 3 {
 				key := strings.ReplaceAll(parts[1], "$mod", "Super")
 				key = strings.ReplaceAll(key, "+", " + ")
 				action := parts[2]
-				fmt.Printf("  %s → %s\n", ui.Highlight(key), action)
+				hotkeys = append(hotkeys, fmt.Sprintf("%s → %s", key, action))
 			}
 		}
 	}
+
+	if len(hotkeys) == 0 {
+		fmt.Println(ui.Warning("No se encontraron atajos de teclado"))
+		return
+	}
+
+	// Mostrar con rofi
+	rofiInput := strings.Join(hotkeys, "\n")
+	rofiCmd := exec.Command("rofi", "-dmenu", "-i", "-p", "Atajos de Teclado", "-theme-str", "window {width: 50%;} listview {lines: 15;}")
+	rofiCmd.Stdin = strings.NewReader(rofiInput)
+	rofiCmd.Run()
 }
 
 // ============ POWER MENU ============
@@ -224,4 +260,37 @@ func runMemory(cmd *cobra.Command, args []string) {
 
 	used := total - available
 	fmt.Printf(" %.1fG\n", used)
+}
+
+// ============ RELOAD ============
+
+func runReload(cmd *cobra.Command, args []string) {
+	logger.InitOnError("reload")
+
+	fmt.Println(ui.Info("Recargando i3 y polybar..."))
+
+	// Recargar i3
+	if err := exec.Command("i3-msg", "reload").Run(); err != nil {
+		fmt.Println(ui.Warning("No se pudo recargar i3 (puede que no esté corriendo)"))
+	} else {
+		fmt.Println(ui.Success("i3 recargado"))
+	}
+
+	// Matar polybar si existe
+	exec.Command("killall", "-q", "polybar").Run()
+	
+	// Esperar 0.5 segundos para asegurar que se cierre correctamente
+	fmt.Println(ui.Info("Esperando 0.5 segundos..."))
+	time.Sleep(500 * time.Millisecond)
+
+	// Lanzar polybar
+	homeDir, _ := os.UserHomeDir()
+	polybarConfig := filepath.Join(homeDir, ".config", "polybar", "config.ini")
+	if err := exec.Command("polybar", "--config="+polybarConfig, "modern").Start(); err != nil {
+		fmt.Println(ui.Warning("No se pudo lanzar polybar"))
+	} else {
+		fmt.Println(ui.Success("polybar lanzado"))
+	}
+
+	fmt.Println(ui.Success("Recarga completada"))
 }

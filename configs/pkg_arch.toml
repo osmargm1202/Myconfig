@@ -33,6 +33,7 @@ packages = [
     "bat",                # cat mejorado
     "dysk",               # información de discos
     "watchexec",          # ejecuta comandos cuando detecta cambios en archivos
+    "nnn",                # explorador de archivos
 ]
 
 ["EDITORES"]
