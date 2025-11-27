@@ -6,7 +6,7 @@ spawn-at-startup "xwayland-satellite"
 //spawn-at-startup "blueman-applet"
 //spawn-at-startup "system-config-printer-applet"
 spawn-at-startup "dms" "run"
-
+spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP"
 
 spawn-at-startup "nextcloud --background"
 spawn-at-startup "sh" "-c" "wl-paste -t text --watch cliphist store & wl-paste -t image/png --watch cliphist store"
@@ -24,7 +24,7 @@ workspace "9"
 prefer-no-csd
 
 
-environment {
+/-environment {
     // Wayland
     OZONE_PLATFORM "wayland"
     QT_QPA_PLATFORM "wayland"
@@ -270,7 +270,7 @@ binds {
     //Mod+M hotkey-overlay-title="Lanzador de apps (rofi)" { spawn "rofi" "-show" "drun" "-show-icons"; }
     //Mod+Alt+L hotkey-overlay-title="Lock the Screen: swaylock (transparente + blur)" { spawn "swaylock" "--grace" "0" "--daemonize" "--screenshots" "--effect-blur" "7x3" "--effect-vignette" "0.3:0.3" "--fade-in" "0.2"; }
     Mod+E hotkey-overlay-title="Gestor de archivos" { spawn "dolphin"; }
-    Mod+W hotkey-overlay-title="Navegador" { spawn "chromium --ozone-platform=wayland --enable-wayland-ime"; }
+    Mod+W hotkey-overlay-title="Navegador" { spawn-sh "chromium --ozone-platform=wayland --enable-wayland-ime --enable-features=WebRTCPipeWireCapturer"; }
 
 
     // dms (usan gum e interacción en CLI, con colores en la terminal)

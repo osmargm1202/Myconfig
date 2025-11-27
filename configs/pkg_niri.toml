@@ -4,6 +4,7 @@ packages = [
     "xwayland-satellite",
     "xdg-desktop-portal",
     "xdg-desktop-portal-gnome",
+    
 ]
 
 ["DMS SHELL Y DEPENDENCIAS"]

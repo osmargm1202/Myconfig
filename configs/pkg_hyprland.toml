@@ -7,6 +7,7 @@ packages = [
     "hyprlock",           # pantalla de bloqueo
     "hypridle",           # gestor de inactividad
     "hyprpaper",          # gestor de wallpapers
+    "xdg-desktop-portal-hyprland", # portal para Wayland
 ]
 
 ["BARRAS Y LANZADORES"]

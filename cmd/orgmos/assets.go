@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/charmbracelet/huh"
@@ -35,6 +36,7 @@ func runAssetsCopy(cmd *cobra.Command, args []string) {
 
 	wallpapersSource := filepath.Join(repoDir, "Wallpapers")
 	wallpapersDest := filepath.Join(homeDir, "Pictures", "Wallpapers")
+	os.MkdirAll(wallpapersDest, 0o755)
 
 	// Contar archivos
 	var wallpaperCount int
@@ -46,11 +48,6 @@ func runAssetsCopy(cmd *cobra.Command, args []string) {
 			}
 			return nil
 		})
-	}
-
-	if wallpaperCount == 0 {
-		fmt.Println(ui.Warning("No se encontraron wallpapers para copiar"))
-		return
 	}
 
 	// Confirmación
@@ -71,15 +68,38 @@ func runAssetsCopy(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Copiar wallpapers
-	fmt.Println(ui.Info("Copiando wallpapers..."))
-	copied, failed := copyDirectory(wallpapersSource, wallpapersDest)
-	
-	fmt.Println(ui.Success(fmt.Sprintf("Wallpapers copiados: %d", copied)))
-	if failed > 0 {
-		fmt.Println(ui.Warning(fmt.Sprintf("Fallidos: %d archivos", failed)))
+	totalCopied := 0
+	totalFailed := 0
+
+	// Descargar wallpapers desde ML4W
+	if remoteCopied, remoteFailed := downloadRemoteWallpapers(wallpapersDest); remoteCopied > 0 || remoteFailed > 0 {
+		totalCopied += remoteCopied
+		totalFailed += remoteFailed
+		fmt.Println(ui.Success(fmt.Sprintf("Wallpapers ML4W copiados: %d", remoteCopied)))
+		if remoteFailed > 0 {
+			fmt.Println(ui.Warning(fmt.Sprintf("Fallidos (ML4W): %d archivos", remoteFailed)))
+		}
 	}
-	logger.Info("Wallpapers copiados: %d copiados, %d fallidos", copied, failed)
+
+	// Copiar wallpapers locales del repositorio
+	if wallpaperCount > 0 {
+		fmt.Println(ui.Info("Copiando wallpapers locales..."))
+		copied, failed := copyDirectory(wallpapersSource, wallpapersDest)
+		totalCopied += copied
+		totalFailed += failed
+		fmt.Println(ui.Success(fmt.Sprintf("Wallpapers locales copiados: %d", copied)))
+		if failed > 0 {
+			fmt.Println(ui.Warning(fmt.Sprintf("Fallidos (locales): %d archivos", failed)))
+		}
+	} else {
+		fmt.Println(ui.Warning("No se encontraron wallpapers locales en el repositorio"))
+	}
+
+	fmt.Println(ui.Success(fmt.Sprintf("Total wallpapers copiados: %d", totalCopied)))
+	if totalFailed > 0 {
+		fmt.Println(ui.Warning(fmt.Sprintf("Total fallidos: %d archivos", totalFailed)))
+	}
+	logger.Info("Wallpapers copiados: %d copiados, %d fallidos", totalCopied, totalFailed)
 }
 
 func copyDirectory(src, dst string) (copied, failed int) {
@@ -119,3 +139,29 @@ func copyDirectory(src, dst string) (copied, failed int) {
 	return copied, failed
 }
 
+func downloadRemoteWallpapers(dest string) (copied, failed int) {
+	fmt.Println(ui.Info("Descargando wallpapers desde ML4W..."))
+	tempDir, err := os.MkdirTemp("", "wallpaper-clone-*")
+	if err != nil {
+		fmt.Println(ui.Warning("No se pudo crear carpeta temporal para wallpapers"))
+		return 0, 0
+	}
+	defer os.RemoveAll(tempDir)
+
+	repoURL := "https://github.com/mylinuxforwork/wallpaper.git"
+	cloneCmd := exec.Command("git", "clone", "--depth=1", repoURL, tempDir)
+	cloneCmd.Stdout = os.Stdout
+	cloneCmd.Stderr = os.Stderr
+
+	if err := cloneCmd.Run(); err != nil {
+		fmt.Println(ui.Warning("No se pudo clonar el repositorio de wallpapers (ML4W)"))
+		logger.Warn("Error clonando wallpapers ML4W: %v", err)
+		return 0, 0
+	}
+
+	// Eliminar la carpeta .git antes de copiar
+	os.RemoveAll(filepath.Join(tempDir, ".git"))
+
+	fmt.Println(ui.Info("Copiando wallpapers descargados..."))
+	return copyDirectory(tempDir, dest)
+}

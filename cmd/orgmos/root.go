@@ -18,7 +18,7 @@ var (
 		Use:   "orgmos",
 		Short: "ORGMOS - Sistema de configuración para Arch Linux",
 		Long: `ORGMOS es una herramienta de configuración y automatización
-para sistemas Arch Linux con i3, Hyprland, Niri o Sway.
+para sistemas Arch Linux con i3, Niri o Sway.
 
 Usa 'orgmos menu' para acceder al menú interactivo o ejecuta
 'orgmos [comando] --help' para ver la ayuda de un comando específico.`,
@@ -69,4 +69,3 @@ func initConfig() {
 		logger.Info("Usando config: %s", viper.ConfigFileUsed())
 	}
 }
-
