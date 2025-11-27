@@ -37,10 +37,11 @@ func runMenu(cmd *cobra.Command, args []string) {
 				huh.NewSelect[string]().
 					Title("Selecciona una opción").
 					Options(
-						huh.NewOption("Instalar i3 Window Manager", "i3"),
-						huh.NewOption("Instalar Hyprland", "hyprland"),
-						huh.NewOption("Instalar Niri Window Manager", "niri"),
-						huh.NewOption("Instalador de paquetes", "package"),
+					huh.NewOption("Instalar i3 Window Manager", "i3"),
+					huh.NewOption("Instalar Hyprland", "hyprland"),
+					huh.NewOption("Instalar Niri Window Manager", "niri"),
+					huh.NewOption("Instalar Openbox Window Manager", "openbox"),
+					huh.NewOption("Instalador de paquetes", "package"),
 						huh.NewOption("Instalador de Flatpak", "flatpak"),
 						huh.NewOption("Instalar Paru AUR Helper", "paru"),
 						huh.NewOption("Instalar SDDM", "sddm"),
@@ -71,6 +72,8 @@ func runMenu(cmd *cobra.Command, args []string) {
 			runHyprlandInstall(nil, nil)
 		case "niri":
 			runNiriInstall(nil, nil)
+		case "openbox":
+			runOpenboxInstall(nil, nil)
 		case "package":
 			runPackageInstall(nil, nil)
 		case "flatpak":

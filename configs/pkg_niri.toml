@@ -30,13 +30,15 @@ packages = [
 
 ["TERMINAL Y APLICACIONES"]
 packages = [
-    "alacritty",
+    "kitty",
     "dolphin",
 ]
 
 ["FUENTES Y EXTRAS"]
 packages = [
     "ttf-roboto",
+    "ttf-jetbrains-mono-nerd",
+    "ttf-ms-fonts",
     "inter-font",
     "gpu-screen-recorder",
     "wlsunset",

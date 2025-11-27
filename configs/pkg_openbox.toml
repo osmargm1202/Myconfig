@@ -1,0 +1,38 @@
+["OPENBOX WM"]
+packages = [
+    "openbox",                   # window manager stacking
+    "obconf-qt",                 # configurador gráfico
+    "tint2",                     # panel minimalista
+    "pcmanfm-qt",                # gestor de archivos ligero
+]
+
+["CLIPBOARD"]
+packages = [
+    "wl-paste",
+    "cliphist",
+]
+
+["AUDIO Y MULTIMEDIA"]
+packages = [
+    "wireplumber",
+    "playerctl",
+]
+
+["TERMINAL"]
+packages = [
+    "kitty",
+]
+
+["FUENTES"]
+packages = [
+    "ttf-roboto",
+    "ttf-jetbrains-mono-nerd",
+    "ttf-ms-fonts",
+    "inter-font",
+]
+
+["TEMAS Y APARIENCIA"]
+packages = [
+    "papirus-icon-theme",
+    "bibata-cursor-theme",
+]

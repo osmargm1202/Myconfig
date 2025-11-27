@@ -128,7 +128,7 @@ fi
 
 # Verificar que ~/.local/bin esté en PATH
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-    log_status warn "~/.local/bin no está en PATH. Agrégalo a tu shell profile:"
+    log_status warn "\$HOME/.local/bin no está en PATH. Agrégalo a tu shell profile:"
     echo -e "${YELLOW}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
 fi
 

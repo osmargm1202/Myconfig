@@ -63,6 +63,7 @@ packages = [
     "fastfetch",          # información del sistema
     "ncdu",               # visor de uso de disco en terminal
     "pacseek",            # explorador de paquetes
+    "peaclock",           # reloj, temporizador y cronómetro para terminal
 ]
 
 ["CONTENEDORES"]

@@ -37,6 +37,21 @@ alias rg="rg --hidden --glob '!.git/*'"
 
 # fd (buscar archivos mejor que find)
 alias f="fd --hidden --exclude .git"
+
+# ipinfo (información de IP)
+alias ipinfo="curl -s ipinfo.io"
+
+# peaclock (reloj digital con configuración personalizada)
+if type -q peaclock
+    if test -f ~/.config/peaclock/config
+        alias clock="peaclock --config ~/.config/peaclock/config"
+    else if test -f ~/.peaclock/config
+        alias clock="peaclock --config ~/.peaclock/config"
+    else
+        alias clock="peaclock"
+    end
+end
+
 set TERM xterm-256color
 set EDITOR nvim
 set FZF_DEFAULT_OPTS "--height=50% --reverse --inline-info --border --color=fg:15,bg:0"
@@ -50,6 +65,12 @@ end
 
 # Deshabilitar mensaje de ayuda de fish
 set -U fish_greeting ""
+
+
+
+function cheat
+    curl -s cheat.sh/:list | fzf --preview "curl -s cheat.sh/{}" --preview-window=right:70% | xargs -I {} curl -s cheat.sh/{} | bat --language=markdown --paging=always
+end
 
 # Ejecutar fastfetch con configuración ORGMOS (logo orgm.png)
 if type -q fastfetch

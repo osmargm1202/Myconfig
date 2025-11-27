@@ -250,7 +250,6 @@ binds {
     //Mod+Alt+L hotkey-overlay-title="Lock the Screen: swaylock (transparente + blur)" { spawn "swaylock" "--grace" "0" "--daemonize" "--screenshots" "--effect-blur" "7x3" "--effect-vignette" "0.3:0.3" "--fade-in" "0.2"; }
     Mod+E hotkey-overlay-title="Gestor de archivos" { spawn "dolphin"; }
     Mod+W hotkey-overlay-title="Navegador" { spawn "chromium"; }
-    Mod+Tab hotkey-overlay-title="Cambiar ventana (rofi)" { spawn "rofi" "-show" "window"; }
 
     //noctalia-shell (comentados para usar dms)
     //Mod+Y hotkey-overlay-title="Historial del portapapeles" { spawn-sh "qs -c noctalia-shell ipc call launcher clipboard"; }
@@ -281,7 +280,7 @@ binds {
     XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "+10%"; }
     XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "10%-"; }
 
-    Mod+O repeat=false { toggle-overview; }
+    Mod+Tab repeat=false { toggle-overview; }
     Mod+Q repeat=false { close-window; }
 
     Mod+Left  { focus-column-left; }
@@ -400,9 +399,9 @@ binds {
     Mod+Ctrl+Shift+Space { switch-focus-between-floating-and-tiling; }
 
     Mod+T { toggle-column-tabbed-display; }
-
-    Print { screenshot; }
-    Ctrl+P { screenshot-screen; }
+     
+    Mod+P { screenshot; }
+    Print { screenshot-screen; }
     Alt+Print { screenshot-window; }
 
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
