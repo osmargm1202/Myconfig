@@ -39,7 +39,6 @@ func runMenu(cmd *cobra.Command, args []string) {
 					Options(
 						huh.NewOption("Instalar i3 Window Manager", "i3"),
 						huh.NewOption("Instalar Niri Window Manager", "niri"),
-						huh.NewOption("Instalar Sway Window Manager", "sway"),
 						huh.NewOption("Instalador de paquetes", "package"),
 						huh.NewOption("Instalador de Flatpak", "flatpak"),
 						huh.NewOption("Instalar Paru AUR Helper", "paru"),
@@ -69,8 +68,6 @@ func runMenu(cmd *cobra.Command, args []string) {
 			runI3Install(nil, nil)
 		case "niri":
 			runNiriInstall(nil, nil)
-		case "sway":
-			runSwayInstall(nil, nil)
 		case "package":
 			runPackageInstall(nil, nil)
 		case "flatpak":
@@ -110,13 +107,11 @@ func runScriptsMenu() {
 			huh.NewSelect[string]().
 				Title("Selecciona un script").
 				Options(
-					huh.NewOption("Modo Juego", "game-mode"),
-					huh.NewOption("Caffeine (no suspender)", "caffeine"),
 					huh.NewOption("Cambiar Wallpaper", "change-wallpaper"),
 					huh.NewOption("Bloquear Pantalla", "lock"),
 					huh.NewOption("Menú de Energía", "powermenu"),
-					huh.NewOption("Monitor Watcher", "monitor-watcher"),
 					huh.NewOption("Mostrar Hotkeys", "hotkey"),
+					huh.NewOption("Uso de memoria", "memory"),
 					huh.NewOption("Volver", "back"),
 				).
 				Value(&script),
@@ -129,19 +124,15 @@ func runScriptsMenu() {
 
 	// Ejecutar el comando correspondiente
 	switch script {
-	case "game-mode":
-		runGameMode(nil, nil)
-	case "caffeine":
-		runCaffeine(nil, []string{"toggle"})
 	case "change-wallpaper":
 		runChangeWallpaper(nil, []string{"random"})
 	case "lock":
 		runLock(nil, nil)
 	case "powermenu":
 		runPowerMenu(nil, nil)
-	case "monitor-watcher":
-		runMonitorWatcher(nil, nil)
 	case "hotkey":
 		runHotkey(nil, nil)
+	case "memory":
+		runMemory(nil, nil)
 	}
 }

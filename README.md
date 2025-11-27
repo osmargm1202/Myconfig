@@ -1,6 +1,6 @@
 # ORGMOS - Sistema de Configuración para Arch Linux
 
-Sistema de configuración completo para i3wm, Sway, rofi y aplicaciones web con tema Tokyo Night.
+Sistema de configuración completo para i3wm, Niri, rofi y aplicaciones web con tema Tokyo Night.
 
 ## 🚀 Instalación Rápida (Una línea)
 
@@ -70,7 +70,6 @@ orgmos menu
 | Comando | Descripción |
 |---------|-------------|
 | `orgmos i3` | Instalar i3 Window Manager y componentes |
-| `orgmos sway` | Instalar Sway Window Manager y componentes Wayland |
 | `orgmos niri` | Instalar Niri Window Manager y componentes |
 | `orgmos package` | Instalador interactivo de paquetes |
 | `orgmos flatpak` | Instalador de aplicaciones Flatpak |
@@ -80,7 +79,6 @@ orgmos menu
 | `orgmos assets` | Copiar iconos y wallpapers |
 | `orgmos arch` | Herramientas de terminal para Arch |
 | `orgmos ubuntu` | Herramientas de terminal para Ubuntu |
-| `orgmos script [cmd]` | Ejecutar scripts de automatización |
 | `orgmos webapp` | WebApp Creator |
 | `orgmos menu` | Menú interactivo principal |
 
@@ -89,9 +87,6 @@ orgmos menu
 ```bash
 # Instalar i3 completo
 orgmos i3
-
-# Instalar Sway
-orgmos sway
 
 # Instalar Niri
 orgmos niri
@@ -108,8 +103,8 @@ orgmos config
 # Copiar iconos y wallpapers
 orgmos assets
 
-# Ejecutar script de modo juego
-orgmos script game-mode
+# Mostrar atajos de i3
+orgmos i3 hotkey
 ```
 
 ## 📁 Estructura del Proyecto
@@ -125,7 +120,6 @@ Myconfig/
 ├── configs/            # Archivos TOML de paquetes
 │   ├── pkg_general.toml
 │   ├── pkg_i3.toml
-│   ├── pkg_sway.toml
 │   ├── pkg_niri.toml
 │   └── pkg_flatpak.toml
 ├── configs_to_copy/    # Configuraciones para ~/.config
@@ -166,8 +160,8 @@ orgmos-{comando}-{timestamp}.log
 
 ## 🎛️ Shell Wayland (Polybar ➜ DMS Shell)
 
-- DMS Shell replica los módulos críticos de la barra (workspaces, título de ventana, fecha/hora, filesystem, audio, batería, métricas, toggles de cafeína/hotkeys/powermenu y contador de actualizaciones Paru/Flatpak) pero optimizados para Wayland.
-- Los scripts existentes (`orgmos script …`) alimentan los módulos personalizados para mantener el mismo flujo de trabajo en i3, Sway y Niri.
+- DMS Shell replica los módulos críticos de la barra (workspaces, título de ventana, fecha/hora, filesystem, audio, batería, métricas y toggles de hotkeys/powermenu) pero optimizados para Wayland.
+- Los atajos `orgmos i3 …` alimentan los módulos personalizados para mantener el flujo de trabajo en i3 y Niri.
 - El tema aplica la misma paleta **Tokyo Night** (fondos translúcidos + acentos lila/cian) y simplifica la configuración Wayland al usar quickshell + dms-shell.
 
 ## 🛠️ Desarrollo
@@ -195,21 +189,18 @@ make clean
 ## 📋 Requisitos del Sistema
 
 - **Sistema**: Arch Linux (o basado en Arch)
-- **WM**: i3-gaps, Sway o Niri
+- **WM**: i3-gaps o Niri
 - **Fuentes**: JetBrainsMono Nerd Font
 - **Terminal**: kitty o alacritty
 - **Launcher**: rofi o wofi
 
-## 🎯 Comandos de Scripts
+## 🎯 Utilidades rápidas para i3
 
-Los scripts de automatización están disponibles vía `orgmos script`:
-
-- `orgmos script game-mode` - Activar/desactivar modo juego
-- `orgmos script caffeine` - Prevenir suspensión
-- `orgmos script wallpaper` - Cambiar wallpaper
-- `orgmos script display` - Gestión de monitores (rofi)
-- `orgmos script lock` - Bloquear pantalla
-- `orgmos script powermenu` - Menú de energía
+- `orgmos i3 wallpaper [random|restore|ruta]`
+- `orgmos i3 lock`
+- `orgmos i3 hotkey`
+- `orgmos i3 powermenu`
+- `orgmos i3 memory`
 
 ## 🔐 Paru AUR Helper
 

@@ -41,8 +41,41 @@ var i3Cmd = &cobra.Command{
 	Run:   runI3Install,
 }
 
+var (
+	i3WallpaperCmd = &cobra.Command{
+		Use:   "wallpaper [random|restore|ruta]",
+		Short: "Cambiar wallpaper (solo i3)",
+		Run:   runChangeWallpaper,
+	}
+	i3LockCmd = &cobra.Command{
+		Use:   "lock",
+		Short: "Bloquear pantalla (i3lock)",
+		Run:   runLock,
+	}
+	i3HotkeyCmd = &cobra.Command{
+		Use:   "hotkey",
+		Short: "Mostrar atajos configurados en i3",
+		Run:   runHotkey,
+	}
+	i3PowermenuCmd = &cobra.Command{
+		Use:   "powermenu",
+		Short: "Mostrar menú de energía (rofi)",
+		Run:   runPowerMenu,
+	}
+	i3MemoryCmd = &cobra.Command{
+		Use:   "memory",
+		Short: "Imprimir uso de memoria",
+		Run:   runMemory,
+	}
+)
+
 func init() {
 	rootCmd.AddCommand(i3Cmd)
+	i3Cmd.AddCommand(i3WallpaperCmd)
+	i3Cmd.AddCommand(i3LockCmd)
+	i3Cmd.AddCommand(i3HotkeyCmd)
+	i3Cmd.AddCommand(i3PowermenuCmd)
+	i3Cmd.AddCommand(i3MemoryCmd)
 }
 
 func runI3Install(cmd *cobra.Command, args []string) {
@@ -78,7 +111,7 @@ func runI3Install(cmd *cobra.Command, args []string) {
 			pkgList += "  "
 		}
 	}
-	
+
 	form := ui.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
@@ -111,4 +144,3 @@ func runI3Install(cmd *cobra.Command, args []string) {
 	fmt.Println(ui.Success("i3 y componentes instalados correctamente"))
 	logger.Info("Instalación i3 completada")
 }
-

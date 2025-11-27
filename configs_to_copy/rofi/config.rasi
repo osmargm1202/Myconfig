@@ -2,8 +2,5 @@ configuration {
     font: "JetBrainsMono Nerd Font 12";
 }
 
-//@theme "~/.config/rofi/spotlight-dark.rasi"
+@theme "~/.config/rofi/style-5.rasi"
 
-@theme "~/.config/rofi/rounded-blue-dark.rasi"
-
-//@theme "~/.config/rofi/launchpad.rasi"

@@ -35,13 +35,11 @@ exec --no-startup-id dex --autostart --environment i3
 # Lanzar GNOME Keyring en el inicio y notificar en la terminal con color
 exec --no-startup-id /usr/bin/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh,gpg && notify-send -u normal -a "i3" "GNOME Keyring iniciado"
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
-exec --no-startup-id orgmos script caffeine apply
 exec --no-startup-id polybar --config=$HOME/.config/polybar/config.ini modern
 # Auto-detect monitor changes with autorandr
 # Try to load matching profile on startup
 exec --no-startup-id autorandr --change --default default
 # Monitor for display changes and handle them automatically
-exec_always --no-startup-id orgmos script monitor-watcher &
 
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
@@ -53,7 +51,7 @@ exec --no-startup-id export CM_LAUNCHER=rofi
 exec --no-startup-id clipmenud
 exec --no-startup-id picom --config ~/.config/picom/picom.conf -b
 exec --no-startup-id setxkbmap -layout "us,latam"
-exec --no-startup-id orgmos script change-wallpaper restore
+exec --no-startup-id orgmos i3 wallpaper restore
 # Configure cursor theme Bibata-Modern-Ice
 exec --no-startup-id gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice' 2>/dev/null || xsetroot -cursor_name left_ptr 2>/dev/null || true 
 # Lanzar Transmission Daemon y notificar en la terminal con color
@@ -97,7 +95,6 @@ bindsym $mod+v exec --no-startup-id CM_LAUNCHER=rofi clipmenu -p "Portapapeles"
 bindsym $mod+p exec flameshot gui
 bindsym $mod+Shift+o exec systemctl suspend
 bindsym $mod+Mod1+o exec poweroff
-bindsym $mod+k exec --no-startup-id orgmos script keyboard-toggle
 bindsym $mod+Tab exec --no-startup-id "rofi -show window"
 
 # Wallpaper configuration
@@ -105,22 +102,13 @@ bindsym $mod+Tab exec --no-startup-id "rofi -show window"
 
 # Change to random wallpaper keybinding
 # Super+Alt+Space = Random wallpaper
-bindsym $mod+Mod1+space exec --no-startup-id orgmos script change-wallpaper random
+bindsym $mod+Mod1+space exec --no-startup-id orgmos i3 wallpaper random
 
 # For feh
 #bindsym $mod+Mod1+space exec --no-startup-id feh --bg-fill "$(find ~/Pictures -type f | shuf -n1)"
 
-# Modo juego con Mod+Alt+G
-bindsym $mod+Mod1+g exec --no-startup-id orgmos script game-mode
-
-# Reload servicios con Mod+Alt+R (opcional)
-bindsym $mod+Mod1+r exec --no-startup-id orgmos script game-mode reload
-
 # Bloquear pantalla con Mod+Shift+L
-bindsym $mod+Shift+l exec --no-startup-id orgmos script lock
-
-# Toggle modo cafeína con Mod+Shift+C
-bindsym $mod+Shift+c exec --no-startup-id orgmos script caffeine toggle
+bindsym $mod+Shift+l exec --no-startup-id orgmos i3 lock
 
 # Apagar pantalla inmediatamente con Mod+Alt+P
 bindsym $mod+Mod1+p exec --no-startup-id xset dpms force off
@@ -334,5 +322,5 @@ client.placeholder      #000000 #1a1b26 #ffffff #000000 #1a1b26
 #}
 
 # Hotkey helper - Show all keybindings
-bindsym $mod+slash exec --no-startup-id orgmos script hotkey
-bindsym $mod+minus exec --no-startup-id orgmos script hotkey
+bindsym $mod+slash exec --no-startup-id orgmos i3 hotkey
+bindsym $mod+minus exec --no-startup-id orgmos i3 hotkey
