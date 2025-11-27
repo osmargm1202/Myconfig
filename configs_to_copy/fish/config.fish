@@ -9,9 +9,46 @@ end
 # Iniciar Niri automáticamente al hacer login en TTY1
 if status is-login
     if test -z "$DISPLAY" -a "$XDG_VTNR" -eq 1
-        exec niri-session
+        exec niri
     end
 end
+
+function start-sway
+    # Wayland
+    set -x OZONE_PLATFORM wayland
+    set -x QT_QPA_PLATFORM wayland
+    set -x GDK_BACKEND wayland
+    set -x SDL_VIDEODRIVER wayland
+    set -x CLUTTER_BACKEND wayland
+    
+    # NVIDIA específico
+    set -x __GLX_VENDOR_LIBRARY_NAME nvidia
+    set -x LIBVA_DRIVER_NAME nvidia
+    set -x VDPAU_DRIVER nvidia
+    set -x NVD_BACKEND direct
+    
+    # GPU optimization
+    set -x __NV_PRIME_RENDER_OFFLOAD 1
+    set -x __VK_LAYER_NV_optimus NVIDIA_only
+    set -x LIBGL_ALWAYS_INDIRECT 0
+    
+    # CRÍTICO para Sway + NVIDIA
+    set -x WLR_NO_HARDWARE_CURSORS 1
+    set -x GBM_BACKEND nvidia-drm
+    
+    # Electron apps
+    set -x ELECTRON_OZONE_PLATFORM_HINT auto
+    
+    # Performance
+    set -x MESA_NO_ERROR 1
+    set -x EGL_PLATFORM wayland
+    
+    # Ejecutar Sway
+    exec sway
+end
+
+# Alias corto
+alias ss='start-sway'
 
 # PATH
 set -gx PATH $HOME/.local/bin $PATH
@@ -64,7 +101,6 @@ end
 # Deshabilitar mensaje de ayuda de fish
 set -U fish_greeting ""
 
-
 function cheat
     curl -s cheat.sh/:list | fzf --preview "curl -s cheat.sh/{}" --preview-window=right:70% | xargs -I {} curl -s cheat.sh/{} | bat --language=markdown --paging=always
 end
@@ -81,4 +117,7 @@ if type -q fastfetch
 end
 
 # The next line updates PATH for the Google Cloud SDK.
-if [ -f '/home/osmar/google-cloud-sdk/path.fish.inc' ]; . '/home/osmar/google-cloud-sdk/path.fish.inc'; end
+if [ -f '/home/osmar/google-cloud-sdk/path.fish.inc' ]
+    . '/home/osmar/google-cloud-sdk/path.fish.inc'
+end
+

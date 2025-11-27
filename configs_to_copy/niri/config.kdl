@@ -270,11 +270,6 @@ binds {
     Mod+E hotkey-overlay-title="Gestor de archivos" { spawn "dolphin"; }
     Mod+W hotkey-overlay-title="Navegador" { spawn "chromium --ozone-platform=wayland --enable-wayland-ime"; }
 
-    //noctalia-shell (comentados para usar dms)
-    //Mod+Y hotkey-overlay-title="Historial del portapapeles" { spawn-sh "qs -c noctalia-shell ipc call launcher clipboard"; }
-    //Mod+Alt+E hotkey-overlay-title="Menú de sesión (apagar, suspender, desloguiar)" { spawn-sh "qs -c noctalia-shell ipc call sessionMenu toggle"; }
-    //Mod+M hotkey-overlay-title="Lanzador de apps (noctalia)" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
-    //Mod+Alt+L hotkey-overlay-title="Bloquear y suspender" { spawn-sh "qs -c noctalia-shell ipc call sessionMenu lockAndSuspend"; }
 
     // dms (usan gum e interacción en CLI, con colores en la terminal)
     Mod+Y hotkey-overlay-title="Historial del portapapeles" { spawn-sh "dms ipc call clipboard open"; }
@@ -284,6 +279,11 @@ binds {
     Mod+N hotkey-overlay-title="Bloc de notas" { spawn-sh "dms ipc call notepad toggle"; }
     Super+Alt+W hotkey-overlay-title="Cambiar fondo de pantalla" { spawn-sh "dms ipc call wallpaper next"; }
 
+    //noctalia-shell (comentados para usar dms)
+    //Mod+Y hotkey-overlay-title="Historial del portapapeles" { spawn-sh "qs -c noctalia-shell ipc call launcher clipboard"; }
+    //Mod+Alt+E hotkey-overlay-title="Menú de sesión (apagar, suspender, desloguiar)" { spawn-sh "qs -c noctalia-shell ipc call sessionMenu toggle"; }
+    //Mod+M hotkey-overlay-title="Lanzador de apps (noctalia)" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
+    //Mod+Alt+L hotkey-overlay-title="Bloquear y suspender" { spawn-sh "qs -c noctalia-shell ipc call sessionMenu lockAndSuspend"; }
 
 
     XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }

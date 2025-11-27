@@ -112,3 +112,4 @@ func runOpenboxInstall(cmd *cobra.Command, args []string) {
 	logger.Info("Instalación Openbox completada")
 }
 
+
