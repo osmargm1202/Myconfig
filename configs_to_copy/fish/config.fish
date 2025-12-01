@@ -2,15 +2,12 @@ if status is-interactive
     # Commands to run in interactive sessions can go here
 end
 
-source ~/.config/fish/conf.d/sway.fish
 source ~/.config/fish/conf.d/niri.fish
 
 
 if status --is-login
     set -gx PATH $PATH ~/linux/bin
 end
-
-
 
 # PATH
 set -gx PATH $HOME/.local/bin $PATH

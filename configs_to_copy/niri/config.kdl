@@ -1,15 +1,19 @@
-spawn-at-startup "bash" "-lc" "gnome-keyring-daemon --start --components=pkcs11,secrets,ssh,gpg && notify-send -u normal -a 'niri' 'GNOME Keyring iniciado'"
-spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
-spawn-at-startup "/usr/lib/xdg-desktop-portal-xapp"
-spawn-at-startup "xwayland-satellite"
+
+
+
+spawn-at-startup "systemctl --user stop dunst"
+spawn-at-startup "fish" "-c" "dms run"
+spawn-at-startup "fish" "-c" "bash" "-lc" "gnome-keyring-daemon --start --components=pkcs11,secrets,ssh,gpg && notify-send -u normal -a 'niri' 'GNOME Keyring iniciado'"
+spawn-at-startup "fish" "-c" "/usr/lib/polkit-kde-authentication-agent-1"
+//spawn-at-startup "/usr/lib/xdg-desktop-portal-xapp"
+spawn-at-startup "fish" "-c" "xwayland-satellite"
 //spawn-at-startup "nm-applet"
 //spawn-at-startup "blueman-applet"
 //spawn-at-startup "system-config-printer-applet"
-spawn-at-startup "dms" "run"
-spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP"
+spawn-at-startup "fish" "-c" "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP"
+spawn-at-startup "fish" "-c" "nextcloud --background && notify-send -u normal -a 'niri' 'Nextcloud '"
+spawn-at-startup "fish" "-c" "wl-paste -t text --watch cliphist store & wl-paste -t image/png --watch cliphist store"
 
-spawn-at-startup "nextcloud --background"
-spawn-at-startup "sh" "-c" "wl-paste -t text --watch cliphist store & wl-paste -t image/png --watch cliphist store"
 
 workspace "1"
 workspace "2"
@@ -23,30 +27,6 @@ workspace "9"
 
 prefer-no-csd
 
-
-/-environment {
-    // Wayland
-    OZONE_PLATFORM "wayland"
-    QT_QPA_PLATFORM "wayland"
-    GDK_BACKEND "wayland"
-    
-    // NVIDIA específico
-    __GLX_VENDOR_LIBRARY_NAME "nvidia"
-    LIBVA_DRIVER_NAME "nvidia"
-    VDPAU_DRIVER "nvidia"
-    NVD_BACKEND "direct"
-    
-    // GPU optimization
-    __NV_PRIME_RENDER_OFFLOAD "1"
-    LIBGL_ALWAYS_INDIRECT "0"
-    
-    // Electron apps
-    ELECTRON_OZONE_PLATFORM_HINT "auto"
-    
-    // Performance
-    MESA_NO_ERROR "1"
-    EGL_PLATFORM "wayland"
-}
 
 hotkey-overlay {
     skip-at-startup
@@ -267,25 +247,21 @@ overview {
 binds {
     Mod+Slash { show-hotkey-overlay; }
     Mod+Return hotkey-overlay-title="Abrir terminal (kitty)" { spawn "kitty"; }
-    //Mod+M hotkey-overlay-title="Lanzador de apps (rofi)" { spawn "rofi" "-show" "drun" "-show-icons"; }
-    //Mod+Alt+L hotkey-overlay-title="Lock the Screen: swaylock (transparente + blur)" { spawn "swaylock" "--grace" "0" "--daemonize" "--screenshots" "--effect-blur" "7x3" "--effect-vignette" "0.3:0.3" "--fade-in" "0.2"; }
+    Mod+M hotkey-overlay-title="Lanzador de apps (rofi)" { spawn "fish" "-c" "rofi -show drun -show-icons"; }
     Mod+E hotkey-overlay-title="Gestor de archivos" { spawn "dolphin"; }
-    Mod+W hotkey-overlay-title="Navegador" { spawn-sh "chromium --ozone-platform=wayland --enable-wayland-ime --enable-features=WebRTCPipeWireCapturer"; }
+    Mod+W hotkey-overlay-title="Navegador" { spawn "fish" "-c" "chromium --ozone-platform=wayland --enable-wayland-ime --enable-features=WebRTCPipeWireCapturer"; }
+    Mod+A hotkey-overlay-title="Cursor Code Editor" { spawn "fish" "-c" "cursor"; }
 
 
-    // dms (usan gum e interacción en CLI, con colores en la terminal)
+    // dms
     Mod+Y hotkey-overlay-title="Historial del portapapeles" { spawn-sh "dms ipc call clipboard open"; }
     Mod+Alt+E hotkey-overlay-title="Menú de sesión (apagar, suspender, cerrar sesión)" { spawn-sh "dms ipc call powermenu toggle"; }
-    Mod+M hotkey-overlay-title="Lanzador de aplicaciones" { spawn-sh "dms ipc call spotlight toggle"; }
+    Mod+space hotkey-overlay-title="Lanzador de aplicaciones" { spawn-sh "dms ipc call spotlight toggle"; }
     Super+Alt+L hotkey-overlay-title="Bloquear sesión" { spawn-sh "dms ipc call lock lock"; }
     Mod+N hotkey-overlay-title="Bloc de notas" { spawn-sh "dms ipc call notepad toggle"; }
     Super+Alt+W hotkey-overlay-title="Cambiar fondo de pantalla" { spawn-sh "dms ipc call wallpaper next"; }
-
-    //noctalia-shell (comentados para usar dms)
-    //Mod+Y hotkey-overlay-title="Historial del portapapeles" { spawn-sh "qs -c noctalia-shell ipc call launcher clipboard"; }
-    //Mod+Alt+E hotkey-overlay-title="Menú de sesión (apagar, suspender, desloguiar)" { spawn-sh "qs -c noctalia-shell ipc call sessionMenu toggle"; }
-    //Mod+M hotkey-overlay-title="Lanzador de apps (noctalia)" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
-    //Mod+Alt+L hotkey-overlay-title="Bloquear y suspender" { spawn-sh "qs -c noctalia-shell ipc call sessionMenu lockAndSuspend"; }
+    Mod+Shift+Escape hotkey-overlay-title="Cerrar sesión" { spawn-sh "dms ipc call powermenu toggle"; }
+    Mod+Shift+M hotkey-overlay-title="Cerrar sesión" { spawn-sh "dms ipc call notifications toggle"; }
 
 
     XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
@@ -435,34 +411,3 @@ binds {
     Mod+Shift+P { power-off-monitors; }
 }
 
-
-/-recent-windows {
-    // off
-    debounce-ms 750
-
-    open-delay-ms 150
-
-    highlight {
-        active-color "#999999ff"
-        urgent-color "#ff9999ff"
-        padding 30
-        corner-radius 0
-    }
-
-    previews {
-        max-height 480
-        max-scale 0.5
-    }
-
-    binds {
-        Alt+Tab         { next-window; }
-        Alt+Shift+Tab   { previous-window; }
-        Alt+grave       { next-window     filter="app-id"; }
-        Alt+Shift+grave { previous-window filter="app-id"; }
-
-        Mod+Tab         { next-window; }
-        Mod+Shift+Tab   { previous-window; }
-        Mod+grave       { next-window     filter="app-id"; }
-        Mod+Shift+grave { previous-window filter="app-id"; }
-    }
-}

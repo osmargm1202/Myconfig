@@ -49,6 +49,7 @@ packages = [
 packages = [
     "qt5-wayland",
     "qt6-wayland",
+    "polkit",
     "polkit-kde-agent",
 ]
 
@@ -56,6 +57,7 @@ packages = [
 packages = [
     "brightnessctl",
     "trash-cli",
+    "power-profiles-daemon",
 ]
 
 ["TEMAS Y APARIENCIA"]
