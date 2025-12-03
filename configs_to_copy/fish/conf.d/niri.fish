@@ -2,9 +2,9 @@
 if status is-login
     if test -z "$DISPLAY" -a "$XDG_VTNR" -eq 1
         # --- Forzar backend X11 / XWayland ---
-        set -x OZONE_PLATFORM x11
+        #set -x OZONE_PLATFORM x11
         set -x QT_QPA_PLATFORM wayland
-        set -x GDK_BACKEND x11
+        set -x GDK_BACKEND wayland,x11
         set -x EGL_PLATFORM x11
         set -x ELECTRON_OZONE_PLATFORM_HINT x11
 

@@ -50,7 +50,7 @@ exec --no-startup-id autorandr --change --default default
 exec --no-startup-id nm-applet
 # Bluetooth manager - blueman-applet provides a system tray GUI for Bluetooth management
 exec --no-startup-id blueman-applet
-#exec --no-startup-id feh --bg-fill ~/Pictures/wallpaper.png
+
 exec --no-startup-id export CM_LAUNCHER=rofi
 exec --no-startup-id clipmenud
 exec --no-startup-id picom --config ~/.config/picom/picom.conf -b
@@ -60,6 +60,7 @@ exec --no-startup-id orgmos i3 wallpaper restore
 exec --no-startup-id gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Ice' 2>/dev/null || xsetroot -cursor_name left_ptr 2>/dev/null || true 
 # Lanzar Transmission Daemon y notificar en la terminal con color
 
+1
 exec --no-startup-id system-config-printer-applet
 
 exec --no-startup-id dunst
@@ -68,6 +69,9 @@ exec_always --no-startup-id wal -R
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
+
+# Lanzar el terminal con la CLI de IA al inicio
+exec --no-startup-id kitty --class ai-scratchpad -e "orgmai chat"
 
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
@@ -86,6 +90,10 @@ bindsym $mod+Return exec $term
 
 # kill focused window
 bindsym $mod+q kill
+
+# Keybinding para togglear
+bindsym $mod+Shift+a [instance="ai-scratchpad"] scratchpad show
+
 
 # start dmenu (a program launcher)
 bindsym $mod+m exec --no-startup-id rofi -show drun -show-icons
@@ -276,6 +284,8 @@ for_window [class="system-config-printer"] floating enable
 #for_window [tiling] border pixel 2
 for_window [all] border pixel 0
 for_window [class="Cursor"] layout tabbed
+for_window [instance="ai-scratchpad"] floating enable, move scratchpad, resize set 800 600, move position center
+
 # Márgenes globales
 gaps inner 10
 gaps outer 5

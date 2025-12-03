@@ -24,7 +24,16 @@ func runChangeWallpaper(cmd *cobra.Command, args []string) {
 	homeDir, _ := os.UserHomeDir()
 	lastWallpaperFile := filepath.Join(homeDir, ".lastwallpaper")
 	picturesDir := filepath.Join(homeDir, "Pictures", "Wallpapers")
-	repoDir := utils.GetRepoDir()
+	
+	// Descargar/actualizar archivos de config si es necesario
+	if err := utils.DownloadConfigFiles(); err != nil {
+		// No es crítico para cambiar wallpaper, continuar
+	}
+	
+	repoDir := utils.GetConfigRepoDir()
+	if repoDir == "" {
+		repoDir = utils.GetRepoDir()
+	}
 	repoWallpapers := filepath.Join(repoDir, "Wallpapers")
 
 	wallpaperDir := picturesDir

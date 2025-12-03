@@ -33,6 +33,7 @@ packages = [
 packages = [
     "kitty",
     "dolphin",
+    "nautilus",
 ]
 
 ["FUENTES Y EXTRAS"]
@@ -58,6 +59,7 @@ packages = [
     "brightnessctl",
     "trash-cli",
     "power-profiles-daemon",
+    "swayidle",           # gestor de inactividad para Wayland
 ]
 
 ["TEMAS Y APARIENCIA"]

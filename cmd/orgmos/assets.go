@@ -31,7 +31,16 @@ func runAssetsCopy(cmd *cobra.Command, args []string) {
 
 	fmt.Println(ui.Title("Copiar Wallpapers"))
 
-	repoDir := utils.GetRepoDir()
+	// Descargar/actualizar archivos de config si es necesario
+	if err := utils.DownloadConfigFiles(); err != nil {
+		fmt.Println(ui.Warning(fmt.Sprintf("No se pudieron descargar archivos de config: %v", err)))
+		fmt.Println(ui.Info("Intentando usar repositorio local..."))
+	}
+
+	repoDir := utils.GetConfigRepoDir()
+	if repoDir == "" {
+		repoDir = utils.GetRepoDir()
+	}
 	homeDir, _ := os.UserHomeDir()
 
 	wallpapersSource := filepath.Join(repoDir, "Wallpapers")

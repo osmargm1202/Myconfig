@@ -11,9 +11,11 @@ curl -fsSL https://raw.githubusercontent.com/osmargm1202/Myconfig/master/install
 Este comando:
 - ✅ Clona/actualiza el repositorio en `~/Myconfig`
 - ✅ Instala Go si no está disponible
-- ✅ Compila el binario `orgmos`
-- ✅ Crea symlink en `/usr/local/bin/orgmos`
+- ✅ Descarga e instala los binarios `orgmos` y `orgmai` desde `dist/`
+- ✅ Copia binarios a `~/.local/bin/` con permisos de ejecución
 - ✅ Crea entrada de escritorio
+
+**Nota:** `install.sh` ya no compila los binarios, solo los descarga desde el repositorio. Para compilar localmente, ver la sección [Builds Manuales](#-builds-manuales).
 
 ## 📦 Instalación Manual
 
@@ -45,17 +47,21 @@ sudo apt update && sudo apt install -y golang-go git make
 
 **Importante:** El Makefile se usa con el comando `make`, no ejecutándolo directamente.
 
+Para compilar los binarios localmente:
 ```bash
-make install
+make build
 ```
 
-O manualmente:
+Esto compilará ambos binarios (`orgmos` y `orgmai`) en la carpeta `dist/`.
+
+Para instalar después de compilar:
 ```bash
-go build -o orgmos ./cmd/orgmos
-sudo ln -s $(pwd)/orgmos /usr/local/bin/orgmos
+cp dist/orgmos ~/.local/bin/
+cp dist/orgmai ~/.local/bin/
+chmod +x ~/.local/bin/orgmos ~/.local/bin/orgmai
 ```
 
-**Nota:** Si ejecutas `./Makefile` directamente, obtendrás errores. Siempre usa `make [target]` (por ejemplo: `make build`, `make install`, `make run`).
+**Nota:** Si ejecutas `./Makefile` directamente, obtendrás errores. Siempre usa `make [target]` (por ejemplo: `make build`, `make build-orgmos`, `make build-orgmai`).
 
 ## 🎯 Uso
 
@@ -79,7 +85,7 @@ orgmos menu
 | `orgmos assets` | Copiar iconos y wallpapers |
 | `orgmos arch` | Herramientas de terminal para Arch |
 | `orgmos ubuntu` | Herramientas de terminal para Ubuntu |
-| `orgmos webapp` | WebApp Creator |
+| `orgmos update` | Actualizar orgmos y orgmai desde el servidor remoto |
 | `orgmos menu` | Menú interactivo principal |
 
 ### Ejemplos
@@ -126,18 +132,30 @@ Myconfig/
 ├── Icons/              # Iconos del sistema
 ├── Wallpapers/         # Fondos de pantalla
 ├── sddm/               # Tema SDDM
-└── webapp/             # WebApp Creator
 ```
 
 ## 🔧 Actualización
 
+### Actualización automática
+
+```bash
+orgmos update
+```
+
+Este comando ejecuta el script de instalación remoto para actualizar los binarios `orgmos` y `orgmai`.
+
+### Actualización manual
+
 ```bash
 cd ~/Myconfig
 git pull origin master
-make install
+make build
+cp dist/orgmos ~/.local/bin/
+cp dist/orgmai ~/.local/bin/
+chmod +x ~/.local/bin/orgmos ~/.local/bin/orgmai
 ```
 
-El binario se actualiza automáticamente al ejecutar cualquier comando.
+**Nota:** Los archivos de configuración se descargan automáticamente cuando los comandos los necesitan, usando `~/.config/orgmos/repo/` como caché local.
 
 ## 📝 Logs
 
@@ -166,10 +184,28 @@ orgmos-{comando}-{timestamp}.log
 
 ## 🛠️ Desarrollo
 
-### Compilar
+### Builds Manuales
+
+Para compilar los binarios localmente:
 
 ```bash
+# Compilar ambos binarios
 make build
+
+# Compilar solo orgmos
+make build-orgmos
+
+# Compilar solo orgmai (requiere pyinstaller)
+make build-orgmai
+```
+
+Los binarios se generan en la carpeta `dist/`:
+- `dist/orgmos` - Binario Go compilado
+- `dist/orgmai` - Binario Python empaquetado con PyInstaller
+
+**Requisitos para build-orgmai:**
+```bash
+pip install pyinstaller
 ```
 
 ### Ejecutar sin instalar
@@ -185,6 +221,8 @@ go run ./cmd/orgmos menu
 ```bash
 make clean
 ```
+
+Esto elimina la carpeta `dist/` y los artefactos de compilación.
 
 ## 📋 Requisitos del Sistema
 

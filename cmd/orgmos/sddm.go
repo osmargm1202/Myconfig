@@ -101,7 +101,16 @@ func runSddmInstall(cmd *cobra.Command, args []string) {
 }
 
 func installSddmTheme() error {
-	repoDir := utils.GetRepoDir()
+	// Descargar/actualizar archivos de config si es necesario
+	if err := utils.DownloadConfigFiles(); err != nil {
+		fmt.Println(ui.Warning(fmt.Sprintf("No se pudieron descargar archivos de config: %v", err)))
+		fmt.Println(ui.Info("Intentando usar repositorio local..."))
+	}
+
+	repoDir := utils.GetConfigRepoDir()
+	if repoDir == "" {
+		repoDir = utils.GetRepoDir()
+	}
 	themeSource := filepath.Join(repoDir, "sddm", "orgmos-sddm")
 	themeDest := "/usr/share/sddm/themes/orgmos-sddm"
 

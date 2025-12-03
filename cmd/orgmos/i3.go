@@ -11,28 +11,6 @@ import (
 	"orgmos/internal/ui"
 )
 
-var i3Packages = []string{
-	"i3-wm",
-	"dunst",
-	"polybar",
-	"rofi",
-	"picom",
-	"feh",
-	"xwallpaper",
-	"i3lock-color",
-	"brightnessctl",
-	"udiskie",
-	"scrot",
-	"maim",
-	"xclip",
-	"clipmenu",
-	"arandr",
-	"autorandr",
-	"flameshot",
-	"xorg-xrandr",
-	"xorg-xinput",
-	"xorg-xsetroot",
-}
 
 var i3Cmd = &cobra.Command{
 	Use:   "i3",
@@ -89,12 +67,26 @@ func runI3Install(cmd *cobra.Command, args []string) {
 
 	fmt.Println(ui.Title("Instalación de i3 Window Manager"))
 
+	// Cargar paquetes desde TOML
+	groups, err := packages.ParseTOML("pkg_i3.toml")
+	if err != nil {
+		fmt.Println(ui.Error(fmt.Sprintf("Error cargando paquetes: %v", err)))
+		logger.Error("Error parseando TOML: %v", err)
+		return
+	}
+
+	// Obtener todos los paquetes
+	var allPackages []string
+	for _, g := range groups {
+		allPackages = append(allPackages, g.Packages...)
+	}
+
 	// Verificar paquetes instalados
 	fmt.Println(ui.Info("Verificando paquetes instalados..."))
-	installed := packages.CheckInstalledPacman(i3Packages)
+	installed := packages.CheckInstalledPacman(allPackages)
 
 	var toInstall []string
-	for _, pkg := range i3Packages {
+	for _, pkg := range allPackages {
 		if !installed[pkg] {
 			toInstall = append(toInstall, pkg)
 		}

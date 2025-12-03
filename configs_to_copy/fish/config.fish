@@ -1,9 +1,18 @@
 if status is-interactive
-    # Commands to run in interactive sessions can go here
+    if type -q fastfetch
+        if test -f ~/.config/fastfetch/config.jsonc
+            fastfetch --config ~/.config/fastfetch/config.jsonc
+        else if test -f ~/.config/fastfetch/orgm.png
+            fastfetch --logo-path ~/.config/fastfetch/orgm.png
+        else
+            fastfetch
+        end
+    end
 end
 
-source ~/.config/fish/conf.d/niri.fish
-
+if test -f ~/.config/fish/conf.d/niri.fish
+    source ~/.config/fish/conf.d/niri.fish
+end
 
 if status --is-login
     set -gx PATH $PATH ~/linux/bin
@@ -65,18 +74,11 @@ function cheat
 end
 
 # Ejecutar fastfetch con configuración ORGMOS (logo orgm.png)
-if type -q fastfetch
-    if test -f ~/.config/fastfetch/config.jsonc
-        fastfetch --config ~/.config/fastfetch/config.jsonc
-    else if test -f ~/.config/fastfetch/orgm.png
-        fastfetch --logo-path ~/.config/fastfetch/orgm.png
-    else
-        fastfetch
-    end
-end
+
 
 # The next line updates PATH for the Google Cloud SDK.
-if [ -f '/home/osmar/google-cloud-sdk/path.fish.inc' ]
+if test -f '/home/osmar/google-cloud-sdk/path.fish.inc'
     . '/home/osmar/google-cloud-sdk/path.fish.inc'
 end
+
 

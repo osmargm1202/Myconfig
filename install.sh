@@ -87,24 +87,71 @@ else
     cd "$REPO_DIR"
 fi
 
-# Compilar binario en directorio temporal
-echo -e "${BLUE}Compilando binario...${NC}"
-TEMP_BINARY=$(mktemp)
+# Compilar o descargar binarios
 BIN_DIR="$HOME/.local/bin"
 mkdir -p "$BIN_DIR"
 
-if command -v make &> /dev/null; then
-    # Usar make pero compilar a directorio temporal
-    cd "$REPO_DIR"
-    go build -o "$TEMP_BINARY" ./cmd/orgmos
-    mv "$TEMP_BINARY" "$BIN_DIR/orgmos"
-    chmod +x "$BIN_DIR/orgmos"
-    echo -e "${GREEN}✓ Binario compilado en $BIN_DIR/orgmos${NC}"
-    
-    # Crear desktop entry si no existe
-    mkdir -p ~/.local/share/applications
-    if [ ! -f ~/.local/share/applications/orgmos.desktop ]; then
-        cat > ~/.local/share/applications/orgmos.desktop << 'EOF'
+log_status info "Compilando o descargando binarios..."
+
+# Compilar o descargar orgmos
+cd "$REPO_DIR"
+if command -v go &> /dev/null; then
+    log_status info "Intentando compilar orgmos..."
+    if go build -o "$BIN_DIR/orgmos" ./cmd/orgmos 2>/dev/null; then
+        chmod +x "$BIN_DIR/orgmos"
+        log_status success "orgmos compilado e instalado"
+    else
+        log_status warn "No se pudo compilar orgmos, intentando descargar desde dist/..."
+        if [ -f "$REPO_DIR/dist/orgmos" ]; then
+            cp "$REPO_DIR/dist/orgmos" "$BIN_DIR/orgmos"
+            chmod +x "$BIN_DIR/orgmos"
+            log_status success "orgmos instalado desde dist/"
+        else
+            log_status error "No se pudo instalar orgmos: compilación falló y binario no encontrado en dist/"
+        fi
+    fi
+else
+    log_status warn "Go no disponible, intentando descargar desde dist/..."
+    if [ -f "$REPO_DIR/dist/orgmos" ]; then
+        cp "$REPO_DIR/dist/orgmos" "$BIN_DIR/orgmos"
+        chmod +x "$BIN_DIR/orgmos"
+        log_status success "orgmos instalado desde dist/"
+    else
+        log_status error "No se pudo instalar orgmos: Go no disponible y binario no encontrado en dist/"
+    fi
+fi
+
+# Compilar o descargar orgmai
+if command -v pyinstaller &> /dev/null && [ -f "$REPO_DIR/orgmai.py" ]; then
+    log_status info "Intentando compilar orgmai..."
+    if pyinstaller --onefile --name orgmai --distpath "$BIN_DIR" "$REPO_DIR/orgmai.py" 2>/dev/null; then
+        chmod +x "$BIN_DIR/orgmai"
+        log_status success "orgmai compilado e instalado"
+    else
+        log_status warn "No se pudo compilar orgmai, intentando descargar desde dist/..."
+        if [ -f "$REPO_DIR/dist/orgmai" ]; then
+            cp "$REPO_DIR/dist/orgmai" "$BIN_DIR/orgmai"
+            chmod +x "$BIN_DIR/orgmai"
+            log_status success "orgmai instalado desde dist/"
+        else
+            log_status warn "orgmai no encontrado en dist/ y compilación falló"
+        fi
+    fi
+else
+    log_status warn "pyinstaller no disponible o orgmai.py no encontrado, intentando descargar desde dist/..."
+    if [ -f "$REPO_DIR/dist/orgmai" ]; then
+        cp "$REPO_DIR/dist/orgmai" "$BIN_DIR/orgmai"
+        chmod +x "$BIN_DIR/orgmai"
+        log_status success "orgmai instalado desde dist/"
+    else
+        log_status warn "orgmai no encontrado en dist/"
+    fi
+fi
+
+# Crear desktop entry si no existe
+mkdir -p ~/.local/share/applications
+if [ ! -f ~/.local/share/applications/orgmos.desktop ]; then
+    cat > ~/.local/share/applications/orgmos.desktop << 'EOF'
 [Desktop Entry]
 Name=ORGMOS
 Comment=Sistema de configuración ORGMOS
@@ -114,16 +161,8 @@ Type=Application
 Icon=orgmos
 Categories=System;Utility;
 EOF
-        chmod +x ~/.local/share/applications/orgmos.desktop
-        echo -e "${GREEN}✓ Desktop entry creado${NC}"
-    fi
-else
-    # Fallback sin make
-    cd "$REPO_DIR"
-    go build -o "$TEMP_BINARY" ./cmd/orgmos
-    mv "$TEMP_BINARY" "$BIN_DIR/orgmos"
-    chmod +x "$BIN_DIR/orgmos"
-    echo -e "${GREEN}✓ Binario compilado en $BIN_DIR/orgmos${NC}"
+    chmod +x ~/.local/share/applications/orgmos.desktop
+    log_status success "Desktop entry creado"
 fi
 
 # Verificar que ~/.local/bin esté en PATH
@@ -132,6 +171,7 @@ if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
     echo -e "${YELLOW}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
 fi
 
+
 echo
 echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
 echo -e "${GREEN}║   ¡Instalación completada!            ║${NC}"
@@ -139,6 +179,9 @@ echo -e "${GREEN}╚════════════════════
 echo
 echo -e "${BLUE}Binario instalado en:${NC} $BIN_DIR/orgmos"
 echo -e "${BLUE}Ejecuta:${NC} orgmos menu"
+if [ -f "$BIN_DIR/orgmai" ]; then
+    echo -e "${BLUE}orgmai CLI instalado. Ejecuta:${NC} orgmai"
+fi
 echo -e "${BLUE}O visita:${NC} $REPO_DIR"
 echo
 

@@ -121,3 +121,78 @@ Keywords=config;setup;system;
 	return nil
 }
 
+// GetConfigRepoDir obtiene el directorio del repositorio para archivos de config
+func GetConfigRepoDir() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return filepath.Join(homeDir, ".config", "orgmos", "repo")
+}
+
+// DownloadConfigFiles descarga/actualiza el repositorio en ~/.config/orgmos/repo/
+// para tener acceso a archivos de configuración sin necesidad del repo completo
+func DownloadConfigFiles() error {
+	configRepoDir := GetConfigRepoDir()
+	if configRepoDir == "" {
+		return fmt.Errorf("no se pudo obtener directorio de configuración")
+	}
+
+	repoURL := "https://github.com/osmargm1202/Myconfig.git"
+
+	// Si el directorio no existe, clonar el repositorio
+	if _, err := os.Stat(configRepoDir); os.IsNotExist(err) {
+		fmt.Println(ui.Info("Clonando repositorio para archivos de configuración..."))
+		logger.Info("Clonando repo en: %s", configRepoDir)
+
+		// Crear directorio padre
+		if err := os.MkdirAll(filepath.Dir(configRepoDir), 0755); err != nil {
+			return fmt.Errorf("error creando directorio: %w", err)
+		}
+
+		// Clonar repositorio (solo como origen de lectura para las configs)
+		output, err := RunCommandSilent("git", "clone", repoURL, configRepoDir)
+		if err != nil {
+			logger.Error("Error clonando repo: %s", output)
+			return fmt.Errorf("error clonando repositorio: %w", err)
+		}
+
+		fmt.Println(ui.Success("Origen de archivos de configuración preparado"))
+		logger.Info("Repo clonado exitosamente")
+		return nil
+	}
+
+	// Si existe, actualizar (solo para mantener al día el origen de lectura)
+	fmt.Println(ui.Info("Actualizando origen de archivos de configuración..."))
+	logger.Info("Actualizando repo en: %s", configRepoDir)
+
+	// Cambiar al directorio del repo
+	oldDir, _ := os.Getwd()
+	if err := os.Chdir(configRepoDir); err != nil {
+		return fmt.Errorf("error cambiando a directorio del repo: %w", err)
+	}
+	defer os.Chdir(oldDir)
+
+	// Git pull
+	output, err := RunCommandSilent("git", "pull", "--rebase")
+	if err != nil {
+		logger.Warn("Error actualizando repo de config: %s", output)
+		// No es error fatal, continuar con lo que hay
+		fmt.Println(ui.Warning("No se pudo actualizar el repositorio de configuración"))
+		return nil
+	}
+
+	// Verificar si ya estaba actualizado
+	outputLower := strings.ToLower(output)
+	if strings.Contains(outputLower, "already up to date") ||
+		strings.Contains(outputLower, "ya está actualizado") ||
+		output == "" {
+		fmt.Println(ui.Dim("Origen de archivos de configuración ya actualizado"))
+	} else {
+		fmt.Println(ui.Success("Origen de archivos de configuración actualizado"))
+		logger.Info("Repo de config actualizado: %s", output)
+	}
+
+	return nil
+}
+

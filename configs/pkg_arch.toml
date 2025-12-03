@@ -57,6 +57,8 @@ packages = [
     "unzip",              # extractor zip
     "smbclient",          # cliente SMB/CIFS
     "xclip",              # clipboard manager para Linux
+    "tmux",               # terminal multiplexer
+    "wlop",               # control de pantallas OLED
 ]
 
 ["MONITORES Y SISTEMA"]
@@ -71,5 +73,24 @@ packages = [
 ["CONTENEDORES"]
 packages = [
     "docker",             # contenedores
+]
+
+["PYTHON Y DEPENDENCIAS"]
+packages = [
+    "python-openai",      # cliente OpenAI para Python
+    "python-pipx",        # instalador de aplicaciones Python
+    "python-playwright",  # automatización de navegadores
+    "python-pywal",       # paleta de colores para wal
+    "python-questionary", # prompts interactivos en terminal
+    "python-rich",        # terminal mejorado con colores
+    "python-typer",       # framework CLI moderno
+]
+
+["RED Y SEGURIDAD"]
+packages = [
+    "bind",               # herramientas DNS (incluye nslookup)
+    "hcxdumptool",        # herramienta de captura WiFi
+    "hcxtools",           # herramientas para análisis WiFi
+    "wireshark-cli",      # analizador de protocolos de red (CLI)
 ]
 

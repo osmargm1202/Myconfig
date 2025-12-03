@@ -47,7 +47,6 @@ func runMenu(cmd *cobra.Command, args []string) {
 						huh.NewOption("Copiar iconos y wallpapers", "assets"),
 						huh.NewOption("Herramientas Arch", "arch"),
 						huh.NewOption("Herramientas Ubuntu", "ubuntu"),
-						huh.NewOption("WebApp Creator", "webapp"),
 						huh.NewOption("Scripts", "scripts"),
 						huh.NewOption("Salir", "exit"),
 					).
@@ -84,8 +83,6 @@ func runMenu(cmd *cobra.Command, args []string) {
 			runArchInstall(nil, nil)
 		case "ubuntu":
 			runUbuntuInstall(nil, nil)
-		case "webapp":
-			runWebapp(nil, nil)
 		case "scripts":
 			runScriptsMenu()
 		case "exit":
