@@ -150,20 +150,20 @@ func DownloadConfigFiles() error {
 			return fmt.Errorf("error creando directorio: %w", err)
 		}
 
-		// Clonar repositorio (solo como origen de lectura para las configs)
+		// Clonar repositorio
 		output, err := RunCommandSilent("git", "clone", repoURL, configRepoDir)
 		if err != nil {
 			logger.Error("Error clonando repo: %s", output)
 			return fmt.Errorf("error clonando repositorio: %w", err)
 		}
 
-		fmt.Println(ui.Success("Origen de archivos de configuración preparado"))
+		fmt.Println(ui.Success("Repositorio clonado para archivos de configuración"))
 		logger.Info("Repo clonado exitosamente")
 		return nil
 	}
 
-	// Si existe, actualizar (solo para mantener al día el origen de lectura)
-	fmt.Println(ui.Info("Actualizando origen de archivos de configuración..."))
+	// Si existe, actualizar
+	fmt.Println(ui.Info("Actualizando repositorio de configuración..."))
 	logger.Info("Actualizando repo en: %s", configRepoDir)
 
 	// Cambiar al directorio del repo
@@ -187,9 +187,9 @@ func DownloadConfigFiles() error {
 	if strings.Contains(outputLower, "already up to date") ||
 		strings.Contains(outputLower, "ya está actualizado") ||
 		output == "" {
-		fmt.Println(ui.Dim("Origen de archivos de configuración ya actualizado"))
+		fmt.Println(ui.Dim("Repositorio de configuración ya actualizado"))
 	} else {
-		fmt.Println(ui.Success("Origen de archivos de configuración actualizado"))
+		fmt.Println(ui.Success("Repositorio de configuración actualizado"))
 		logger.Info("Repo de config actualizado: %s", output)
 	}
 

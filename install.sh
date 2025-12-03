@@ -94,7 +94,7 @@ mkdir -p "$BIN_DIR"
 log_status info "Compilando o descargando binarios..."
 
 # Compilar o descargar orgmos
-cd "$REPO_DIR"
+    cd "$REPO_DIR"
 if command -v go &> /dev/null; then
     log_status info "Intentando compilar orgmos..."
     if go build -o "$BIN_DIR/orgmos" ./cmd/orgmos 2>/dev/null; then
@@ -114,7 +114,7 @@ else
     log_status warn "Go no disponible, intentando descargar desde dist/..."
     if [ -f "$REPO_DIR/dist/orgmos" ]; then
         cp "$REPO_DIR/dist/orgmos" "$BIN_DIR/orgmos"
-        chmod +x "$BIN_DIR/orgmos"
+    chmod +x "$BIN_DIR/orgmos"
         log_status success "orgmos instalado desde dist/"
     else
         log_status error "No se pudo instalar orgmos: Go no disponible y binario no encontrado en dist/"
@@ -147,11 +147,11 @@ else
         log_status warn "orgmai no encontrado en dist/"
     fi
 fi
-
-# Crear desktop entry si no existe
-mkdir -p ~/.local/share/applications
-if [ ! -f ~/.local/share/applications/orgmos.desktop ]; then
-    cat > ~/.local/share/applications/orgmos.desktop << 'EOF'
+    
+    # Crear desktop entry si no existe
+    mkdir -p ~/.local/share/applications
+    if [ ! -f ~/.local/share/applications/orgmos.desktop ]; then
+        cat > ~/.local/share/applications/orgmos.desktop << 'EOF'
 [Desktop Entry]
 Name=ORGMOS
 Comment=Sistema de configuración ORGMOS
@@ -161,7 +161,7 @@ Type=Application
 Icon=orgmos
 Categories=System;Utility;
 EOF
-    chmod +x ~/.local/share/applications/orgmos.desktop
+        chmod +x ~/.local/share/applications/orgmos.desktop
     log_status success "Desktop entry creado"
 fi
 

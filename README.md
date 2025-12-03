@@ -85,6 +85,7 @@ orgmos menu
 | `orgmos assets` | Copiar iconos y wallpapers |
 | `orgmos arch` | Herramientas de terminal para Arch |
 | `orgmos ubuntu` | Herramientas de terminal para Ubuntu |
+| `orgmos webapp` | WebApp Creator |
 | `orgmos update` | Actualizar orgmos y orgmai desde el servidor remoto |
 | `orgmos menu` | Menú interactivo principal |
 
@@ -132,6 +133,7 @@ Myconfig/
 ├── Icons/              # Iconos del sistema
 ├── Wallpapers/         # Fondos de pantalla
 ├── sddm/               # Tema SDDM
+└── webapp/             # WebApp Creator
 ```
 
 ## 🔧 Actualización

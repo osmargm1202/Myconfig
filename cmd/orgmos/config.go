@@ -46,7 +46,6 @@ func runConfigCopy(cmd *cobra.Command, args []string) {
 		fmt.Println(ui.Title(msg))
 	}
 
-	// Función para copiar configuraciones (versión completa con descarga opcional)
 	copyFunc := func() {
 		printColorGum("Copiar Configuraciones")
 
@@ -198,8 +197,8 @@ func runConfigCopy(cmd *cobra.Command, args []string) {
 
 			// Dividir ventana verticalmente y ejecutar watch en el panel inferior
 			// El panel inferior monitoreará el panel superior y se cerrará cuando termine
-			// Usamos un script que ejecuta watch en foreground y monitorea el panel superior en background
-			watchScript := `(while tmux list-panes -t orgmos-watch:0.0 >/dev/null 2>&1; do sleep 1; done; tmux kill-session -t orgmos-watch 2>/dev/null) & MONITOR_PID=$!; watch -n 1 niri validate; kill $MONITOR_PID 2>/dev/null; tmux kill-session -t orgmos-watch 2>/dev/null`
+			// Usamos un script que ejecuta watch en background y monitorea el panel superior
+			watchScript := `watch -n 1 niri validate & WATCH_PID=$!; while tmux list-panes -t orgmos-watch:0.0 >/dev/null 2>&1; do sleep 1; done; kill $WATCH_PID 2>/dev/null; tmux kill-session -t orgmos-watch 2>/dev/null`
 			splitWindow := exec.Command("tmux", "split-window", "-v", "-t", "orgmos-watch", "sh", "-c", watchScript)
 			if err := splitWindow.Run(); err != nil {
 				fmt.Println(ui.Error(fmt.Sprintf("Error dividiendo ventana: %v", err)))
@@ -222,25 +221,11 @@ func runConfigCopy(cmd *cobra.Command, args []string) {
 
 			logger.Info("Sesión tmux creada. Adjuntando...")
 			
-			// Función para limpiar la sesión de tmux
-			cleanupTmuxSession := func() {
+			// Configurar limpieza cuando se salga de tmux
+			defer func() {
 				logger.Info("Limpiando sesión tmux...")
 				exec.Command("tmux", "kill-session", "-t", "orgmos-watch").Run()
-			}
-			
-			// Configurar handler de señales para limpiar cuando se presione Ctrl+C
-			sigChan := make(chan os.Signal, 1)
-			signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-			
-			go func() {
-				<-sigChan
-				fmt.Println(ui.Info("\nCerrando sesión tmux..."))
-				cleanupTmuxSession()
-				os.Exit(0)
 			}()
-			
-			// Asegurar limpieza cuando se salga de tmux
-			defer cleanupTmuxSession()
 
 			// Adjuntar a la sesión (esto bloqueará hasta que se salga de tmux)
 			attachSession := exec.Command("tmux", "attach-session", "-t", "orgmos-watch")
@@ -277,111 +262,23 @@ func runConfigCopy(cmd *cobra.Command, args []string) {
 		// Goroutine para manejar señales
 		go func() {
 			<-sigChan
-			fmt.Println(ui.Info("\nDeteniendo watch y cerrando sesión tmux..."))
-			// Limpiar la sesión antes de salir
-			cleanupTmux()
+			fmt.Println(ui.Info("\nDeteniendo watch..."))
+			// Cuando este proceso termine, el panel inferior detectará que el panel superior
+			// ya no existe y cerrará automáticamente la sesión
 			os.Exit(0)
 		}()
 
+		prevHash := ""
 		delay := time.Duration(delayRun) * time.Second
 
-		// Calcular hash inicial para evitar copia en el primer ciclo
-		repoDir := utils.GetRepoDir()
-		configSource := filepath.Join(repoDir, "configs_to_copy")
-		if _, err := os.Stat(configSource); os.IsNotExist(err) {
-			configSource = filepath.Join(repoDir, "folders to be copied to .config")
-		}
-
-		prevHash := ""
-		fileCount := 0
-		filepath.WalkDir(configSource, func(path string, d fs.DirEntry, err error) error {
-			if err == nil && !d.IsDir() {
-				info, err := d.Info()
-				if err == nil {
-					prevHash += fmt.Sprintf("%s-%d|", info.ModTime(), info.Size())
-					fileCount++
-				}
-			}
-			return nil
-		})
-
-		logger.Info("Modo watch iniciado. Monitoreando %d archivos en: %s", fileCount, configSource)
-		printColorGum(ui.Info(fmt.Sprintf("Modo watch: esperando cambios en configuraciones (%d archivos)...", fileCount)))
+		printColorGum(ui.Info("Modo watch: esperando cambios en configuraciones..."))
 		printColorGum(ui.Dim("Presiona Ctrl+C para detener y cerrar la sesión"))
 		
-		// Función simplificada para copiar solo desde el repo local (sin descargar)
-		copyLocalFunc := func() {
-			printColorGum("Copiar Configuraciones")
-			
-			// Para modo watch, siempre usar el repo local
-			repoDir := utils.GetRepoDir()
-			configSource := filepath.Join(repoDir, "configs_to_copy")
-			if _, err := os.Stat(configSource); os.IsNotExist(err) {
-				configSource = filepath.Join(repoDir, "folders to be copied to .config")
-			}
-
-			if _, err := os.Stat(configSource); os.IsNotExist(err) {
-				fmt.Println(ui.Error("Carpeta de configuraciones no encontrada"))
-				return
-			}
-
-			homeDir, _ := os.UserHomeDir()
-			configDest := filepath.Join(homeDir, ".config")
-
-			fmt.Println(ui.Info("Copiando configuraciones..."))
-			var copied, failed int
-
-			err := filepath.WalkDir(configSource, func(path string, d fs.DirEntry, err error) error {
-				if err != nil {
-					return nil
-				}
-
-				relPath, _ := filepath.Rel(configSource, path)
-				destPath := filepath.Join(configDest, relPath)
-
-				if d.IsDir() {
-					os.MkdirAll(destPath, 0755)
-					return nil
-				}
-
-				// Copiar archivo
-				data, err := os.ReadFile(path)
-				if err != nil {
-					logger.Error("Error leyendo %s: %v", path, err)
-					failed++
-					return nil
-				}
-
-				os.MkdirAll(filepath.Dir(destPath), 0755)
-
-				if err := os.WriteFile(destPath, data, 0644); err != nil {
-					logger.Error("Error escribiendo %s: %v", destPath, err)
-					failed++
-					return nil
-				}
-
-				copied++
-				logger.Info("Copiado: %s", relPath)
-				return nil
-			})
-
-			if err != nil {
-				fmt.Println(ui.Error(fmt.Sprintf("Error: %v", err)))
-				return
-			}
-
-			fmt.Println(ui.Success(fmt.Sprintf("Copiados: %d archivos", copied)))
-			if failed > 0 {
-				fmt.Println(ui.Warning(fmt.Sprintf("Fallidos: %d archivos", failed)))
-			}
-			logger.Info("Copia completada: %d copiados, %d fallidos", copied, failed)
-		}
-		
 		for {
-			// Para el modo watch usamos siempre el repo local de trabajo,
-			// así los cambios que hagas en ~/Myconfig/configs_to_copy se
-			// detectan correctamente mientras desarrollas.
-			repoDir := utils.GetRepoDir()
+			repoDir := utils.GetConfigRepoDir()
+			if repoDir == "" {
+				repoDir = utils.GetRepoDir()
+			}
 			configSource := filepath.Join(repoDir, "configs_to_copy")
 			if _, err := os.Stat(configSource); os.IsNotExist(err) {
 				configSource = filepath.Join(repoDir, "folders to be copied to .config")
@@ -402,16 +299,7 @@ func runConfigCopy(cmd *cobra.Command, args []string) {
 			})
 
 			// Si cambia hash, se copia (con delay opcional)
-			if hash != prevHash && prevHash != "" {
-				prevHashPreview := prevHash
-				hashPreview := hash
-				if len(prevHashPreview) > 50 {
-					prevHashPreview = prevHashPreview[:50] + "..."
-				}
-				if len(hashPreview) > 50 {
-					hashPreview = hashPreview[:50] + "..."
-				}
-				logger.Info("Hash cambió. Hash anterior: %s, Hash nuevo: %s", prevHashPreview, hashPreview)
+			if hash != prevHash {
 				fmt.Print(ui.Info(fmt.Sprintf("Detectado cambio en configuraciones (%d archivos)!", fileCount)))
 				if delay > 0 {
 					fmt.Println(ui.Dim(fmt.Sprintf(" Esperando %ds antes de copiar...", delayRun)))
@@ -419,14 +307,9 @@ func runConfigCopy(cmd *cobra.Command, args []string) {
 				} else {
 					fmt.Println()
 				}
-				// Usar la función simplificada que solo copia desde el repo local
-				copyLocalFunc()
+				copyFunc()
 				prevHash = hash
 				fmt.Println(ui.Dim("Vigilando nuevos cambios..."))
-			} else if prevHash == "" {
-				// Primera iteración, solo actualizar el hash
-				prevHash = hash
-				logger.Info("Hash inicial establecido. Monitoreando cambios...")
 			}
 			time.Sleep(2 * time.Second)
 		}

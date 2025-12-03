@@ -1,27 +1,10 @@
-# utilziar bat sin numeracion de linea en orgmai last
-
-# quita de orgmai.py todos los debus message para que sea compilado finalmente.
-
-# agrega que el make file copie los binarios a la carpeta que toca no que lo haga install.sh,, esto por si quiero hacer los binarios localmente, y not ener que ejecutar el isntall.sh que esta dedicado a usar con curl.
+# CLAUDE AI
+agregar que se pueda configurar con la api de claude para usar claude como modelo de IA.
 
 
-# hazme una funcion con nuevo proyecto nuevop la carpeta fija sera ~/Nextcloud/Proyectos/[input].
+# SEPRARACION DE LOGICA
+crear una funcion fastapi para con la opcion --server desplegarla y que entonces las funciones hagan solicitud a localhost:8081,,, asi toda la logia fuerte queda lanzada y en esepera de solicitudes para dar respuesta mas rapidas.
 
+lso comandos de CLI siguen funcionando con bat, less, gum y agregar un gum spinner para la espera de la respuesta de la IA. la api debe poder tomar el modelo y dependiendo del modelo usar la funcion de openai o la funcion de claude para la solicitud.
 
-Pedir nombre de la carpeta madre usando gum
-NOMBRE_MADRE=$(gum input --placeholder "Nombre de la carpeta madre")
-
-# Crear carpeta madre
-mkdir -p "$NOMBRE_MADRE"
-
-# Crear carpetas hijas dentro de la carpeta madre
-mkdir -p "$NOMBRE_MADRE"/Comunicacion \
-         "$NOMBRE_MADRE"/Diseño \
-         "$NOMBRE_MADRE"/Estudios \
-         "$NOMBRE_MADRE"/Calculos \
-         "$NOMBRE_MADRE"/Levantamientos \
-         "$NOMBRE_MADRE"/Entregas \
-         "$NOMBRE_MADRE"/Recibido \
-         "$NOMBRE_MADRE"/Oferta
-
-echo "Carpeta '$NOMBRE_MADRE' creada con sus subcarpetas."
+la api tiene que ser lo mas sencillo del mundo sin modelo ni nada ni validaciones ni opciones oslo lo necesario apra que se comuniquen entre si localmente.

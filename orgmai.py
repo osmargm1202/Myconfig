@@ -51,8 +51,13 @@ def error_exit(message: str):
 
 def gum_input(prompt: str = ">") -> Optional[str]:
     """Obtiene input del usuario usando gum"""
+    print(f"[DEBUG] gum_input llamado con prompt: '{prompt}'", file=sys.stderr)
+
     if not check_tool("gum"):
+        print("[DEBUG] gum no encontrado", file=sys.stderr)
         error_exit("gum no está instalado. Instala con: paru -S gum")
+
+    print(f"[DEBUG] Ejecutando: gum input --prompt '{prompt}'", file=sys.stderr)
 
     # Ejecutar gum input de forma interactiva
     # No capturar stderr para que gum pueda mostrar su interfaz
@@ -64,20 +69,33 @@ def gum_input(prompt: str = ">") -> Optional[str]:
         check=False,
     )
 
+    print(f"[DEBUG] gum input returncode: {result.returncode}", file=sys.stderr)
+    print(f"[DEBUG] gum input stdout: '{result.stdout}'", file=sys.stderr)
+
     # Returncode 130 es Ctrl+C, tratarlo como cancelación
     if result.returncode == 130:
+        print("[DEBUG] Usuario canceló con Ctrl+C", file=sys.stderr)
         return None
 
     output = result.stdout.strip()
+    print(f"[DEBUG] gum_input retornando: '{output}'", file=sys.stderr)
     return output if output else None
 
 
 def gum_choose(options: List[str], prompt: str = "Selecciona:") -> Optional[str]:
     """Muestra opciones usando gum choose"""
+    print(
+        f"[DEBUG] gum_choose llamado con {len(options)} opciones, prompt: '{prompt}'",
+        file=sys.stderr,
+    )
+    print(f"[DEBUG] Opciones: {options}", file=sys.stderr)
+
     if not check_tool("gum"):
+        print("[DEBUG] gum no encontrado", file=sys.stderr)
         error_exit("gum no está instalado. Instala con: paru -S gum")
 
     if not options:
+        print("[DEBUG] No hay opciones, retornando None", file=sys.stderr)
         return None
 
     # Escapar opciones que contengan caracteres especiales y pasarlas como argumentos
@@ -85,6 +103,7 @@ def gum_choose(options: List[str], prompt: str = "Selecciona:") -> Optional[str]
     cmd = ["gum", "choose"]
     # Agregar cada opción como argumento separado (gum maneja espacios y caracteres especiales)
     cmd.extend(options)
+    print(f"[DEBUG] Ejecutando: {' '.join(repr(arg) for arg in cmd)}", file=sys.stderr)
 
     proc = subprocess.Popen(
         cmd,
@@ -94,14 +113,23 @@ def gum_choose(options: List[str], prompt: str = "Selecciona:") -> Optional[str]
     )
     stdout, _ = proc.communicate()
 
+    print(f"[DEBUG] gum choose returncode: {proc.returncode}", file=sys.stderr)
+    print(f"[DEBUG] gum choose stdout: '{stdout}'", file=sys.stderr)
+
     # Returncode 130 es Ctrl+C, tratarlo como cancelación
     if proc.returncode == 130:
+        print("[DEBUG] Usuario canceló con Ctrl+C", file=sys.stderr)
         return None
 
     if proc.returncode != 0:
+        print(
+            f"[DEBUG] gum choose falló con returncode {proc.returncode}, retornando None",
+            file=sys.stderr,
+        )
         return None
 
     result = stdout.strip() if stdout else None
+    print(f"[DEBUG] gum_choose retornando: '{result}'", file=sys.stderr)
     return result
 
 
@@ -532,7 +560,9 @@ def stream_chat(client, messages: List[Dict], model: str):
 
 def chat(ctx=None):
     """Inicia una nueva conversación con la IA"""
+    print("[DEBUG] chat() llamado", file=sys.stderr)
     args = sys.argv[1:]
+    print(f"[DEBUG] args: {args}", file=sys.stderr)
 
     chat_idx = -1
     for i, arg in enumerate(args):
@@ -552,11 +582,13 @@ def chat(ctx=None):
         pregunta_parts.append(arg)
 
     pregunta = " ".join(pregunta_parts) if pregunta_parts else None
+    print(f"[DEBUG] pregunta: '{pregunta}'", file=sys.stderr)
 
     client = get_client()
     model = get_model()
 
     if not pregunta:
+        print("[DEBUG] Modo interactivo iniciado", file=sys.stderr)
         messages = []
         now = datetime.now()
         timestamp = now.strftime("%Y-%m-%d-%H-%M-%S")
@@ -564,7 +596,9 @@ def chat(ctx=None):
         print_info(f"Modelo: {model}\n")
 
         while True:
+            print("[DEBUG] Esperando input del usuario...", file=sys.stderr)
             user_input = gum_input("Tú>")
+            print(f"[DEBUG] Usuario ingresó: '{user_input}'", file=sys.stderr)
 
             if not user_input or user_input.lower() in ["salir", "exit", "quit"]:
                 break
@@ -620,9 +654,11 @@ def chat(ctx=None):
 
 def config():
     """Configura el modelo a utilizar"""
+    print("[DEBUG] config() llamado", file=sys.stderr)
     print_info("Selecciona el modelo a utilizar:\n")
 
     current_model = get_model()
+    print(f"[DEBUG] Modelo actual: {current_model}", file=sys.stderr)
     choices = []
 
     for model in AVAILABLE_MODELS:
@@ -631,10 +667,13 @@ def config():
             label += " (actual)"
         choices.append(label)
 
+    print(f"[DEBUG] Opciones para elegir: {choices}", file=sys.stderr)
     selected = gum_choose(choices, "Modelo:")
+    print(f"[DEBUG] Opción seleccionada: '{selected}'", file=sys.stderr)
 
     if selected:
         model_name = selected.split(" (actual)")[0]
+        print(f"[DEBUG] Configurando modelo: {model_name}", file=sys.stderr)
         set_model(model_name)
 
 
@@ -662,7 +701,7 @@ def last():
     try:
         # Usar bat para mostrar la conversación en la terminal (prioridad)
         if check_tool("bat"):
-            subprocess.run(["bat", "--style=plain", str(filepath)], check=False)
+            subprocess.run(["bat", str(filepath)], check=False)
         elif check_tool("less"):
             subprocess.run(["less", "-R", str(filepath)], check=False)
         elif check_tool("gum"):
@@ -705,7 +744,9 @@ def last():
 
 def prev():
     """Selecciona y continúa una conversación anterior"""
+    print("[DEBUG] prev() llamado", file=sys.stderr)
     conversations = list_conversations()
+    print(f"[DEBUG] Conversaciones encontradas: {len(conversations)}", file=sys.stderr)
 
     if not conversations:
         print_warning("No hay conversaciones anteriores")
@@ -723,9 +764,12 @@ def prev():
         else:
             choices.append(conv)
 
+    print(f"[DEBUG] Opciones para elegir: {choices}", file=sys.stderr)
     selected = gum_choose(choices, "Conversación:")
+    print(f"[DEBUG] Opción seleccionada: '{selected}'", file=sys.stderr)
 
     if not selected:
+        print("[DEBUG] No se seleccionó ninguna opción", file=sys.stderr)
         return
 
     idx = choices.index(selected)
@@ -756,7 +800,7 @@ def prev():
         elif check_tool("less"):
             subprocess.run(["less", "-R", str(filepath)], check=False)
         elif check_tool("bat"):
-            subprocess.run(["bat", "--style=plain", str(filepath)], check=False)
+            subprocess.run(["bat", str(filepath)], check=False)
         else:
             with open(filepath, "r", encoding="utf-8") as f:
                 print(f.read())
