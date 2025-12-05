@@ -62,7 +62,9 @@ func InstallApt(packages []string) error {
 	fmt.Println(ui.Info(fmt.Sprintf("Instalando %d paquetes con apt...", len(packages))))
 
 	// Primero actualizar
-	utils.RunCommandWithSudo("apt", "update")
+	if err := utils.RunCommandWithSudo("apt", "update"); err != nil {
+		return fmt.Errorf("error actualizando lista de paquetes: %w", err)
+	}
 
 	args := append([]string{"install", "-y"}, packages...)
 	return utils.RunCommandWithSudo("apt", args...)

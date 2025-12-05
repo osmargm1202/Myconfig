@@ -1,6 +1,5 @@
 FROM golang:1.25.5-trixie
 
-
 # Instalar paquetes del sistema necesarios para desarrollo y build de Go
 RUN apt-get update && apt-get install -y \
     git \
@@ -20,5 +19,4 @@ RUN git config --global user.email "osmargm1202@gmail.com"
 
 
 # Mantener el directorio de trabajo por defecto de Go
-WORKDIR /workspaces
-
+WORKDIR /workspace
