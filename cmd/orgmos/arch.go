@@ -9,7 +9,6 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
-	"orgmos/internal/logger"
 	"orgmos/internal/packages"
 	"orgmos/internal/ui"
 	"orgmos/internal/utils"
@@ -27,8 +26,6 @@ func init() {
 }
 
 func runArchInstall(cmd *cobra.Command, args []string) {
-	logger.InitOnError("arch")
-
 	fmt.Println(ui.Title("Herramientas de Terminal - Arch Linux"))
 
 	// Verificar paru antes de continuar
@@ -43,7 +40,6 @@ func runArchInstall(cmd *cobra.Command, args []string) {
 	groups, err := packages.ParseTOML("pkg_arch.toml")
 	if err != nil {
 		fmt.Println(ui.Error(fmt.Sprintf("Error cargando paquetes: %v", err)))
-		logger.Error("Error parseando TOML: %v", err)
 		return
 	}
 
@@ -68,6 +64,12 @@ func runArchInstall(cmd *cobra.Command, args []string) {
 		fmt.Println(ui.Success("Todas las herramientas ya están instaladas"))
 		offerFishShellSwitch()
 		return
+	}
+
+	// Mostrar paquetes a instalar
+	fmt.Println(ui.Info(fmt.Sprintf("Paquetes a instalar (%d):", len(toInstall))))
+	for _, pkg := range toInstall {
+		fmt.Println(ui.Dim(fmt.Sprintf("  • %s", pkg)))
 	}
 
 	// Confirmación
@@ -96,7 +98,6 @@ func runArchInstall(cmd *cobra.Command, args []string) {
 
 	fmt.Println(ui.Success("Herramientas instaladas correctamente"))
 	offerFishShellSwitch()
-	logger.Info("Instalación Arch completada")
 }
 
 func offerFishShellSwitch() {
@@ -151,4 +152,3 @@ func ensureFishRegistered(fishPath string) {
 		fmt.Println(ui.Warning("No se pudo registrar fish en /etc/shells automáticamente"))
 	}
 }
-

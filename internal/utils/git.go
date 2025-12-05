@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"orgmos/internal/logger"
 	"orgmos/internal/ui"
 )
 
@@ -17,7 +16,6 @@ func UpdateRepo() error {
 	// Verificar si es un repositorio git
 	gitDir := filepath.Join(repoDir, ".git")
 	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
-		logger.Warn("No es un repositorio git: %s", repoDir)
 		return nil
 	}
 
@@ -33,11 +31,9 @@ func UpdateRepo() error {
 	// Git pull
 	output, err := RunCommandSilent("git", "pull", "--rebase")
 	if err != nil {
-		logger.Error("Error actualizando repo: %s", output)
-		
 		// Analizar el tipo de error
 		outputLower := strings.ToLower(output)
-		
+
 		// Detectar errores de conexión
 		if strings.Contains(outputLower, "could not resolve host") ||
 			strings.Contains(outputLower, "connection refused") ||
@@ -48,14 +44,14 @@ func UpdateRepo() error {
 			fmt.Println(ui.Warning("No se pudo actualizar: sin conexión a internet"))
 			return nil
 		}
-		
+
 		// Detectar si ya está actualizado (a veces git devuelve error pero está actualizado)
 		if strings.Contains(outputLower, "already up to date") ||
 			strings.Contains(outputLower, "ya está actualizado") {
 			fmt.Println(ui.Dim("Repositorio ya actualizado"))
 			return nil
 		}
-		
+
 		// Detectar conflictos o cambios locales que necesitan atención
 		if strings.Contains(outputLower, "your local changes") ||
 			strings.Contains(outputLower, "tus cambios locales") ||
@@ -67,7 +63,7 @@ func UpdateRepo() error {
 			fmt.Println(ui.Dim("Ejecuta 'git status' para ver los cambios y resuélvelos manualmente"))
 			return nil
 		}
-		
+
 		// Error genérico
 		fmt.Println(ui.Warning("No se pudo actualizar el repositorio"))
 		return nil // No es error fatal
@@ -81,11 +77,9 @@ func UpdateRepo() error {
 		fmt.Println(ui.Dim("Repositorio ya actualizado"))
 	} else {
 		fmt.Println(ui.Success("Repositorio actualizado"))
-		logger.Info("Repo actualizado: %s", output)
 	}
 
 	return nil
-
 }
 
 // CreateDesktopFile crea el archivo .desktop para orgmos
@@ -113,11 +107,9 @@ Keywords=config;setup;system;
 
 	desktopPath := filepath.Join(applicationsDir, "orgmos.desktop")
 	if err := os.WriteFile(desktopPath, []byte(desktopContent), 0755); err != nil {
-		logger.Error("Error creando desktop file: %v", err)
 		return err
 	}
 
-	logger.Info("Desktop file creado: %s", desktopPath)
 	return nil
 }
 
@@ -143,7 +135,6 @@ func DownloadConfigFiles() error {
 	// Si el directorio no existe, clonar el repositorio
 	if _, err := os.Stat(configRepoDir); os.IsNotExist(err) {
 		fmt.Println(ui.Info("Clonando repositorio para archivos de configuración..."))
-		logger.Info("Clonando repo en: %s", configRepoDir)
 
 		// Crear directorio padre
 		if err := os.MkdirAll(filepath.Dir(configRepoDir), 0755); err != nil {
@@ -153,18 +144,15 @@ func DownloadConfigFiles() error {
 		// Clonar repositorio
 		output, err := RunCommandSilent("git", "clone", repoURL, configRepoDir)
 		if err != nil {
-			logger.Error("Error clonando repo: %s", output)
-			return fmt.Errorf("error clonando repositorio: %w", err)
+			return fmt.Errorf("error clonando repositorio: %s - %w", output, err)
 		}
 
 		fmt.Println(ui.Success("Repositorio clonado para archivos de configuración"))
-		logger.Info("Repo clonado exitosamente")
 		return nil
 	}
 
 	// Si existe, actualizar
 	fmt.Println(ui.Info("Actualizando repositorio de configuración..."))
-	logger.Info("Actualizando repo en: %s", configRepoDir)
 
 	// Cambiar al directorio del repo
 	oldDir, _ := os.Getwd()
@@ -176,7 +164,6 @@ func DownloadConfigFiles() error {
 	// Git pull
 	output, err := RunCommandSilent("git", "pull", "--rebase")
 	if err != nil {
-		logger.Warn("Error actualizando repo de config: %s", output)
 		// No es error fatal, continuar con lo que hay
 		fmt.Println(ui.Warning("No se pudo actualizar el repositorio de configuración"))
 		return nil
@@ -190,9 +177,7 @@ func DownloadConfigFiles() error {
 		fmt.Println(ui.Dim("Repositorio de configuración ya actualizado"))
 	} else {
 		fmt.Println(ui.Success("Repositorio de configuración actualizado"))
-		logger.Info("Repo de config actualizado: %s", output)
 	}
 
 	return nil
 }
-

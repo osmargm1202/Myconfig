@@ -2,68 +2,15 @@
 packages = [
     "niri",
     "xwayland-satellite",
-    "xdg-desktop-portal",
+    "xdg-desktop-portal-gtk",
     "xdg-desktop-portal-gnome",
     
-]
-
-["DMS SHELL Y DEPENDENCIAS"]
-packages = [
-    "dms-shell-niri-git",
-    "quickshell",
-    "matugen-git",
-    "dgop",
-    "dsearch",
-    "hyprpicker",
-]
-
-["CLIPBOARD"]
-packages = [
-    "wl-paste",
-    "cliphist",
-]
-
-["AUDIO Y MULTIMEDIA"]
-packages = [
-    "wireplumber",
-    "playerctl",
-]
-
-["TERMINAL Y APLICACIONES"]
-packages = [
-    "kitty",
-    "dolphin",
-    "nautilus",
-]
-
-["FUENTES Y EXTRAS"]
-packages = [
-    "ttf-roboto",
-    "ttf-jetbrains-mono-nerd",
-    "ttf-ms-fonts",
-    "inter-font",
-    "gpu-screen-recorder",
-    "wlsunset",
-]
-
-["SOPORTE QT/WAYLAND"]
-packages = [
-    "qt5-wayland",
-    "qt6-wayland",
-    "polkit",
-    "polkit-kde-agent",
 ]
 
 ["UTILIDADES"]
 packages = [
     "brightnessctl",
-    "trash-cli",
     "power-profiles-daemon",
     "swayidle",           # gestor de inactividad para Wayland
 ]
 
-["TEMAS Y APARIENCIA"]
-packages = [
-    "papirus-icon-theme",
-    "bibata-cursor-theme",         # tema de cursor minimalista
-]

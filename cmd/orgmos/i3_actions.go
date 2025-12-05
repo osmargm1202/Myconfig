@@ -11,7 +11,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"orgmos/internal/logger"
 	"orgmos/internal/ui"
 	"orgmos/internal/utils"
 )
@@ -19,32 +18,14 @@ import (
 // ============ WALLPAPER ============
 
 func runChangeWallpaper(cmd *cobra.Command, args []string) {
-	logger.InitOnError("change-wallpaper")
-
 	homeDir, _ := os.UserHomeDir()
 	lastWallpaperFile := filepath.Join(homeDir, ".lastwallpaper")
 	picturesDir := filepath.Join(homeDir, "Pictures", "Wallpapers")
-	
-	// Descargar/actualizar archivos de config si es necesario
-	if err := utils.DownloadConfigFiles(); err != nil {
-		// No es crítico para cambiar wallpaper, continuar
-	}
-	
-	repoDir := utils.GetConfigRepoDir()
-	if repoDir == "" {
-		repoDir = utils.GetRepoDir()
-	}
-	repoWallpapers := filepath.Join(repoDir, "Wallpapers")
 
 	wallpaperDir := picturesDir
 	if _, err := os.Stat(wallpaperDir); os.IsNotExist(err) {
-		if _, repoErr := os.Stat(repoWallpapers); repoErr == nil {
-			fmt.Println(ui.Warning("No se encontró ~/Pictures/Wallpapers, usando los del repositorio. Ejecuta 'orgmos assets' para copiarlos."))
-			wallpaperDir = repoWallpapers
-		} else {
-			fmt.Println(ui.Error("No se encontró ninguna carpeta de wallpapers. Ejecuta 'orgmos assets' para instalarlos."))
-			return
-		}
+		fmt.Println(ui.Error("No se encontró ~/Pictures/Wallpapers. Ejecuta 'orgmos assets' para descargarlos."))
+		return
 	}
 
 	action := "random"
@@ -158,8 +139,6 @@ func applyI3Wallpaper(path string) error {
 // ============ LOCK ============
 
 func runLock(cmd *cobra.Command, args []string) {
-	logger.InitOnError("lock")
-
 	if !utils.RequireDependency("i3lock") {
 		fmt.Println(ui.Error("Dependencia faltante: i3lock. Instálala con: sudo pacman -S i3lock-color"))
 		return
@@ -171,7 +150,6 @@ func runLock(cmd *cobra.Command, args []string) {
 // ============ HOTKEY ============
 
 func runHotkey(cmd *cobra.Command, args []string) {
-	logger.InitOnError("hotkey")
 	showI3Hotkeys()
 }
 
@@ -215,8 +193,6 @@ func showI3Hotkeys() {
 // ============ POWER MENU ============
 
 func runPowerMenu(cmd *cobra.Command, args []string) {
-	logger.InitOnError("powermenu")
-
 	options := "⏻ Apagar\n⟳ Reiniciar\n⏾ Suspender\n🔒 Bloquear\n⇥ Cerrar sesión"
 	rofiCmd := exec.Command("rofi", "-dmenu", "-i", "-p", "Power", "-theme-str", "window {width: 20%;} listview {lines: 5;}")
 	rofiCmd.Stdin = strings.NewReader(options)
@@ -274,8 +250,6 @@ func runMemory(cmd *cobra.Command, args []string) {
 // ============ RELOAD ============
 
 func runReload(cmd *cobra.Command, args []string) {
-	logger.InitOnError("reload")
-
 	fmt.Println(ui.Info("Recargando i3 y polybar..."))
 
 	// Recargar i3
@@ -287,7 +261,7 @@ func runReload(cmd *cobra.Command, args []string) {
 
 	// Matar polybar si existe
 	exec.Command("killall", "-q", "polybar").Run()
-	
+
 	// Esperar 0.5 segundos para asegurar que se cierre correctamente
 	fmt.Println(ui.Info("Esperando 0.5 segundos..."))
 	time.Sleep(500 * time.Millisecond)

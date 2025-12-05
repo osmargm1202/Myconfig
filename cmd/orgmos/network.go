@@ -11,19 +11,18 @@ import (
 	"orgmos/internal/ui"
 )
 
-var packageCmd = &cobra.Command{
-	Use:     "general",
-	Aliases: []string{"package"},
-	Short:   "Instalar paquetes generales",
-	Long:    `Instala todos los paquetes definidos en pkg_general.toml.`,
-	Run:     runPackageInstall,
+var networkCmd = &cobra.Command{
+	Use:   "network",
+	Short: "Instalar herramientas de red y seguridad",
+	Long:  `Instala todas las herramientas de red definidas en pkg_networks.toml.`,
+	Run:   runNetworkInstall,
 }
 
 func init() {
-	rootCmd.AddCommand(packageCmd)
+	rootCmd.AddCommand(networkCmd)
 }
 
-func runPackageInstall(cmd *cobra.Command, args []string) {
+func runNetworkInstall(cmd *cobra.Command, args []string) {
 	// Verificar paru antes de continuar
 	if !packages.CheckParuInstalled() {
 		if !packages.OfferInstallParu() {
@@ -32,7 +31,7 @@ func runPackageInstall(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	fmt.Println(ui.Title("Instalador de Paquetes Generales"))
+	fmt.Println(ui.Title("Herramientas de Red y Seguridad"))
 
 	// Cargar grupos de paquetes
 	var groups []packages.PackageGroup
@@ -43,7 +42,7 @@ func runPackageInstall(cmd *cobra.Command, args []string) {
 		Title("Verificando paquetes instalados...").
 		Action(func() {
 			var err error
-			groups, err = packages.ParseTOML("pkg_general.toml")
+			groups, err = packages.ParseTOML("pkg_networks.toml")
 			if err != nil {
 				return
 			}
@@ -74,7 +73,7 @@ func runPackageInstall(cmd *cobra.Command, args []string) {
 	}
 
 	if len(toInstall) == 0 {
-		fmt.Println(ui.Success("Todos los paquetes ya están instalados"))
+		fmt.Println(ui.Success("Todas las herramientas de red ya están instaladas"))
 		return
 	}
 
@@ -105,25 +104,12 @@ func runPackageInstall(cmd *cobra.Command, args []string) {
 	fmt.Println(ui.Info("Categorizando paquetes por origen..."))
 	categories := packages.CategorizePackages(toInstall)
 
-	// Mostrar resumen
-	if len(categories["pacman"]) > 0 {
-		fmt.Println(ui.Info(fmt.Sprintf("Repos oficiales: %d", len(categories["pacman"]))))
-	}
-	if len(categories["multilib"]) > 0 {
-		fmt.Println(ui.Warning(fmt.Sprintf("Multilib: %d (requiere multilib habilitado)", len(categories["multilib"]))))
-	}
-	if len(categories["chaotic"]) > 0 {
-		fmt.Println(ui.Warning(fmt.Sprintf("Chaotic-AUR: %d (requiere chaotic-aur)", len(categories["chaotic"]))))
-	}
-	if len(categories["aur"]) > 0 {
-		fmt.Println(ui.Info(fmt.Sprintf("AUR: %d", len(categories["aur"]))))
-	}
-
 	// Instalar
 	if err := packages.InstallCategorized(categories); err != nil {
 		fmt.Println(ui.Error(fmt.Sprintf("Error: %v", err)))
 		return
 	}
 
-	fmt.Println(ui.Success("Instalación completada"))
+	fmt.Println(ui.Success("Herramientas de red instaladas correctamente"))
 }
+

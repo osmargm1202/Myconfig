@@ -8,14 +8,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"orgmos/internal/logger"
 	"orgmos/internal/ui"
 )
 
 // RunCommand ejecuta un comando y muestra la salida
 func RunCommand(name string, args ...string) error {
-	logger.Info("Ejecutando: %s %s", name, strings.Join(args, " "))
-
 	cmd := exec.Command(name, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -23,22 +20,17 @@ func RunCommand(name string, args ...string) error {
 
 	err := cmd.Run()
 	if err != nil {
-		logger.Error("Error ejecutando %s: %v", name, err)
 		return err
 	}
 
-	logger.Info("Comando completado: %s", name)
 	return nil
 }
 
 // RunCommandSilent ejecuta un comando sin mostrar salida
 func RunCommandSilent(name string, args ...string) (string, error) {
-	logger.Info("Ejecutando (silencioso): %s %s", name, strings.Join(args, " "))
-
 	cmd := exec.Command(name, args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		logger.Error("Error: %s - %s", name, string(output))
 		return string(output), err
 	}
 
@@ -74,7 +66,6 @@ func CheckDependency(cmd string) bool {
 }
 
 // NotifyMissingDependency notifica que falta una dependencia usando swaync o notify-send
-// Si ninguno está disponible, escribe en logs
 func NotifyMissingDependency(cmd string) {
 	msg := fmt.Sprintf("Dependencia faltante: %s. Instálala con tu gestor de paquetes.", cmd)
 
@@ -90,8 +81,8 @@ func NotifyMissingDependency(cmd string) {
 		return
 	}
 
-	// Si no hay sistema de notificaciones, solo loguear
-	logger.Error("Dependencia faltante: %s (no se pudo notificar, swaync y notify-send no disponibles)", cmd)
+	// Si no hay sistema de notificaciones, imprimir en consola
+	fmt.Println(ui.Warning(msg))
 }
 
 // RequireDependency verifica una dependencia y notifica si falta, retorna false si no existe

@@ -7,7 +7,6 @@ import (
 	"github.com/charmbracelet/huh/spinner"
 	"github.com/spf13/cobra"
 
-	"orgmos/internal/logger"
 	"orgmos/internal/packages"
 	"orgmos/internal/ui"
 	"orgmos/internal/utils"
@@ -16,7 +15,7 @@ import (
 var flatpakCmd = &cobra.Command{
 	Use:   "flatpak",
 	Short: "Instalador de aplicaciones Flatpak",
-	Long:  `Permite seleccionar e instalar aplicaciones Flatpak por categorías.`,
+	Long:  `Instala todas las aplicaciones Flatpak definidas en pkg_flatpak.toml.`,
 	Run:   runFlatpakInstall,
 }
 
@@ -25,8 +24,6 @@ func init() {
 }
 
 func runFlatpakInstall(cmd *cobra.Command, args []string) {
-	logger.InitOnError("flatpak")
-
 	fmt.Println(ui.Title("Instalador de Flatpak"))
 
 	if !ensureFlatpakInstalled() {
@@ -44,7 +41,6 @@ func runFlatpakInstall(cmd *cobra.Command, args []string) {
 			var err error
 			groups, err = packages.ParseTOML("pkg_flatpak.toml")
 			if err != nil {
-				logger.Error("Error parseando TOML: %v", err)
 				return
 			}
 
@@ -63,59 +59,25 @@ func runFlatpakInstall(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Combinar todos los paquetes en una sola lista
-	var allOptions []huh.Option[string]
-	
+	// Filtrar aplicaciones no instaladas
+	var toInstall []string
 	for _, group := range groups {
 		for _, pkg := range group.Packages {
-			// Obtener información de la aplicación
-			name, desc := packages.GetFlatpakInfo(pkg)
-			
-			// Crear etiqueta con nombre real, descripción y categoría
-			label := pkg
-			if name != "" && name != pkg {
-				if desc != "" {
-					label = fmt.Sprintf("[%s] %s - %s (%s)", group.Name, name, desc, pkg)
-				} else {
-					label = fmt.Sprintf("[%s] %s (%s)", group.Name, name, pkg)
-				}
-			} else if desc != "" {
-				label = fmt.Sprintf("[%s] %s - %s", group.Name, pkg, desc)
-			} else {
-				label = fmt.Sprintf("[%s] %s", group.Name, pkg)
+			if !installedMap[pkg] {
+				toInstall = append(toInstall, pkg)
 			}
-			
-			opt := huh.NewOption(label, pkg)
-			if installedMap[pkg] {
-				opt = opt.Selected(true) // Ya instalado, preseleccionar
-			} else {
-				opt = opt.Selected(false) // No instalado, no preseleccionar
-			}
-			allOptions = append(allOptions, opt)
 		}
 	}
 
-	// Crear un solo formulario con todos los paquetes
-	var selectedPackages []string
-	form := ui.NewForm(
-		huh.NewGroup(
-			huh.NewMultiSelect[string]().
-				Title("Aplicaciones Flatpak").
-				Description("Selecciona las aplicaciones a instalar. Las ya instaladas aparecen marcadas. Usa las flechas para navegar y Espacio para seleccionar.").
-				Options(allOptions...).
-				Value(&selectedPackages).
-				Height(20), // Altura para hacer scrollable
-		),
-	)
-
-	if err := form.Run(); err != nil {
-		fmt.Println(ui.Warning("Selección cancelada"))
+	if len(toInstall) == 0 {
+		fmt.Println(ui.Success("Todas las aplicaciones Flatpak ya están instaladas"))
 		return
 	}
 
-	if len(selectedPackages) == 0 {
-		fmt.Println(ui.Warning("No se seleccionaron aplicaciones"))
-		return
+	// Mostrar aplicaciones a instalar
+	fmt.Println(ui.Info(fmt.Sprintf("Aplicaciones a instalar (%d):", len(toInstall))))
+	for _, pkg := range toInstall {
+		fmt.Println(ui.Dim(fmt.Sprintf("  • %s", pkg)))
 	}
 
 	// Confirmación final
@@ -123,7 +85,7 @@ func runFlatpakInstall(cmd *cobra.Command, args []string) {
 	ui.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
-				Title(fmt.Sprintf("Se instalarán %d aplicaciones Flatpak", len(selectedPackages))).
+				Title(fmt.Sprintf("Se instalarán %d aplicaciones Flatpak", len(toInstall))).
 				Affirmative("Instalar").
 				Negative("Cancelar").
 				Value(&confirm),
@@ -136,13 +98,12 @@ func runFlatpakInstall(cmd *cobra.Command, args []string) {
 	}
 
 	// Instalar
-	if err := packages.InstallFlatpak(selectedPackages); err != nil {
+	if err := packages.InstallFlatpak(toInstall); err != nil {
 		fmt.Println(ui.Error(fmt.Sprintf("Error: %v", err)))
 		return
 	}
 
 	fmt.Println(ui.Success("Aplicaciones Flatpak instaladas"))
-	logger.Info("Instalación Flatpak completada")
 }
 
 func ensureFlatpakInstalled() bool {
@@ -174,4 +135,3 @@ func ensureFlatpakInstalled() bool {
 	fmt.Println(ui.Success("Flatpak instalado correctamente"))
 	return true
 }
-

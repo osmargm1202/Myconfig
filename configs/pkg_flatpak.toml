@@ -1,114 +1,40 @@
 # Lista de aplicaciones Flatpak organizadas por categorías
 
-["NAVEGADORES WEB"]
-packages = [
-    "org.mozilla.firefox",
-    "com.google.Chrome",
-    "com.brave.Browser",
-    "org.chromium.Chromium",
-    "com.github.Eloston.UngoogledChromium",
-    "org.mozilla.LibreWolf",
-    "com.vivaldi.Vivaldi",
-    "com.opera.Opera",
-    "com.microsoft.Edge",
-]
+
 
 ["JUEGOS Y GAMING"]
 packages = [
     "com.valvesoftware.Steam",
     "com.valvesoftware.Steam.CompatibilityTool.Proton-GE",
-    "ru.linux_gaming.PortProton",
-    "com.heroicgameslauncher.hgl",
     "net.lutris.Lutris",
-    "com.github.Matoking.protontricks",
-    "net.davidotek.pupgui2",
-    "io.github.Foldex.ProtonPlus",
-    "com.mojang.Minecraft",
-    "com.mojang.MinecraftBedrockLauncher",
-    "com.prismlauncher.PrismLauncher",
-    "com.usebottles.bottles",
-    "io.github.soberhacker.sober",
 ]
 
-["EMULADORES"]
-packages = [
-    "org.libretro.RetroArch",
-    "org.DolphinEmu.dolphin-emu",
-    "io.github.dolphinemu_primehack",
-    "org.ppsspp.PPSSPP",
-    "net.pcsx2.PCSX2",
-    "io.github.melonDS.melonDS",
-    "org.xemu.Xemu",
-    "net.supermodel.Supermodel",
-    "com.github.Rosalie241.RMG",
-    "org.scummvm.ScummVM",
-    "com.github.retrodeck.retrodeck",
-]
 
 ["MULTIMEDIA - REPRODUCTORES"]
 packages = [
     "org.videolan.VLC",
-    "com.github.rafostar.Clapper",
-    "com.github.haruna.Haruna",
     "com.spotify.Client",
-    "com.stremio.Stremio",
-    "org.kde.kodi",
-    "de.haeckerfelix.Shortwave",
 ]
 
 ["MULTIMEDIA - EDICIÓN"]
 packages = [
     "com.obsproject.Studio",
-    "org.audacityteam.Audacity",
-    "org.kde.kdenlive",
-    "org.shotcut.Shotcut",
     "com.github.unrud.VideoDownloader",
     "com.github.jesec.FreeTube",
-    "com.github.wwmm.easyeffects",
-    "com.github.ytmdesktop.ytmdesktop",
-    "com.github.4K4KTube.4K4KTube",
-    "com.github.jely2002.youtube-dl-gui",
-    "com.github.parabolic.Parabolic",
-    "fr.handbrake.HandBrake",
-    "com.dec05eba.gpu_screen_recorder",
 ]
 
 ["PRODUCTIVIDAD Y OFICINA"]
 packages = [
-    "org.libreoffice.LibreOffice",
-    "com.onlyoffice.desktopeditors",
     "com.wps.Office",
-    "com.github.johnfactotum.Foliate",
-    "org.gnome.Evince",
-    "org.kde.okular",
-    "com.github.jeromerobert.pdfarranger",
-    "com.calibre_ebook.calibre",
 ]
 
 ["COMUNICACIÓN"]
 packages = [
     "com.discordapp.Discord",
-    "org.telegram.desktop",
-    "org.signal.Signal",
-    "com.github.zed0x84.webcord",
-    "com.github.Vencord.Vesktop",
-    "com.github.WhatsieApp.Whatsie",
-    "io.github.mimbrero.WhatsAppDesktop",
-    "org.mozilla.Thunderbird",
-    "org.mozilla.Thunderbird.Betterbird",
-    "com.rtosta.zapzap",
-    "us.zoom.Zoom",
-    "com.microsoft.Teams",
-    "com.rustdesk.RustDesk",
 ]
 
 ["DESARROLLO"]
 packages = [
-    "com.visualstudio.code",
-    "com.vscodium.codium",
-    "com.github.Postman.Postman",
-    "org.gnome.Builder",
-    "com.jetbrains.AndroidStudio",
     "com.dbeaver.DBeaverCommunity",
 ]
 
@@ -116,11 +42,7 @@ packages = [
 packages = [
     "org.gimp.GIMP",
     "org.inkscape.Inkscape",
-    "org.kde.krita",
     "org.blender.Blender",
-    "org.freecadweb.FreeCAD",
-    "com.github.PintaProject.Pinta",
-    "com.github.maoschanz.drawing",
 ]
 
 ["UTILIDADES DEL SISTEMA"]
@@ -129,69 +51,23 @@ packages = [
     "io.github.flattool.Warehouse",
     "io.missioncenter.MissionCenter",
     "io.gitlab.adhami3310.Impression",
-    "org.gnome.Boxes",
-    "com.github.wwmm.easyeffects",
-    "com.github.flameshot-org.flameshot",
-    "org.gnome.Screenshot",
-    "org.gnome.eog",
-    "com.mattjakeman.ExtensionManager",
-    "org.gnome.Snapshot",
-    "io.github.peazip.PeaZip",
-    "org.xm1.CPU-X",
-    "org.fedoraproject.MediaWriter",
 ]
 
 ["SEGURIDAD Y PRIVACIDAD"]
 packages = [
     "com.bitwarden.desktop",
-    "org.keepassxc.KeePassXC",
-    "org.torproject.torbrowser-launcher",
-    "com.github.micahflee.torbrowser-launcher",
-    "ch.protonvpn.www",
-]
-
-["RED Y TRANSFERENCIA DE ARCHIVOS"]
-packages = [
-    "org.localsend.localsend",
-    "org.qbittorrent.qBittorrent",
-    "org.jdownloader.JDownloader",
-]
-
-["VIRTUALIZACIÓN Y CONTENEDORES"]
-packages = [
-    "com.github.containers.podman-desktop",
-    "com.github.containers.distrobox",
-    "io.github.distrobox.distroshelf",
 ]
 
 ["STREAMING Y REMOTO"]
 packages = [
     "com.moonlight_stream.Moonlight",
-    "com.github.debauchee.barrier",
-    "com.anydesk.Anydesk",
-    "org.remmina.Remmina",
-    "com.github.FreeRDP.FreeRDP",
-    "com.plexamp.Plexamp",
-    "tv.plex.PlexDesktop",
     "com.github.iwalton3.jellyfin-media-player",
     "dev.lizardbyte.app.Sunshine",
 ]
 
-["WINE Y COMPATIBILIDAD"]
-packages = [
-    "org.winehq.Wine",
-    "com.usebottles.bottles",
-]
-
-["NOTAS Y PRODUCTIVIDAD"]
-packages = [
-    "md.obsidian.Obsidian",
-]
 
 ["HERRAMIENTAS ADICIONALES"]
 packages = [
     "org.openrgb.OpenRGB",
-    "io.github.ilya-fedin.lact",
-    "com.github.junrrein.PDFSlicer",
 ]
 

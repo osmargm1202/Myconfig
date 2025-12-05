@@ -2,9 +2,7 @@ package packages
 
 import (
 	"fmt"
-	"strings"
 
-	"orgmos/internal/logger"
 	"orgmos/internal/ui"
 	"orgmos/internal/utils"
 )
@@ -16,7 +14,6 @@ func InstallPacman(packages []string) error {
 	}
 
 	fmt.Println(ui.Info(fmt.Sprintf("Instalando %d paquetes con pacman...", len(packages))))
-	logger.Info("Instalando pacman: %s", strings.Join(packages, " "))
 
 	args := append([]string{"-S", "--noconfirm", "--needed"}, packages...)
 	return utils.RunCommand("sudo", append([]string{"pacman"}, args...)...)
@@ -34,7 +31,6 @@ func InstallParu(packages []string) error {
 	}
 
 	fmt.Println(ui.Info(fmt.Sprintf("Instalando %d paquetes AUR con paru...", len(packages))))
-	logger.Info("Instalando AUR: %s", strings.Join(packages, " "))
 
 	args := append([]string{"-S", "--noconfirm", "--needed"}, packages...)
 	return utils.RunCommand("paru", args...)
@@ -52,7 +48,6 @@ func InstallFlatpak(packages []string) error {
 	}
 
 	fmt.Println(ui.Info(fmt.Sprintf("Instalando %d aplicaciones Flatpak...", len(packages))))
-	logger.Info("Instalando Flatpak: %s", strings.Join(packages, " "))
 
 	args := append([]string{"install", "-y", "flathub"}, packages...)
 	return utils.RunCommand("flatpak", args...)
@@ -65,7 +60,6 @@ func InstallApt(packages []string) error {
 	}
 
 	fmt.Println(ui.Info(fmt.Sprintf("Instalando %d paquetes con apt...", len(packages))))
-	logger.Info("Instalando apt: %s", strings.Join(packages, " "))
 
 	// Primero actualizar
 	utils.RunCommand("sudo", "apt", "update")
@@ -87,7 +81,7 @@ func InstallCategorized(categories map[string][]string) error {
 	if len(categories["multilib"]) > 0 {
 		fmt.Println(ui.Warning("Se requiere multilib habilitado para algunos paquetes"))
 		if err := InstallPacman(categories["multilib"]); err != nil {
-			logger.Warn("Error instalando multilib: %v", err)
+			fmt.Println(ui.Warning(fmt.Sprintf("Error instalando multilib: %v", err)))
 		}
 	}
 
@@ -95,7 +89,7 @@ func InstallCategorized(categories map[string][]string) error {
 	if len(categories["chaotic"]) > 0 {
 		fmt.Println(ui.Warning("Se requiere chaotic-aur para algunos paquetes"))
 		if err := InstallPacman(categories["chaotic"]); err != nil {
-			logger.Warn("Error instalando chaotic: %v", err)
+			fmt.Println(ui.Warning(fmt.Sprintf("Error instalando chaotic: %v", err)))
 		}
 	}
 
@@ -108,4 +102,3 @@ func InstallCategorized(categories map[string][]string) error {
 
 	return nil
 }
-

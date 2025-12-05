@@ -14,54 +14,34 @@ log_status() {
     local level="$1"; shift
     local message="$*"
     local color="$BLUE"
-    local gum_color="33"
 
     case "$level" in
-        success) color="$GREEN"; gum_color="42" ;;
-        warn)    color="$YELLOW"; gum_color="214" ;;
-        error)   color="$RED"; gum_color="204" ;;
-        info|*)  color="$CYAN"; gum_color="39" ;;
+        success) color="$GREEN" ;;
+        warn)    color="$YELLOW" ;;
+        error)   color="$RED" ;;
+        info|*)  color="$CYAN" ;;
     esac
 
-    if command -v gum >/dev/null 2>&1; then
-        gum style --border normal --border-foreground "$gum_color" --padding "0 1" --foreground "$gum_color" "$message"
-    else
-        echo -e "${color}${message}${NC}"
-    fi
+    echo -e "${color}${message}${NC}"
 }
 
 REPO_URL="https://github.com/osmargm1202/Myconfig.git"
 REPO_DIR="$HOME/Myconfig"
+BIN_DIR="$HOME/.local/bin"
 
 echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
 echo -e "${CYAN}║      ORGMOS Installation Script       ║${NC}"
 echo -e "${CYAN}╚════════════════════════════════════════╝${NC}"
 echo
 
-# Verificar/instalar Go
-if ! command -v go &> /dev/null; then
-    echo -e "${YELLOW}Go no está instalado. Instalando...${NC}"
-    if command -v pacman &> /dev/null; then
-        sudo pacman -S --noconfirm go
-    elif command -v apt &> /dev/null; then
-        sudo apt update && sudo apt install -y golang-go
-    else
-        echo -e "${RED}No se pudo instalar Go automáticamente. Instálalo manualmente.${NC}"
-        exit 1
-    fi
-fi
-
-echo -e "${GREEN}✓ Go instalado: $(go version)${NC}"
-
 # Clonar o actualizar repositorio
 if [ -d "$REPO_DIR" ]; then
-    log_status info "Repositorio detectado, verificando estado local..."
+    log_status info "Repositorio detectado, actualizando..."
     cd "$REPO_DIR"
 
     if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         if [ -n "$(git status --porcelain)" ]; then
-            log_status warn "Estás en el proyecto madre con cambios locales sin comprometer. Haz commit/push antes de actualizar."
-            log_status warn "Se omitió git pull para no sobrescribir tu trabajo local."
+            log_status warn "Cambios locales detectados. Se omite git pull."
         else
             BEFORE_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "desconocido")
             if pull_output=$(git pull --ff-only 2>&1); then
@@ -70,88 +50,39 @@ if [ -d "$REPO_DIR" ]; then
                     log_status success "Repositorio ya estaba al día (commit $AFTER_COMMIT)."
                 else
                     log_status success "Repositorio actualizado de $BEFORE_COMMIT a $AFTER_COMMIT."
-                    [ -n "$pull_output" ] && echo "$pull_output"
                 fi
             else
-                log_status error "No se pudo actualizar el repositorio automáticamente:"
-                [ -n "$pull_output" ] && echo "$pull_output"
-                log_status error "Revisa la conexión o resuelve los conflictos y vuelve a ejecutar el script."
+                log_status error "No se pudo actualizar el repositorio."
+                log_status error "Revisa la conexión o resuelve los conflictos."
             fi
         fi
     else
-        log_status warn "Directorio existente, pero no es un repositorio Git válido. Se continuará sin actualizar."
+        log_status warn "Directorio existente pero no es un repositorio Git válido."
     fi
 else
-    echo -e "${BLUE}Clonando repositorio...${NC}"
+    log_status info "Clonando repositorio..."
     git clone "$REPO_URL" "$REPO_DIR"
     cd "$REPO_DIR"
 fi
 
-# Compilar o descargar binarios
-BIN_DIR="$HOME/.local/bin"
+# Crear directorio de binarios
 mkdir -p "$BIN_DIR"
 
-log_status info "Compilando o descargando binarios..."
+# Copiar binario orgmos
+log_status info "Instalando orgmos..."
 
-# Compilar o descargar orgmos
-    cd "$REPO_DIR"
-if command -v go &> /dev/null; then
-    log_status info "Intentando compilar orgmos..."
-    if go build -o "$BIN_DIR/orgmos" ./cmd/orgmos 2>/dev/null; then
-        chmod +x "$BIN_DIR/orgmos"
-        log_status success "orgmos compilado e instalado"
-    else
-        log_status warn "No se pudo compilar orgmos, intentando descargar desde dist/..."
-        if [ -f "$REPO_DIR/dist/orgmos" ]; then
-            cp "$REPO_DIR/dist/orgmos" "$BIN_DIR/orgmos"
-            chmod +x "$BIN_DIR/orgmos"
-            log_status success "orgmos instalado desde dist/"
-        else
-            log_status error "No se pudo instalar orgmos: compilación falló y binario no encontrado en dist/"
-        fi
-    fi
-else
-    log_status warn "Go no disponible, intentando descargar desde dist/..."
-    if [ -f "$REPO_DIR/dist/orgmos" ]; then
-        cp "$REPO_DIR/dist/orgmos" "$BIN_DIR/orgmos"
+if [ -f "$REPO_DIR/orgmos" ]; then
+    cp "$REPO_DIR/orgmos" "$BIN_DIR/orgmos"
     chmod +x "$BIN_DIR/orgmos"
-        log_status success "orgmos instalado desde dist/"
-    else
-        log_status error "No se pudo instalar orgmos: Go no disponible y binario no encontrado en dist/"
-    fi
+    log_status success "orgmos instalado correctamente"
+else
+    log_status error "Binario orgmos no encontrado en $REPO_DIR"
+    exit 1
 fi
 
-# Compilar o descargar orgmai
-if command -v pyinstaller &> /dev/null && [ -f "$REPO_DIR/orgmai.py" ]; then
-    log_status info "Intentando compilar orgmai..."
-    if pyinstaller --onefile --name orgmai --distpath "$BIN_DIR" "$REPO_DIR/orgmai.py" 2>/dev/null; then
-        chmod +x "$BIN_DIR/orgmai"
-        log_status success "orgmai compilado e instalado"
-    else
-        log_status warn "No se pudo compilar orgmai, intentando descargar desde dist/..."
-        if [ -f "$REPO_DIR/dist/orgmai" ]; then
-            cp "$REPO_DIR/dist/orgmai" "$BIN_DIR/orgmai"
-            chmod +x "$BIN_DIR/orgmai"
-            log_status success "orgmai instalado desde dist/"
-        else
-            log_status warn "orgmai no encontrado en dist/ y compilación falló"
-        fi
-    fi
-else
-    log_status warn "pyinstaller no disponible o orgmai.py no encontrado, intentando descargar desde dist/..."
-    if [ -f "$REPO_DIR/dist/orgmai" ]; then
-        cp "$REPO_DIR/dist/orgmai" "$BIN_DIR/orgmai"
-        chmod +x "$BIN_DIR/orgmai"
-        log_status success "orgmai instalado desde dist/"
-    else
-        log_status warn "orgmai no encontrado en dist/"
-    fi
-fi
-    
-    # Crear desktop entry si no existe
-    mkdir -p ~/.local/share/applications
-    if [ ! -f ~/.local/share/applications/orgmos.desktop ]; then
-        cat > ~/.local/share/applications/orgmos.desktop << 'EOF'
+# Crear desktop entry
+mkdir -p ~/.local/share/applications
+cat > ~/.local/share/applications/orgmos.desktop << 'EOF'
 [Desktop Entry]
 Name=ORGMOS
 Comment=Sistema de configuración ORGMOS
@@ -161,16 +92,14 @@ Type=Application
 Icon=orgmos
 Categories=System;Utility;
 EOF
-        chmod +x ~/.local/share/applications/orgmos.desktop
-    log_status success "Desktop entry creado"
-fi
+chmod +x ~/.local/share/applications/orgmos.desktop
+log_status success "Desktop entry creado"
 
-# Verificar que ~/.local/bin esté en PATH
+# Verificar PATH
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
     log_status warn "\$HOME/.local/bin no está en PATH. Agrégalo a tu shell profile:"
     echo -e "${YELLOW}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
 fi
-
 
 echo
 echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
@@ -179,9 +108,4 @@ echo -e "${GREEN}╚════════════════════
 echo
 echo -e "${BLUE}Binario instalado en:${NC} $BIN_DIR/orgmos"
 echo -e "${BLUE}Ejecuta:${NC} orgmos menu"
-if [ -f "$BIN_DIR/orgmai" ]; then
-    echo -e "${BLUE}orgmai CLI instalado. Ejecuta:${NC} orgmai"
-fi
-echo -e "${BLUE}O visita:${NC} $REPO_DIR"
 echo
-

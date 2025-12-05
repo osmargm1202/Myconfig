@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
-	"orgmos/internal/logger"
 	"orgmos/internal/packages"
 	"orgmos/internal/ui"
 	"orgmos/internal/utils"
@@ -26,8 +25,6 @@ func init() {
 }
 
 func runParuInstall(cmd *cobra.Command, args []string) {
-	logger.InitOnError("paru")
-
 	fmt.Println(ui.Title("Instalación de Paru AUR Helper"))
 
 	// Verificar si ya está instalado
@@ -60,20 +57,18 @@ func runParuInstall(cmd *cobra.Command, args []string) {
 	fmt.Println(ui.Info("Instalando dependencias (base-devel, git)..."))
 	if err := utils.RunCommand("sudo", "pacman", "-S", "--needed", "--noconfirm", "base-devel", "git"); err != nil {
 		fmt.Println(ui.Error("Error instalando dependencias"))
-		logger.Error("Error: %v", err)
 		return
 	}
 
 	// Paso 2: Clonar repositorio
 	tmpDir := "/tmp/paru-install"
 	fmt.Println(ui.Info("Clonando repositorio de Paru..."))
-	
+
 	// Limpiar directorio temporal si existe
 	os.RemoveAll(tmpDir)
-	
+
 	if err := utils.RunCommand("git", "clone", "https://aur.archlinux.org/paru.git", tmpDir); err != nil {
 		fmt.Println(ui.Error("Error clonando repositorio"))
-		logger.Error("Error: %v", err)
 		return
 	}
 
@@ -95,7 +90,6 @@ func runParuInstall(cmd *cobra.Command, args []string) {
 
 	if err := makepkgCmd.Run(); err != nil {
 		fmt.Println(ui.Error("Error compilando Paru"))
-		logger.Error("Error: %v", err)
 		os.Chdir(oldDir)
 		os.RemoveAll(tmpDir)
 		return
@@ -110,10 +104,7 @@ func runParuInstall(cmd *cobra.Command, args []string) {
 		fmt.Println(ui.Success("Paru instalado correctamente"))
 		output, _ := utils.RunCommandSilent("paru", "--version")
 		fmt.Println(ui.Info(output))
-		logger.Info("Paru instalado exitosamente")
 	} else {
 		fmt.Println(ui.Error("Paru no se pudo instalar correctamente"))
-		logger.Error("Paru no encontrado después de la instalación")
 	}
 }
-

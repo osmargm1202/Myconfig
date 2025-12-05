@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"orgmos/internal/logger"
 	"orgmos/internal/ui"
 	"orgmos/internal/utils"
 )
@@ -23,8 +22,6 @@ para sistemas Arch Linux con i3 o Niri.
 Usa 'orgmos menu' para acceder al menú interactivo o ejecuta
 'orgmos [comando] --help' para ver la ayuda de un comando específico.`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			// Actualizar repo al iniciar
-			utils.UpdateRepo()
 			// Crear desktop file
 			utils.CreateDesktopFile()
 		},
@@ -64,8 +61,5 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv()
-
-	if err := viper.ReadInConfig(); err == nil {
-		logger.Info("Usando config: %s", viper.ConfigFileUsed())
-	}
+	viper.ReadInConfig()
 }

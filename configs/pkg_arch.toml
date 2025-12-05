@@ -4,21 +4,14 @@
 packages = [
     "git",                # control de versiones
     "openssh",            # cliente/servidor SSH
-    "rsync",              # sincronización de archivos
-    "ntfs-3g",            # soporte NTFS
-    "dosfstools",         # herramientas FAT32
-    "exfatprogs",         # soporte exFAT
-    "man-db",             # páginas de manual
-    "man-pages",          # páginas de manual del sistema
+
     "base-devel",         # herramientas de desarrollo básicas
-    "pacman-contrib",     # utilidades adicionales pacman
 ]
 
 ["TERMINAL Y SHELL"]
 packages = [
     "fish",               # shell moderno
     "kitty",              # emulador de terminal
-    "alacritty",          # terminal alternativo
     "starship",           # prompt personalizable
 ]
 
@@ -30,44 +23,28 @@ packages = [
     "fzf",                # buscador difuso
     "ripgrep",            # búsqueda en texto
     "fd",                 # búsqueda de archivos
-    "bat",                # cat mejorado
-    "dysk",               # información de discos
-    "watchexec",          # ejecuta comandos cuando detecta cambios en archivos
-    "nnn",                # explorador de archivos
 ]
 
 ["EDITORES"]
 packages = [
     "neovim",             # editor de texto avanzado
-    "nano",               # editor simple
 ]
 
-["GIT Y DOCKER UI"]
-packages = [
-    "lazygit",            # interfaz git
-    "lazydocker",         # interfaz docker
-]
+
 
 ["UTILIDADES"]
 packages = [
     "jq",                 # procesador JSON
     "curl",               # cliente web
     "wget",               # descargador web
-    "gum",                # herramienta CLI interactiva
-    "unzip",              # extractor zip
-    "smbclient",          # cliente SMB/CIFS
-    "xclip",              # clipboard manager para Linux
-    "tmux",               # terminal multiplexer
-    "wlop",               # control de pantallas OLED
+
 ]
 
 ["MONITORES Y SISTEMA"]
 packages = [
-    "btop",               # monitor del sistema
+    "htop",               # monitor de procesos
     "fastfetch",          # información del sistema
     "ncdu",               # visor de uso de disco en terminal
-    "pacseek",            # explorador de paquetes
-    "peaclock",           # reloj, temporizador y cronómetro para terminal
 ]
 
 ["CONTENEDORES"]
@@ -75,22 +52,5 @@ packages = [
     "docker",             # contenedores
 ]
 
-["PYTHON Y DEPENDENCIAS"]
-packages = [
-    "python-openai",      # cliente OpenAI para Python
-    "python-pipx",        # instalador de aplicaciones Python
-    "python-playwright",  # automatización de navegadores
-    "python-pywal",       # paleta de colores para wal
-    "python-questionary", # prompts interactivos en terminal
-    "python-rich",        # terminal mejorado con colores
-    "python-typer",       # framework CLI moderno
-]
 
-["RED Y SEGURIDAD"]
-packages = [
-    "bind",               # herramientas DNS (incluye nslookup)
-    "hcxdumptool",        # herramienta de captura WiFi
-    "hcxtools",           # herramientas para análisis WiFi
-    "wireshark-cli",      # analizador de protocolos de red (CLI)
-]
 

@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
-	"orgmos/internal/logger"
 	"orgmos/internal/ui"
 )
 
@@ -24,8 +23,6 @@ func init() {
 }
 
 func runMenu(cmd *cobra.Command, args []string) {
-	logger.InitOnError("menu")
-
 	for {
 		fmt.Print("\033[H\033[2J") // Clear screen
 		fmt.Println(ui.Title("ORGMOS - Sistema de Configuración"))
@@ -39,14 +36,14 @@ func runMenu(cmd *cobra.Command, args []string) {
 					Options(
 						huh.NewOption("Instalar i3 Window Manager", "i3"),
 						huh.NewOption("Instalar Niri Window Manager", "niri"),
-						huh.NewOption("Instalador de paquetes", "package"),
+						huh.NewOption("Paquetes generales", "general"),
+						huh.NewOption("Paquetes extras", "extras"),
+						huh.NewOption("Herramientas de red", "network"),
+						huh.NewOption("Herramientas Arch", "arch"),
 						huh.NewOption("Instalador de Flatpak", "flatpak"),
 						huh.NewOption("Instalar Paru AUR Helper", "paru"),
-						huh.NewOption("Instalar SDDM", "sddm"),
 						huh.NewOption("Copiar configuraciones", "config"),
-						huh.NewOption("Copiar iconos y wallpapers", "assets"),
-						huh.NewOption("Herramientas Arch", "arch"),
-						huh.NewOption("Herramientas Ubuntu", "ubuntu"),
+						huh.NewOption("Copiar wallpapers", "assets"),
 						huh.NewOption("Scripts", "scripts"),
 						huh.NewOption("Salir", "exit"),
 					).
@@ -67,22 +64,22 @@ func runMenu(cmd *cobra.Command, args []string) {
 			runI3Install(nil, nil)
 		case "niri":
 			runNiriInstall(nil, nil)
-		case "package":
+		case "general":
 			runPackageInstall(nil, nil)
+		case "extras":
+			runExtrasInstall(nil, nil)
+		case "network":
+			runNetworkInstall(nil, nil)
 		case "flatpak":
 			runFlatpakInstall(nil, nil)
 		case "paru":
 			runParuInstall(nil, nil)
-		case "sddm":
-			runSddmInstall(nil, nil)
 		case "config":
 			runConfigCopy(nil, nil)
 		case "assets":
 			runAssetsCopy(nil, nil)
 		case "arch":
 			runArchInstall(nil, nil)
-		case "ubuntu":
-			runUbuntuInstall(nil, nil)
 		case "scripts":
 			runScriptsMenu()
 		case "exit":

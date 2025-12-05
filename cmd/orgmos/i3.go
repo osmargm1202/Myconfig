@@ -6,11 +6,9 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
-	"orgmos/internal/logger"
 	"orgmos/internal/packages"
 	"orgmos/internal/ui"
 )
-
 
 var i3Cmd = &cobra.Command{
 	Use:   "i3",
@@ -63,15 +61,20 @@ func init() {
 }
 
 func runI3Install(cmd *cobra.Command, args []string) {
-	logger.InitOnError("i3")
-
 	fmt.Println(ui.Title("Instalación de i3 Window Manager"))
+
+	// Verificar paru antes de continuar
+	if !packages.CheckParuInstalled() {
+		if !packages.OfferInstallParu() {
+			fmt.Println(ui.Warning("Instalación cancelada. Paru es necesario para instalar paquetes AUR."))
+			return
+		}
+	}
 
 	// Cargar paquetes desde TOML
 	groups, err := packages.ParseTOML("pkg_i3.toml")
 	if err != nil {
 		fmt.Println(ui.Error(fmt.Sprintf("Error cargando paquetes: %v", err)))
-		logger.Error("Error parseando TOML: %v", err)
 		return
 	}
 
@@ -97,36 +100,25 @@ func runI3Install(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Confirmación con lista de paquetes
-	var confirm bool
-	pkgList := ""
-	for i, pkg := range toInstall {
-		if i > 0 && i%3 == 0 {
-			pkgList += "\n"
-		}
-		pkgList += fmt.Sprintf("  • %s", pkg)
-		if i < len(toInstall)-1 {
-			pkgList += "  "
-		}
+	// Mostrar paquetes a instalar
+	fmt.Println(ui.Info(fmt.Sprintf("Paquetes a instalar (%d):", len(toInstall))))
+	for _, pkg := range toInstall {
+		fmt.Println(ui.Dim(fmt.Sprintf("  • %s", pkg)))
 	}
 
+	// Confirmación
+	var confirm bool
 	form := ui.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title(fmt.Sprintf("Se instalarán %d paquetes", len(toInstall))).
-				Description(fmt.Sprintf("Paquetes a instalar:\n%s", pkgList)).
 				Affirmative("Instalar").
 				Negative("Cancelar").
 				Value(&confirm),
 		),
 	)
 
-	if err := form.Run(); err != nil {
-		fmt.Println(ui.Error("Error en formulario"))
-		return
-	}
-
-	if !confirm {
+	if err := form.Run(); err != nil || !confirm {
 		fmt.Println(ui.Warning("Instalación cancelada"))
 		return
 	}
@@ -135,10 +127,8 @@ func runI3Install(cmd *cobra.Command, args []string) {
 	categories := packages.CategorizePackages(toInstall)
 	if err := packages.InstallCategorized(categories); err != nil {
 		fmt.Println(ui.Error(fmt.Sprintf("Error: %v", err)))
-		logger.Error("Error instalando i3: %v", err)
 		return
 	}
 
 	fmt.Println(ui.Success("i3 y componentes instalados correctamente"))
-	logger.Info("Instalación i3 completada")
 }

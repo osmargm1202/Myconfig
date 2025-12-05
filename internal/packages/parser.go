@@ -7,7 +7,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"orgmos/internal/logger"
 	"orgmos/internal/utils"
 )
 
@@ -34,13 +33,11 @@ func ParseTOML(filename string) ([]PackageGroup, error) {
 
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		logger.Error("Error leyendo %s: %v", filename, err)
 		return nil, err
 	}
 
 	var config PackageConfig
 	if _, err := toml.Decode(string(data), &config); err != nil {
-		logger.Error("Error parseando TOML %s: %v", filename, err)
 		return nil, err
 	}
 
@@ -67,7 +64,6 @@ func ParseTOML(filename string) ([]PackageGroup, error) {
 		}
 	}
 
-	logger.Info("Parseado %s: %d grupos", filename, len(groups))
 	return groups, nil
 }
 
@@ -85,4 +81,3 @@ func GetAllPackages(filename string) ([]string, error) {
 
 	return all, nil
 }
-

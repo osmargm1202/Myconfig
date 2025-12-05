@@ -1,0 +1,42 @@
+{
+	"name": "Go Development Container",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": "."
+	},
+	"workspaceFolder": "/workspace",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+	
+	// Personaliza las herramientas de Go
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"golang.go",
+				"golang.go-nightly"
+			],
+			"settings": {
+				"go.toolsManagement.checkForUpdates": "local",
+				"go.useLanguageServer": true,
+				"go.gopath": "/go",
+				"go.goroot": "/usr/local/go"
+			}
+		}
+	},
+	
+	// Comandos a ejecutar después de crear el contenedor
+	"postCreateCommand": "bash -c 'if [ -n \"$GH_TOKEN\" ]; then echo \"$GH_TOKEN\" | gh auth login --with-token 2>/dev/null || true; fi' && go version && go env",
+	
+	// Configuración de puertos (si necesitas exponer puertos)
+	// "forwardPorts": [8080],
+	
+	// Variables de entorno
+	"remoteEnv": {
+		"GOPATH": "/go",
+		"PATH": "/usr/local/go/bin:${containerEnv:PATH}",
+		"GH_TOKEN": "${localEnv:GH_TOKEN}"
+	},
+	
+	// Comandos a ejecutar cuando el contenedor se inicia
+	"postStartCommand": "echo 'Dev container con Go listo!'"
+}
+

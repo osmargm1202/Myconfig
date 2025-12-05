@@ -1,37 +1,5 @@
 # Lista de paquetes generales del sistema (compartidos entre i3 y Hyprland)
 # Nota: Las herramientas de terminal están en pkg_arch.toml y pkg_ubuntu.toml
-
-["AUDIO Y MULTIMEDIA"]
-packages = [
-    "pipewire",           # servidor de audio/video
-    "pipewire-alsa",      # compatibilidad ALSA
-    "pipewire-pulse",     # compatibilidad PulseAudio
-    "pavucontrol",        # control de volumen GUI
-    "pamixer",            # control de volumen CLI
-    "playerctl",          # controles multimedia
-    "mpv",                # reproductor multimedia
-    "antimicrox",         # mapeador de controles/gamepads
-]
-
-["CONECTIVIDAD"]
-packages = [
-    "networkmanager",     # gestor de red
-    "network-manager-applet",  # applet de red para systray
-    "bluez",              # stack bluetooth
-    "bluez-utils",        # utilidades bluetooth CLI
-    "blueman",            # gestor bluetooth GUI
-    "gvfs-smb",           # integración SMB con gestores de archivos
-]
-
-["DISPLAY MANAGER"]
-packages = [
-    "sddm",               # display manager
-    "qt5-quickcontrols",  # elementos UI para sddm
-    "qt5-quickcontrols2", # elementos UI para sddm
-    "qt5-graphicaleffects", # efectos para sddm
-    "polkit-gnome",       # autenticación GUI para polkit
-]
-
 ["EDITORES Y DESARROLLO"]
 packages = [
     "cursor-bin",         # IDE moderno
@@ -39,50 +7,22 @@ packages = [
 
 ["LENGUAJES Y RUNTIME"]
 packages = [
-    "go",                 # lenguaje Go
-    "nodejs",             # runtime JavaScript
-    "npm",                # gestor de paquetes Node.js
     "uv",                 # gestor de paquetes Python
-    "python-requests",    # biblioteca HTTP para Python
-    "python-rich",        # terminal mejorado con colores
-    "yt-dlp",             # descargador de videos
-]
-
-["APLICACIONES GRÁFICAS"]
-packages = [
-    "dolphin",            # gestor de archivos
-    "kate",               # editor de texto KDE
-    "gnome-calculator",   # calculadora
-    "imagemagick",        # utilidades de conversión de imágenes
-    "system-config-printer-applet", # applet para impresoras (CONFIRMADO)
-    "system-config-printer",        # herramientas de configuración de impresoras (CONFIRMADO)
 ]
 
 ["HERRAMIENTAS Y UTILIDADES"]
 packages = [
-    "ark",                # archivador
     "gnome-keyring",      # gestor de claves y contraseñas
-    "libsecret",          # biblioteca para acceso a keyring
-    "seahorse",           # gestor gráfico de llaveros
+    "udiskie",            # montaje automático de medios
 ]
 
 ["THEMING Y CONFIGURACIÓN"]
 packages = [
-    "nwg-look",           # configuración GTK
-    "qt5ct",              # configuración Qt5
-    "qt6ct",              # configuración Qt6
-    "qt5ct-kde",          # configuración Qt5 para KDE
-    "qt6ct-kde",          # configuración Qt6 para KDE
-    "kvantum",            # motor de temas Qt6
-    "kvantum-qt5",        # motor de temas Qt5
     "noto-fonts-emoji",   # fuente emoji
     "ttf-jetbrains-mono-nerd",  # fuente nerdfont
-    "ttf-jetbrains-mono", # fuente monospace
     "ttf-roboto",         # fuente sans-serif
     "ttf-ms-fonts",       # fuente Microsoft
-    "ttf-symbola",            # fuente de símbolos amplia (alternativa a Wingdings)
-    "ttf-ancient-fonts",      # incluye fuentes de símbolos antiguos y ornamentales
-    "ttf-linux-libertine",    # incluye símbolos y ornamentos
+    "ttf-wps-fonts",          # fuente de WPS Office
 ]
 
 ["CURSORES E ICONOS"]

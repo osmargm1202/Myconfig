@@ -8,7 +8,6 @@ import (
 
 	"github.com/charmbracelet/huh"
 
-	"orgmos/internal/logger"
 	"orgmos/internal/ui"
 	"orgmos/internal/utils"
 )
@@ -27,7 +26,6 @@ func CheckInstalledPacman(packages []string) map[string]bool {
 	// Obtener lista de paquetes instalados
 	output, err := utils.RunCommandSilent("pacman", "-Qq")
 	if err != nil {
-		logger.Error("Error obteniendo paquetes instalados: %v", err)
 		return installed
 	}
 
@@ -52,7 +50,6 @@ func CheckInstalledFlatpak(packages []string) map[string]bool {
 
 	output, err := utils.RunCommandSilent("flatpak", "list", "--app", "--columns=application")
 	if err != nil {
-		logger.Error("Error obteniendo flatpaks: %v", err)
 		return installed
 	}
 
@@ -108,11 +105,11 @@ func GetPackageSource(pkg string) string {
 // CategorizePackages separa paquetes por origen
 func CategorizePackages(packages []string) map[string][]string {
 	categories := map[string][]string{
-		"pacman":  {},
+		"pacman":   {},
 		"multilib": {},
-		"chaotic": {},
-		"aur":     {},
-		"unknown": {},
+		"chaotic":  {},
+		"aur":      {},
+		"unknown":  {},
 	}
 
 	for _, pkg := range packages {
@@ -152,7 +149,7 @@ func OfferInstallParu() bool {
 
 	// Instalar paru
 	fmt.Println(ui.Info("Instalando Paru..."))
-	
+
 	// Instalar dependencias
 	if err := utils.RunCommand("sudo", "pacman", "-S", "--needed", "--noconfirm", "base-devel", "git"); err != nil {
 		fmt.Println(ui.Error("Error instalando dependencias"))
@@ -162,7 +159,7 @@ func OfferInstallParu() bool {
 	// Clonar y compilar
 	tmpDir := "/tmp/paru-install"
 	os.RemoveAll(tmpDir)
-	
+
 	if err := utils.RunCommand("git", "clone", "https://aur.archlinux.org/paru.git", tmpDir); err != nil {
 		fmt.Println(ui.Error("Error clonando repositorio"))
 		return false
@@ -176,7 +173,7 @@ func OfferInstallParu() bool {
 		os.RemoveAll(tmpDir)
 		return false
 	}
-	
+
 	cmd := exec.Command("makepkg", "-si", "--noconfirm")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -288,4 +285,3 @@ func GetPackageDescription(pkg string) string {
 
 	return ""
 }
-

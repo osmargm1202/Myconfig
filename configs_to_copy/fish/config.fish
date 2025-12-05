@@ -14,6 +14,10 @@ if test -f ~/.config/fish/conf.d/niri.fish
     source ~/.config/fish/conf.d/niri.fish
 end
 
+if test -f ~/.config/fish/conf.d/docker.fish
+    source ~/.config/fish/conf.d/docker.fish
+end
+
 if status --is-login
     set -gx PATH $PATH ~/linux/bin
 end
@@ -75,10 +79,7 @@ end
 
 # Ejecutar fastfetch con configuración ORGMOS (logo orgm.png)
 
-
 # The next line updates PATH for the Google Cloud SDK.
 if test -f '/home/osmar/google-cloud-sdk/path.fish.inc'
     . '/home/osmar/google-cloud-sdk/path.fish.inc'
 end
-
-

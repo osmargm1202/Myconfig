@@ -70,9 +70,6 @@ exec_always --no-startup-id wal -R
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
 
-# Lanzar el terminal con la CLI de IA al inicio
-exec --no-startup-id kitty --class ai-scratchpad -e "orgmai chat"
-
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
 bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
@@ -90,10 +87,6 @@ bindsym $mod+Return exec $term
 
 # kill focused window
 bindsym $mod+q kill
-
-# Keybinding para togglear
-bindsym $mod+Shift+a [instance="ai-scratchpad"] scratchpad show
-
 
 # start dmenu (a program launcher)
 bindsym $mod+m exec --no-startup-id rofi -show drun -show-icons
@@ -284,7 +277,6 @@ for_window [class="system-config-printer"] floating enable
 #for_window [tiling] border pixel 2
 for_window [all] border pixel 0
 for_window [class="Cursor"] layout tabbed
-for_window [instance="ai-scratchpad"] floating enable, move scratchpad, resize set 800 600, move position center
 
 # Márgenes globales
 gaps inner 10
