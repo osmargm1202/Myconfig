@@ -78,7 +78,6 @@ else
                     fi
                 else
                     log_status error "No se pudo actualizar el repositorio."
-                    log_status error "Revisa la conexión o resuelve los conflictos."
                 fi
             fi
         else
@@ -97,28 +96,18 @@ mkdir -p "$BIN_DIR"
 # Cambiar al directorio del repositorio
 cd "$REPO_DIR"
 
-# Compilar o copiar binario orgmos
-log_status info "Compilando orgmos..."
+# Copiar binario orgmos (precompilado)
+log_status info "Instalando orgmos..."
 
-# Verificar si Go está instalado
-if ! command -v go &> /dev/null; then
-    log_status error "Go no está instalado. Instálalo primero."
-    exit 1
-fi
-
-# Compilar el binario
-if go build -o orgmos ./cmd/orgmos; then
-    log_status success "Binario compilado correctamente"
+if [ -f "$REPO_DIR/orgmos" ]; then
+    cp "$REPO_DIR/orgmos" "$BIN_DIR/orgmos"
+    chmod +x "$BIN_DIR/orgmos"
+    log_status success "orgmos instalado correctamente"
 else
-    log_status error "Error al compilar el binario"
+    log_status error "Binario orgmos no encontrado en $REPO_DIR"
+    log_status error "Asegúrate de que el binario precompilado existe en el repositorio."
     exit 1
 fi
-
-# Copiar binario
-log_status info "Instalando binario en $BIN_DIR..."
-cp "$REPO_DIR/orgmos" "$BIN_DIR/orgmos"
-chmod +x "$BIN_DIR/orgmos"
-log_status success "orgmos instalado correctamente en $BIN_DIR/orgmos"
 
 # Crear desktop entry
 mkdir -p ~/.local/share/applications
