@@ -44,6 +44,45 @@ func CheckInstalledPacman(packages []string) map[string]bool {
 	return installed
 }
 
+// CheckInstalledApt verifica paquetes instalados con apt (Debian/Ubuntu)
+func CheckInstalledApt(packages []string) map[string]bool {
+	installed := make(map[string]bool)
+
+	// Obtener lista de paquetes instalados
+	output, err := utils.RunCommandSilent("dpkg-query", "-W", "-f=${Package}\n")
+	if err != nil {
+		return installed
+	}
+
+	installedPkgs := make(map[string]bool)
+	for _, pkg := range strings.Split(output, "\n") {
+		pkg = strings.TrimSpace(pkg)
+		if pkg != "" {
+			installedPkgs[pkg] = true
+		}
+	}
+
+	for _, pkg := range packages {
+		installed[pkg] = installedPkgs[pkg]
+	}
+
+	return installed
+}
+
+// GetAptPackageDescription obtiene la descripción de un paquete apt
+func GetAptPackageDescription(pkg string) string {
+	output, err := utils.RunCommandSilent("apt-cache", "show", pkg)
+	if err == nil {
+		lines := strings.Split(output, "\n")
+		for _, line := range lines {
+			if strings.HasPrefix(line, "Description:") {
+				return strings.TrimSpace(strings.TrimPrefix(line, "Description:"))
+			}
+		}
+	}
+	return ""
+}
+
 // CheckInstalledFlatpak verifica apps Flatpak instaladas
 func CheckInstalledFlatpak(packages []string) map[string]bool {
 	installed := make(map[string]bool)
@@ -151,7 +190,7 @@ func OfferInstallParu() bool {
 	fmt.Println(ui.Info("Instalando Paru..."))
 
 	// Instalar dependencias
-	if err := utils.RunCommand("sudo", "pacman", "-S", "--needed", "--noconfirm", "base-devel", "git"); err != nil {
+	if err := utils.RunCommandWithSudo("pacman", "-S", "--needed", "--noconfirm", "base-devel", "git"); err != nil {
 		fmt.Println(ui.Error("Error instalando dependencias"))
 		return false
 	}

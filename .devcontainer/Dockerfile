@@ -1,4 +1,4 @@
-FROM golang:1.25-bookworm
+FROM golang:1.25.5-trixie
 
 
 # Instalar paquetes del sistema necesarios para desarrollo y build de Go
@@ -20,5 +20,5 @@ RUN git config --global user.email "osmargm1202@gmail.com"
 
 
 # Mantener el directorio de trabajo por defecto de Go
-WORKDIR /workspace
+WORKDIR /workspaces
 

@@ -55,7 +55,7 @@ func runParuInstall(cmd *cobra.Command, args []string) {
 
 	// Paso 1: Instalar dependencias
 	fmt.Println(ui.Info("Instalando dependencias (base-devel, git)..."))
-	if err := utils.RunCommand("sudo", "pacman", "-S", "--needed", "--noconfirm", "base-devel", "git"); err != nil {
+	if err := utils.RunCommandWithSudo("pacman", "-S", "--needed", "--noconfirm", "base-devel", "git"); err != nil {
 		fmt.Println(ui.Error("Error instalando dependencias"))
 		return
 	}

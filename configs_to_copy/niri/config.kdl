@@ -1,4 +1,3 @@
-spawn-at-startup "fish" "-c" "orgmos config --watch --no-confirm"
 //spawn-at-startup "fish" "-c" "nextcloud --background && notify-send -u normal -a 'niri' 'Nextcloud '"
 spawn-at-startup "fish" "-c" "wl-paste -t text --watch cliphist store & wl-paste -t image/png --watch cliphist store"
 spawn-at-startup "fish" "-c" "swayidle -w timeout 300 'wlopm --off \\*' resume 'wlopm --on \\*' timeout 600 'dms ipc call lock lock' timeout 900 'systemctl suspend' before-sleep 'dms ipc call lock lock'"
@@ -192,10 +191,19 @@ window-rule {
     match app-id="org.pulseaudio.pavucontrol"
     match app-id="org.gnome.Calculator"
 
+
     default-column-width { proportion 0.3; }
     default-window-height { proportion 0.4; }
     open-floating true
 }
+
+window-rule {
+    match app-id="orgmai-chat"
+    default-column-width { proportion 0.4; }
+    default-window-height { proportion 0.5; }
+    open-floating true
+}
+
 
 window-rule {
     match app-id="Bricscad"
@@ -213,16 +221,22 @@ window-rule {
 
 window-rule {
     match app-id="Kitty$"
+    opacity 0.95
 }
 
 window-rule {
     match app-id="cursor$"
     match app-id="Chromium$"
+    match app-id="org.chromium.Chromium"        // Chromium Flatpak
+    match app-id="Chromium"                     // Chromium - mayúscula
+    match app-id="Cursor"                       // Cursor - mayúscula
     open-maximized true
     opacity 0.97
 }
 window-rule {
     match app-id=r#"^chrome.*"#  // Coincide cualquier ventana cuyo app-id empiece con "chrome"
+    match app-id=r#"^Chrome.*"#  // Coincide cualquier ventana cuyo app-id empiece con "chrome"
+    match app-id=r#"^org.chromium.Chromium.*"#  // Coincide cualquier ventana cuyo app-id empiece con "chrome"
     default-column-width { proportion 0.5; }
     default-window-height { proportion 1.0; }
     default-floating-position x=0 y=0 relative-to="left"
@@ -244,9 +258,11 @@ binds {
     Mod+Slash { show-hotkey-overlay; }
     Mod+Return hotkey-overlay-title="Abrir terminal (kitty)" { spawn "kitty"; }
     Mod+M hotkey-overlay-title="Lanzador de apps (rofi)" { spawn "fish" "-c" "rofi -show drun -show-icons"; }
-    Mod+E hotkey-overlay-title="Gestor de archivos" { spawn "dolphin"; }
+    Mod+E hotkey-overlay-title="Gestor de archivos" { spawn "org.kde.dolphin"; }
     Mod+W hotkey-overlay-title="Navegador" { spawn "fish" "-c" "env OZONE_PLATFORM=wayland chromium --ozone-platform=wayland"; }
     Super+Alt+C hotkey-overlay-title="Cursor Code Editor" { spawn "fish" "-c" "env OZONE_PLATFORM=wayland ELECTRON_OZONE_PLATFORM_HINT=auto cursor --ozone-platform=wayland"; }
+    Mod+A hotkey-overlay-title="chatgpt terminal" { spawn "kitty" "--class" "orgmai-chat" "-e" "fish" "-c" "orgmai chat"; }
+    Mod+Shift+A hotkey-overlay-title="chatgpt terminal última conversación" { spawn "kitty" "--class" "orgmai-chat" "-e" "fish" "-c" "orgmai prev"; }
 
     // dms
     Mod+Y hotkey-overlay-title="Historial del portapapeles" { spawn-sh "dms ipc call clipboard open"; }
@@ -257,7 +273,7 @@ binds {
     Super+Alt+space hotkey-overlay-title="Cambiar fondo de pantalla" { spawn-sh "dms ipc call wallpaper next"; }
     Mod+Shift+Escape hotkey-overlay-title="Cerrar sesión" { spawn-sh "dms ipc call powermenu toggle"; }
     Mod+Shift+M hotkey-overlay-title="Cerrar sesión" { spawn-sh "dms ipc call notifications toggle"; }
-    Mod+Shift+Slash hotkey-overlay-title="DMS: Keybinds (gum, CLI, colores)" { spawn-sh "dms ipc call keybinds toggle sway"; }
+    Mod+Shift+Slash hotkey-overlay-title="DMS: Keybinds" { spawn-sh "dms ipc call keybinds toggle sway"; }
 
 
     XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }

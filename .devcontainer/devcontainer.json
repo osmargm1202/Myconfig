@@ -12,7 +12,10 @@
 		"vscode": {
 			"extensions": [
 				"golang.go",
-				"golang.go-nightly"
+				"golang.go-nightly",
+				"bungcip.better-toml",
+				"mechatroner.rainbow-csv"
+				
 			],
 			"settings": {
 				"go.toolsManagement.checkForUpdates": "local",

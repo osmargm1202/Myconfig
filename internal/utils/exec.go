@@ -11,6 +11,22 @@ import (
 	"orgmos/internal/ui"
 )
 
+// IsRoot verifica si el usuario actual es root
+func IsRoot() bool {
+	return os.Geteuid() == 0
+}
+
+// RunCommandWithSudo ejecuta un comando con sudo si no es root
+func RunCommandWithSudo(name string, args ...string) error {
+	if IsRoot() {
+		// Si es root, ejecutar directamente
+		return RunCommand(name, args...)
+	}
+	// Si no es root, usar sudo
+	fullArgs := append([]string{name}, args...)
+	return RunCommand("sudo", fullArgs...)
+}
+
 // RunCommand ejecuta un comando y muestra la salida
 func RunCommand(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
@@ -96,7 +112,19 @@ func RequireDependency(cmd string) bool {
 
 // GetRepoDir obtiene el directorio del repositorio
 func GetRepoDir() string {
-	// Primero intenta encontrar el directorio desde el ejecutable
+	// Primero intenta desde el directorio de trabajo actual
+	cwd, err := os.Getwd()
+	if err == nil {
+		dir := cwd
+		for i := 0; i < 5; i++ {
+			if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+				return dir
+			}
+			dir = filepath.Dir(dir)
+		}
+	}
+
+	// Intenta encontrar el directorio desde el ejecutable
 	execPath, err := os.Executable()
 	if err == nil {
 		dir := filepath.Dir(execPath)

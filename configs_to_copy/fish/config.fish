@@ -10,10 +10,6 @@ if status is-interactive
     end
 end
 
-if test -f ~/.config/fish/conf.d/niri.fish
-    source ~/.config/fish/conf.d/niri.fish
-end
-
 if test -f ~/.config/fish/conf.d/docker.fish
     source ~/.config/fish/conf.d/docker.fish
 end
@@ -33,22 +29,37 @@ if type -q starship
 end
 
 # zoxide (cd inteligente)
-zoxide init fish | source
-alias cd="z"
+if type -q zoxide
+    zoxide init fish | source
+    alias cd="z"
+end
 
-# eza (ls mejorado)
-alias ls="eza --group-directories-first --icons"
-alias ll="eza -la --group-directories-first --icons"
-alias lt="eza --tree --group-directories-first --icons"
+# eza (ls mejorado), solo si está instalado
+if type -q eza
+    alias ls="eza --group-directories-first --icons"
+    alias ll="eza -la --group-directories-first --icons"
+    alias lt="eza --tree --group-directories-first --icons"
 
-# ripgrep (buscar rápido)
-alias rg="rg --hidden --glob '!.git/*'"
+else
+    alias ll="ls -la"
+    alias ls="ls -l"
+    alias lt="ls -lah"
+end
 
-# fd (buscar archivos mejor que find)
-alias f="fd --hidden --exclude .git"
+# ripgrep (buscar rápido), solo si está instalado
+if type -q rg
+    alias rg="rg --hidden --glob '!.git/*'"
+end
 
-# ipinfo (información de IP)
-alias ipinfo="curl -s ipinfo.io"
+# fd (buscar archivos mejor que find), solo si está instalado
+if type -q fd
+    alias f="fd --hidden --exclude .git"
+end
+
+# ipinfo (información de IP), solo si 'curl' está instalado
+if type -q curl
+    alias ipinfo="curl -s ipinfo.io"
+end
 
 # peaclock (reloj digital con configuración personalizada)
 if type -q peaclock
@@ -60,11 +71,16 @@ if type -q peaclock
 end
 
 set TERM xterm-256color
-set EDITOR nvim
-set FZF_DEFAULT_OPTS "--height=50% --reverse --inline-info --border --color=fg:15,bg:0"
+
+if type -q nvim
+    set EDITOR nvim
+end
+
+
 
 # history search (ctrl+r mejorado con fzf si lo instalas)
 if type -q fzf
+    set FZF_DEFAULT_OPTS "--height=50% --reverse --inline-info --border --color=fg:15,bg:0"
     function fish_user_key_bindings
         bind \cr fzf_history
     end
@@ -73,11 +89,12 @@ end
 # Deshabilitar mensaje de ayuda de fish
 set -U fish_greeting ""
 
-function cheat
-    curl -s cheat.sh/:list | fzf --preview "curl -s cheat.sh/{}" --preview-window=right:70% | xargs -I {} curl -s cheat.sh/{} | bat --language=markdown --paging=always
+if type -q curl; and type -q fzf; and type -q bat
+    function cheat
+        curl -s cheat.sh/:list | fzf --preview "curl -s cheat.sh/{}" --preview-window=right:70% | xargs -I {} curl -s cheat.sh/{} | bat --language=markdown --paging=always
+    end
 end
 
-# Ejecutar fastfetch con configuración ORGMOS (logo orgm.png)
 
 # The next line updates PATH for the Google Cloud SDK.
 if test -f '/home/osmar/google-cloud-sdk/path.fish.inc'

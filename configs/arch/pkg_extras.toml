@@ -1,0 +1,22 @@
+["GIT Y DOCKER UI"]
+packages = [
+    "lazygit",            # interfaz git
+    "lazydocker",         # interfaz docker
+    "uv",                 # herramienta de gestión de proyectos Python
+]
+
+["UTILIDADES"]
+packages = [
+    "smbclient",          # cliente SMB/CIFS
+    "tmux",               # terminal multiplexer
+    "ctop",               # monitor de contenedores
+    "rsync",              # sincronización de archivos
+    "watchexec",          # ejecuta comandos cuando detecta cambios en archivos
+    "nnn",                # explorador de archivos
+]
+["MONITORES Y SISTEMA"]
+packages = [
+    "pacseek",            # explorador de paquetes
+    "peaclock",           # reloj, temporizador y cronómetro para terminal
+]
+

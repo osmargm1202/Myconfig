@@ -16,7 +16,7 @@ func InstallPacman(packages []string) error {
 	fmt.Println(ui.Info(fmt.Sprintf("Instalando %d paquetes con pacman...", len(packages))))
 
 	args := append([]string{"-S", "--noconfirm", "--needed"}, packages...)
-	return utils.RunCommand("sudo", append([]string{"pacman"}, args...)...)
+	return utils.RunCommandWithSudo("pacman", args...)
 }
 
 // InstallParu instala paquetes con paru (AUR)
@@ -53,7 +53,7 @@ func InstallFlatpak(packages []string) error {
 	return utils.RunCommand("flatpak", args...)
 }
 
-// InstallApt instala paquetes con apt (Ubuntu)
+// InstallApt instala paquetes con apt (Debian/Ubuntu)
 func InstallApt(packages []string) error {
 	if len(packages) == 0 {
 		return nil
@@ -62,10 +62,10 @@ func InstallApt(packages []string) error {
 	fmt.Println(ui.Info(fmt.Sprintf("Instalando %d paquetes con apt...", len(packages))))
 
 	// Primero actualizar
-	utils.RunCommand("sudo", "apt", "update")
+	utils.RunCommandWithSudo("apt", "update")
 
-	args := append([]string{"apt", "install", "-y"}, packages...)
-	return utils.RunCommand("sudo", args...)
+	args := append([]string{"install", "-y"}, packages...)
+	return utils.RunCommandWithSudo("apt", args...)
 }
 
 // InstallCategorized instala paquetes separados por categoría
