@@ -8,6 +8,7 @@ import (
 
 	"orgmos/internal/packages"
 	"orgmos/internal/ui"
+	"orgmos/internal/utils"
 )
 
 var i3Cmd = &cobra.Command{
@@ -63,6 +64,12 @@ func init() {
 func runI3Install(cmd *cobra.Command, args []string) {
 	fmt.Println(ui.Title("Instalación de i3 Window Manager"))
 
+	// Clonar/actualizar dotfiles con spinner
+	if err := utils.CloneOrUpdateDotfilesWithSpinner(); err != nil {
+		fmt.Println(ui.Warning(fmt.Sprintf("No se pudo clonar/actualizar dotfiles: %v", err)))
+		fmt.Println(ui.Warning("Se intentará continuar con el repositorio existente si está disponible"))
+	}
+
 	// Verificar paru antes de continuar
 	if !packages.CheckParuInstalled() {
 		if !packages.OfferInstallParu() {
@@ -71,8 +78,8 @@ func runI3Install(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	// Cargar paquetes desde TOML
-	groups, err := packages.ParseTOML("pkg_i3.toml")
+	// Cargar paquetes desde LST
+	groups, err := packages.ParseLST("arch", "pkg_i3.lst")
 	if err != nil {
 		fmt.Println(ui.Error(fmt.Sprintf("Error cargando paquetes: %v", err)))
 		return

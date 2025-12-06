@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/huh/spinner"
 	"github.com/spf13/cobra"
 
 	"orgmos/internal/ui"
@@ -30,15 +31,26 @@ func init() {
 func runConfigCopy(cmd *cobra.Command, args []string) {
 	fmt.Println(ui.Title("Copiar Configuraciones"))
 
-	repoDir := utils.GetRepoDir()
-	configSource := filepath.Join(repoDir, "configs_to_copy")
-	if _, err := os.Stat(configSource); os.IsNotExist(err) {
-		// Fallback a nombre anterior
-		configSource = filepath.Join(repoDir, "folders to be copied to .config")
+	// Clonar o actualizar repositorio dotfiles con spinner
+	var cloneErr error
+	spinner.New().
+		Title("Clonando/actualizando repositorio dotfiles...").
+		Action(func() {
+			cloneErr = utils.CloneOrUpdateDotfiles()
+		}).
+		Run()
+
+	if cloneErr != nil {
+		fmt.Println(ui.Warning(fmt.Sprintf("No se pudo clonar/actualizar dotfiles: %v", cloneErr)))
+		fmt.Println(ui.Warning("Se intentará copiar desde el directorio existente si está disponible"))
 	}
 
+	// Obtener directorio dotfiles
+	dotfilesDir := utils.GetDotfilesDir()
+	configSource := filepath.Join(dotfilesDir, "config")
+
 	if _, err := os.Stat(configSource); os.IsNotExist(err) {
-		fmt.Println(ui.Error("Carpeta de configuraciones no encontrada"))
+		fmt.Println(ui.Error("Carpeta de configuraciones no encontrada en ~/Downloads/dotfiles/config"))
 		return
 	}
 
@@ -74,42 +86,49 @@ func runConfigCopy(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	fmt.Println(ui.Info("Copiando configuraciones..."))
 	var copied, failed int
+	var copyErr error
 
-	err := filepath.WalkDir(configSource, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return nil
-		}
+	// Copiar con spinner mostrando progreso
+	spinner.New().
+		Title("Copiando configuraciones...").
+		Action(func() {
+			copyErr = filepath.WalkDir(configSource, func(path string, d fs.DirEntry, err error) error {
+				if err != nil {
+					return nil
+				}
 
-		relPath, _ := filepath.Rel(configSource, path)
-		destPath := filepath.Join(configDest, relPath)
+				var relPath string
+				relPath, _ = filepath.Rel(configSource, path)
+				destPath := filepath.Join(configDest, relPath)
 
-		if d.IsDir() {
-			os.MkdirAll(destPath, 0755)
-			return nil
-		}
+				if d.IsDir() {
+					os.MkdirAll(destPath, 0755)
+					return nil
+				}
 
-		// Copiar archivo
-		data, err := os.ReadFile(path)
-		if err != nil {
-			failed++
-			return nil
-		}
+				// Copiar archivo
+				data, err := os.ReadFile(path)
+				if err != nil {
+					failed++
+					return nil
+				}
 
-		os.MkdirAll(filepath.Dir(destPath), 0755)
+				os.MkdirAll(filepath.Dir(destPath), 0755)
 
-		if err := os.WriteFile(destPath, data, 0644); err != nil {
-			failed++
-			return nil
-		}
+				if err := os.WriteFile(destPath, data, 0644); err != nil {
+					failed++
+					return nil
+				}
 
-		copied++
-		return nil
-	})
+				copied++
+				return nil
+			})
+		}).
+		Run()
 
-	if err != nil {
-		fmt.Println(ui.Error(fmt.Sprintf("Error: %v", err)))
+	if copyErr != nil {
+		fmt.Println(ui.Error(fmt.Sprintf("Error: %v", copyErr)))
 		return
 	}
 

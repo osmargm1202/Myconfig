@@ -10,6 +10,7 @@ import (
 
 	"orgmos/internal/packages"
 	"orgmos/internal/ui"
+	"orgmos/internal/utils"
 )
 
 var niriCmd = &cobra.Command{
@@ -33,6 +34,12 @@ func runNiriInstall(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Println(ui.Title("Instalación de Niri Window Manager"))
+
+	// Clonar/actualizar dotfiles con spinner
+	if err := utils.CloneOrUpdateDotfilesWithSpinner(); err != nil {
+		fmt.Println(ui.Warning(fmt.Sprintf("No se pudo clonar/actualizar dotfiles: %v", err)))
+		fmt.Println(ui.Warning("Se intentará continuar con el repositorio existente si está disponible"))
+	}
 
 	// Confirmación antes de ejecutar script curl
 	var confirmScript bool
@@ -96,8 +103,8 @@ func runNiriInstall(cmd *cobra.Command, args []string) {
 		"hyprpicker":         true,
 	}
 
-	// Cargar paquetes desde TOML
-	groups, err := packages.ParseTOML("pkg_niri.toml")
+	// Cargar paquetes desde LST
+	groups, err := packages.ParseLST("arch", "pkg_niri.lst")
 	if err != nil {
 		fmt.Println(ui.Error(fmt.Sprintf("Error cargando paquetes: %v", err)))
 		return

@@ -9,6 +9,7 @@ import (
 
 	"orgmos/internal/packages"
 	"orgmos/internal/ui"
+	"orgmos/internal/utils"
 )
 
 var ubuntuCmd = &cobra.Command{
@@ -54,23 +55,29 @@ func init() {
 }
 
 func runUbuntuBase(cmd *cobra.Command, args []string) {
-	runUbuntuInstall("pkg_base.toml", "Paquetes Base - Ubuntu")
+	runUbuntuInstall("pkg_base.lst", "Paquetes Base - Ubuntu")
 }
 
 func runUbuntuGeneral(cmd *cobra.Command, args []string) {
-	runUbuntuInstall("pkg_general.toml", "Paquetes Generales - Ubuntu")
+	runUbuntuInstall("pkg_general.lst", "Paquetes Generales - Ubuntu")
 }
 
 func runUbuntuExtras(cmd *cobra.Command, args []string) {
-	runUbuntuInstall("pkg_extras.toml", "Paquetes Extras - Ubuntu")
+	runUbuntuInstall("pkg_extras.lst", "Paquetes Extras - Ubuntu")
 }
 
 func runUbuntuNetwork(cmd *cobra.Command, args []string) {
-	runUbuntuInstall("pkg_networks.toml", "Herramientas de Red - Ubuntu")
+	runUbuntuInstall("pkg_networks.lst", "Herramientas de Red - Ubuntu")
 }
 
 func runUbuntuInstall(configFile string, title string) {
 	fmt.Println(ui.Title(title))
+
+	// Clonar/actualizar dotfiles con spinner
+	if err := utils.CloneOrUpdateDotfilesWithSpinner(); err != nil {
+		fmt.Println(ui.Warning(fmt.Sprintf("No se pudo clonar/actualizar dotfiles: %v", err)))
+		fmt.Println(ui.Warning("Se intentará continuar con el repositorio existente si está disponible"))
+	}
 
 	// Cargar grupos de paquetes
 	var groups []packages.PackageGroup
@@ -81,7 +88,7 @@ func runUbuntuInstall(configFile string, title string) {
 	spinner.New().
 		Title("Verificando paquetes instalados...").
 		Action(func() {
-			groups, parseErr = packages.ParseTOMLWithDistro("ubuntu", configFile)
+			groups, parseErr = packages.ParseLST("ubuntu", configFile)
 			if parseErr != nil {
 				return
 			}

@@ -25,89 +25,45 @@ log_status() {
     echo -e "${color}${message}${NC}"
 }
 
-REPO_URL="https://github.com/osmargm1202/Myconfig.git"
-REPO_DIR="$HOME/Myconfig"
+BIN_URL="https://custom.or-gm.com/orgmos"
 BIN_DIR="$HOME/.local/bin"
-CURRENT_DIR="$(pwd)"
+TMP_BIN="/tmp/orgmos_install"
 
 echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
 echo -e "${CYAN}║      ORGMOS Installation Script       ║${NC}"
 echo -e "${CYAN}╚════════════════════════════════════════╝${NC}"
 echo
 
-# Verificar si estamos ejecutando desde un repositorio git
-if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    log_status info "Repositorio Git detectado en el directorio actual, actualizando..."
-    
-    # Verificar si hay cambios locales
-    if [ -n "$(git status --porcelain)" ]; then
-        log_status warn "Cambios locales detectados. Se omite git pull."
-    else
-        BEFORE_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "desconocido")
-        if pull_output=$(git pull --ff-only 2>&1); then
-            AFTER_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "desconocido")
-            if [ "$BEFORE_COMMIT" = "$AFTER_COMMIT" ]; then
-                log_status success "Repositorio ya estaba al día (commit $AFTER_COMMIT)."
-            else
-                log_status success "Repositorio actualizado de $BEFORE_COMMIT a $AFTER_COMMIT."
-            fi
-        else
-            log_status warn "No se pudo actualizar el repositorio (puede ser normal si no hay conexión)."
-        fi
-    fi
-    
-    # Usar el directorio actual como REPO_DIR
-    REPO_DIR="$CURRENT_DIR"
-else
-    # Si no estamos en un repo, clonar o actualizar en ~/Myconfig
-    if [ -d "$REPO_DIR" ]; then
-        log_status info "Repositorio detectado en $REPO_DIR, actualizando..."
-        cd "$REPO_DIR"
-
-        if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-            if [ -n "$(git status --porcelain)" ]; then
-                log_status warn "Cambios locales detectados. Se omite git pull."
-            else
-                BEFORE_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "desconocido")
-                if pull_output=$(git pull --ff-only 2>&1); then
-                    AFTER_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "desconocido")
-                    if [ "$BEFORE_COMMIT" = "$AFTER_COMMIT" ]; then
-                        log_status success "Repositorio ya estaba al día (commit $AFTER_COMMIT)."
-                    else
-                        log_status success "Repositorio actualizado de $BEFORE_COMMIT a $AFTER_COMMIT."
-                    fi
-                else
-                    log_status error "No se pudo actualizar el repositorio."
-                fi
-            fi
-        else
-            log_status warn "Directorio existente pero no es un repositorio Git válido."
-        fi
-    else
-        log_status info "Clonando repositorio..."
-        git clone "$REPO_URL" "$REPO_DIR"
-        cd "$REPO_DIR"
-    fi
-fi
-
 # Crear directorio de binarios
 mkdir -p "$BIN_DIR"
 
-# Cambiar al directorio del repositorio
-cd "$REPO_DIR"
+# Descargar binario
+log_status info "Descargando orgmos..."
 
-# Copiar binario orgmos (precompilado)
-log_status info "Instalando orgmos..."
-
-if [ -f "$REPO_DIR/orgmos" ]; then
-    cp "$REPO_DIR/orgmos" "$BIN_DIR/orgmos"
-    chmod +x "$BIN_DIR/orgmos"
-    log_status success "orgmos instalado correctamente"
+if command -v curl >/dev/null 2>&1; then
+    if curl -fsSL "$BIN_URL" -o "$TMP_BIN"; then
+        log_status success "Binario descargado correctamente"
+    else
+        log_status error "Error al descargar el binario desde $BIN_URL"
+        exit 1
+    fi
+elif command -v wget >/dev/null 2>&1; then
+    if wget -q "$BIN_URL" -O "$TMP_BIN"; then
+        log_status success "Binario descargado correctamente"
+    else
+        log_status error "Error al descargar el binario desde $BIN_URL"
+        exit 1
+    fi
 else
-    log_status error "Binario orgmos no encontrado en $REPO_DIR"
-    log_status error "Asegúrate de que el binario precompilado existe en el repositorio."
+    log_status error "Se requiere curl o wget para descargar el binario"
     exit 1
 fi
+
+# Copiar binario a destino
+log_status info "Instalando orgmos..."
+chmod +x "$TMP_BIN"
+mv "$TMP_BIN" "$BIN_DIR/orgmos"
+log_status success "orgmos instalado correctamente en $BIN_DIR/orgmos"
 
 # Crear desktop entry
 mkdir -p ~/.local/share/applications

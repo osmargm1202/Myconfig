@@ -9,6 +9,7 @@ import (
 
 	"orgmos/internal/packages"
 	"orgmos/internal/ui"
+	"orgmos/internal/utils"
 )
 
 var debianCmd = &cobra.Command{
@@ -54,35 +55,41 @@ func init() {
 }
 
 func runDebianBase(cmd *cobra.Command, args []string) {
-	runDebianInstall("pkg_base.toml", "Paquetes Base - Debian")
+	runDebianInstall("pkg_base.lst", "Paquetes Base - Debian")
 }
 
 func runDebianGeneral(cmd *cobra.Command, args []string) {
-	runDebianInstall("pkg_general.toml", "Paquetes Generales - Debian")
+	runDebianInstall("pkg_general.lst", "Paquetes Generales - Debian")
 }
 
 func runDebianExtras(cmd *cobra.Command, args []string) {
-	runDebianInstall("pkg_extras.toml", "Paquetes Extras - Debian")
+	runDebianInstall("pkg_extras.lst", "Paquetes Extras - Debian")
 }
 
 func runDebianNetwork(cmd *cobra.Command, args []string) {
-	runDebianInstall("pkg_networks.toml", "Herramientas de Red - Debian")
+	runDebianInstall("pkg_networks.lst", "Herramientas de Red - Debian")
 }
 
 func runDebianInstall(configFile string, title string) {
 	fmt.Println(ui.Title(title))
 
+	// Clonar/actualizar dotfiles con spinner
+	if err := utils.CloneOrUpdateDotfilesWithSpinner(); err != nil {
+		fmt.Println(ui.Warning(fmt.Sprintf("No se pudo clonar/actualizar dotfiles: %v", err)))
+		fmt.Println(ui.Warning("Se intentará continuar con el repositorio existente si está disponible"))
+	}
+
 	// Cargar grupos de paquetes
 	var groups []packages.PackageGroup
 	var installedMap map[string]bool
+	var parseErr error
 
 	// Spinner mientras verifica
 	spinner.New().
 		Title("Verificando paquetes instalados...").
 		Action(func() {
-			var err error
-			groups, err = packages.ParseTOMLWithDistro("debian", configFile)
-			if err != nil {
+			groups, parseErr = packages.ParseLST("debian", configFile)
+			if parseErr != nil {
 				return
 			}
 
@@ -95,6 +102,11 @@ func runDebianInstall(configFile string, title string) {
 			installedMap = packages.CheckInstalledApt(allPkgs)
 		}).
 		Run()
+
+	if parseErr != nil {
+		fmt.Println(ui.Error(fmt.Sprintf("Error cargando paquetes: %v", parseErr)))
+		return
+	}
 
 	if len(groups) == 0 {
 		fmt.Println(ui.Error("No se pudieron cargar los grupos de paquetes"))

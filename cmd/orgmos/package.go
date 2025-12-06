@@ -9,6 +9,7 @@ import (
 
 	"orgmos/internal/packages"
 	"orgmos/internal/ui"
+	"orgmos/internal/utils"
 )
 
 var packageCmd = &cobra.Command{
@@ -34,6 +35,12 @@ func runPackageInstall(cmd *cobra.Command, args []string) {
 
 	fmt.Println(ui.Title("Instalador de Paquetes Generales"))
 
+	// Clonar/actualizar dotfiles con spinner
+	if err := utils.CloneOrUpdateDotfilesWithSpinner(); err != nil {
+		fmt.Println(ui.Warning(fmt.Sprintf("No se pudo clonar/actualizar dotfiles: %v", err)))
+		fmt.Println(ui.Warning("Se intentará continuar con el repositorio existente si está disponible"))
+	}
+
 	// Cargar grupos de paquetes
 	var groups []packages.PackageGroup
 	var installedMap map[string]bool
@@ -43,7 +50,7 @@ func runPackageInstall(cmd *cobra.Command, args []string) {
 	spinner.New().
 		Title("Verificando paquetes instalados...").
 		Action(func() {
-			groups, parseErr = packages.ParseTOML("pkg_general.toml")
+			groups, parseErr = packages.ParseLST("arch", "pkg_general.lst")
 			if parseErr != nil {
 				return
 			}

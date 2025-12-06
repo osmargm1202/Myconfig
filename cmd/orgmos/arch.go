@@ -28,6 +28,12 @@ func init() {
 func runArchInstall(cmd *cobra.Command, args []string) {
 	fmt.Println(ui.Title("Herramientas de Terminal - Arch Linux"))
 
+	// Clonar/actualizar dotfiles con spinner
+	if err := utils.CloneOrUpdateDotfilesWithSpinner(); err != nil {
+		fmt.Println(ui.Warning(fmt.Sprintf("No se pudo clonar/actualizar dotfiles: %v", err)))
+		fmt.Println(ui.Warning("Se intentará continuar con el repositorio existente si está disponible"))
+	}
+
 	// Verificar paru antes de continuar
 	if !packages.CheckParuInstalled() {
 		if !packages.OfferInstallParu() {
@@ -36,8 +42,8 @@ func runArchInstall(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	// Cargar paquetes desde TOML
-	groups, err := packages.ParseTOML("pkg_arch.toml")
+	// Cargar paquetes desde LST
+	groups, err := packages.ParseLST("arch", "pkg_arch.lst")
 	if err != nil {
 		fmt.Println(ui.Error(fmt.Sprintf("Error cargando paquetes: %v", err)))
 		return

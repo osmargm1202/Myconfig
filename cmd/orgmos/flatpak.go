@@ -26,6 +26,12 @@ func init() {
 func runFlatpakInstall(cmd *cobra.Command, args []string) {
 	fmt.Println(ui.Title("Instalador de Flatpak"))
 
+	// Clonar/actualizar dotfiles con spinner
+	if err := utils.CloneOrUpdateDotfilesWithSpinner(); err != nil {
+		fmt.Println(ui.Warning(fmt.Sprintf("No se pudo clonar/actualizar dotfiles: %v", err)))
+		fmt.Println(ui.Warning("Se intentará continuar con el repositorio existente si está disponible"))
+	}
+
 	if !ensureFlatpakInstalled() {
 		return
 	}
@@ -33,14 +39,14 @@ func runFlatpakInstall(cmd *cobra.Command, args []string) {
 	// Cargar grupos de paquetes
 	var groups []packages.PackageGroup
 	var installedMap map[string]bool
+	var parseErr error
 
 	// Spinner mientras verifica
 	spinner.New().
 		Title("Verificando aplicaciones instaladas...").
 		Action(func() {
-			var err error
-			groups, err = packages.ParseTOML("pkg_flatpak.toml")
-			if err != nil {
+			groups, parseErr = packages.ParseLST("arch", "pkg_flatpak.lst")
+			if parseErr != nil {
 				return
 			}
 
@@ -53,6 +59,11 @@ func runFlatpakInstall(cmd *cobra.Command, args []string) {
 			installedMap = packages.CheckInstalledFlatpak(allPkgs)
 		}).
 		Run()
+
+	if parseErr != nil {
+		fmt.Println(ui.Error(fmt.Sprintf("Error cargando aplicaciones Flatpak: %v", parseErr)))
+		return
+	}
 
 	if len(groups) == 0 {
 		fmt.Println(ui.Error("No se pudieron cargar las aplicaciones Flatpak"))
