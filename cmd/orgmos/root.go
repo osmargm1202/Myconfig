@@ -11,13 +11,16 @@ import (
 	"orgmos/internal/utils"
 )
 
+const Version = "1.01"
+
 var (
 	cfgFile string
 	rootCmd = &cobra.Command{
-		Use:   "orgmos",
-		Short: "ORGMOS - Sistema de configuración para Arch Linux",
+		Use:     "orgmos",
+		Short:   "ORGMOS - Sistema de configuración multi-distro",
+		Version: Version,
 		Long: `ORGMOS es una herramienta de configuración y automatización
-para sistemas Arch Linux con i3 o Niri.
+para sistemas Arch Linux, Debian y Ubuntu.
 
 Usa 'orgmos menu' para acceder al menú interactivo o ejecuta
 'orgmos [comando] --help' para ver la ayuda de un comando específico.`,
@@ -40,9 +43,9 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "archivo de configuración")
-	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "salida detallada")
 
-	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	// Cambiar template de versión
+	rootCmd.SetVersionTemplate("ORGMOS v{{.Version}}\n")
 }
 
 func initConfig() {
