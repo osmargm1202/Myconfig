@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/viper"
 
 	"orgmos/internal/ui"
-	"orgmos/internal/utils"
 )
 
 const Version = "1.01"
@@ -24,10 +23,6 @@ para sistemas Arch Linux, Debian y Ubuntu.
 
 Usa 'orgmos menu' para acceder al menú interactivo o ejecuta
 'orgmos [comando] --help' para ver la ayuda de un comando específico.`,
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			// Crear desktop file
-			utils.CreateDesktopFile()
-		},
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},
