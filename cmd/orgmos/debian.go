@@ -200,4 +200,3 @@ func runDebianMenu() {
 		fmt.Scanln()
 	}
 }
-

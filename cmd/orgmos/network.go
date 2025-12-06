@@ -36,14 +36,14 @@ func runNetworkInstall(cmd *cobra.Command, args []string) {
 	// Cargar grupos de paquetes
 	var groups []packages.PackageGroup
 	var installedMap map[string]bool
+	var parseErr error
 
 	// Spinner mientras verifica
 	spinner.New().
 		Title("Verificando paquetes instalados...").
 		Action(func() {
-			var err error
-			groups, err = packages.ParseTOML("pkg_networks.toml")
-			if err != nil {
+			groups, parseErr = packages.ParseTOML("pkg_networks.toml")
+			if parseErr != nil {
 				return
 			}
 
@@ -56,6 +56,11 @@ func runNetworkInstall(cmd *cobra.Command, args []string) {
 			installedMap = packages.CheckInstalledPacman(allPkgs)
 		}).
 		Run()
+
+	if parseErr != nil {
+		fmt.Println(ui.Error(fmt.Sprintf("Error cargando paquetes: %v", parseErr)))
+		return
+	}
 
 	if len(groups) == 0 {
 		fmt.Println(ui.Error("No se pudieron cargar los grupos de paquetes"))

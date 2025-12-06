@@ -75,14 +75,14 @@ func runUbuntuInstall(configFile string, title string) {
 	// Cargar grupos de paquetes
 	var groups []packages.PackageGroup
 	var installedMap map[string]bool
+	var parseErr error
 
 	// Spinner mientras verifica
 	spinner.New().
 		Title("Verificando paquetes instalados...").
 		Action(func() {
-			var err error
-			groups, err = packages.ParseTOMLWithDistro("ubuntu", configFile)
-			if err != nil {
+			groups, parseErr = packages.ParseTOMLWithDistro("ubuntu", configFile)
+			if parseErr != nil {
 				return
 			}
 
@@ -95,6 +95,11 @@ func runUbuntuInstall(configFile string, title string) {
 			installedMap = packages.CheckInstalledApt(allPkgs)
 		}).
 		Run()
+
+	if parseErr != nil {
+		fmt.Println(ui.Error(fmt.Sprintf("Error cargando paquetes: %v", parseErr)))
+		return
+	}
 
 	if len(groups) == 0 {
 		fmt.Println(ui.Error("No se pudieron cargar los grupos de paquetes"))
