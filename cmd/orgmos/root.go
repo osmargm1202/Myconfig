@@ -10,7 +10,7 @@ import (
 	"orgmos/internal/ui"
 )
 
-const Version = "1.01"
+const Version = "1.02"
 
 var (
 	cfgFile string
@@ -24,7 +24,7 @@ para sistemas Arch Linux, Debian y Ubuntu.
 Usa 'orgmos menu' para acceder al menú interactivo o ejecuta
 'orgmos [comando] --help' para ver la ayuda de un comando específico.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
+			runMenu(cmd, args)
 		},
 	}
 )

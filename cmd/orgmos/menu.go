@@ -26,6 +26,7 @@ func runMenu(cmd *cobra.Command, args []string) {
 	for {
 		fmt.Print("\033[H\033[2J") // Clear screen
 		fmt.Println(ui.Title("ORGMOS - Sistema de Configuración"))
+		fmt.Println(ui.Dim(fmt.Sprintf("Versión %s", Version)))
 		fmt.Println()
 
 		var choice string

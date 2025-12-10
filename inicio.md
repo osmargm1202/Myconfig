@@ -57,3 +57,26 @@ Debe mostrar: `/usr/bin/fish`
 - `test -z "$DISPLAY"` verifica que no haya sesión gráfica ya iniciada
 - `"$XDG_VTNR" -eq 1` asegura que solo se ejecute en TTY1
 - `exec` reemplaza el proceso del shell con niri-session o startx
+
+## 4. Configurar Profile-Sync-Daemon (psd)
+
+Después de instalar `profile-sync-daemon`, configúralo así:
+
+```bash
+# Asegurar permisos correctos para el perfil de Chromium
+paru -S profile-sync-daemon
+chmod 700 ~/.config/chromium
+
+# Cerrar los navegadores antes de activar el servicio
+pkill -9 chromium
+pkill -9 firefox
+
+# Habilitar e iniciar el servicio de usuario
+systemctl --user enable psd.service
+systemctl --user start psd.service
+
+# Verificar que esté funcionando correctamente
+psd p
+```
+
+**Nota:** psd sincroniza los perfiles de navegadores a RAM para mejorar el rendimiento y reducir escrituras en disco.
