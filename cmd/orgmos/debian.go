@@ -177,8 +177,6 @@ func runDebianMenu() {
 						huh.NewOption("Paquetes generales", "general"),
 						huh.NewOption("Paquetes extras", "extras"),
 						huh.NewOption("Herramientas de red", "network"),
-						huh.NewOption("Copiar configuraciones", "config"),
-						huh.NewOption("Copiar wallpapers", "assets"),
 						huh.NewOption("Volver", "back"),
 					).
 					Value(&choice),
@@ -198,10 +196,6 @@ func runDebianMenu() {
 			runDebianExtras(nil, nil)
 		case "network":
 			runDebianNetwork(nil, nil)
-		case "config":
-			runConfigCopy(nil, nil)
-		case "assets":
-			runAssetsCopy(nil, nil)
 		case "back":
 			return
 		}

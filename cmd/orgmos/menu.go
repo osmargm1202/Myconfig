@@ -39,6 +39,8 @@ func runMenu(cmd *cobra.Command, args []string) {
 					huh.NewOption("Debian", "debian"),
 					huh.NewOption("Ubuntu", "ubuntu"),
 						huh.NewOption("Scripts de instalación", "scripts"),
+						huh.NewOption("Copiar configuraciones", "config"),
+						huh.NewOption("Copiar wallpapers", "assets"),
 					huh.NewOption("Flatpak", "flatpak"),
 					huh.NewOption("Salir", "exit"),
 				).
@@ -63,6 +65,10 @@ func runMenu(cmd *cobra.Command, args []string) {
 			runUbuntuMenu()
 		case "scripts":
 			runScriptsInstall(nil, nil)
+		case "config":
+			runConfigCopy(nil, nil)
+		case "assets":
+			runAssetsCopy(nil, nil)
 		case "flatpak":
 			runFlatpakInstall(nil, nil)
 		case "exit":
