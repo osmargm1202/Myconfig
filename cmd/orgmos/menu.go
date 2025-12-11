@@ -32,15 +32,17 @@ func runMenu(cmd *cobra.Command, args []string) {
 		var choice string
 		form := ui.NewForm(
 			huh.NewGroup(
-				huh.NewSelect[string]().
-					Title("Selecciona tu distribución").
-					Options(
-						huh.NewOption("Arch Linux", "arch"),
-						huh.NewOption("Debian", "debian"),
-						huh.NewOption("Ubuntu", "ubuntu"),
-						huh.NewOption("Salir", "exit"),
-					).
-					Value(&choice),
+			huh.NewSelect[string]().
+				Title("Selecciona tu distribución").
+				Options(
+					huh.NewOption("Arch Linux", "arch"),
+					huh.NewOption("Debian", "debian"),
+					huh.NewOption("Ubuntu", "ubuntu"),
+						huh.NewOption("Scripts de instalación", "scripts"),
+					huh.NewOption("Flatpak", "flatpak"),
+					huh.NewOption("Salir", "exit"),
+				).
+				Value(&choice),
 			),
 		)
 
@@ -59,6 +61,10 @@ func runMenu(cmd *cobra.Command, args []string) {
 			runDebianMenu()
 		case "ubuntu":
 			runUbuntuMenu()
+		case "scripts":
+			runScriptsInstall(nil, nil)
+		case "flatpak":
+			runFlatpakInstall(nil, nil)
 		case "exit":
 			fmt.Println(ui.Success("¡Hasta luego!"))
 			os.Exit(0)
@@ -79,17 +85,11 @@ func runArchMenu() {
 				huh.NewSelect[string]().
 					Title("Selecciona una opción").
 					Options(
-						huh.NewOption("Instalar i3 Window Manager", "i3"),
+						huh.NewOption("Lista base", "base"),
+						huh.NewOption("Lista extra", "extras"),
+						huh.NewOption("Lista networks", "network"),
 						huh.NewOption("Instalar Niri Window Manager", "niri"),
-						huh.NewOption("Paquetes generales", "general"),
-						huh.NewOption("Paquetes extras", "extras"),
-						huh.NewOption("Herramientas de red", "network"),
-						huh.NewOption("Herramientas Arch", "arch"),
-						huh.NewOption("Instalador de Flatpak", "flatpak"),
-						huh.NewOption("Instalar Paru AUR Helper", "paru"),
-						huh.NewOption("Copiar configuraciones", "config"),
-						huh.NewOption("Copiar wallpapers", "assets"),
-						huh.NewOption("Scripts", "scripts"),
+						huh.NewOption("Instalar i3 Window Manager", "i3"),
 						huh.NewOption("Volver", "back"),
 					).
 					Value(&choice),
@@ -105,28 +105,16 @@ func runArchMenu() {
 		}
 
 		switch choice {
-		case "i3":
-			runI3Install(nil, nil)
-		case "niri":
-			runNiriInstall(nil, nil)
-		case "general":
+		case "base":
 			runPackageInstall(nil, nil)
 		case "extras":
 			runExtrasInstall(nil, nil)
 		case "network":
 			runNetworkInstall(nil, nil)
-		case "flatpak":
-			runFlatpakInstall(nil, nil)
-		case "paru":
-			runParuInstall(nil, nil)
-		case "config":
-			runConfigCopy(nil, nil)
-		case "assets":
-			runAssetsCopy(nil, nil)
-		case "arch":
-			runArchInstall(nil, nil)
-		case "scripts":
-			runScriptsMenu()
+		case "niri":
+			runNiriInstall(nil, nil)
+		case "i3":
+			runI3Install(nil, nil)
 		case "back":
 			return
 		}

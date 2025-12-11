@@ -45,7 +45,7 @@ func runFlatpakInstall(cmd *cobra.Command, args []string) {
 	spinner.New().
 		Title("Verificando aplicaciones instaladas...").
 		Action(func() {
-			groups, parseErr = packages.ParseLST("arch", "pkg_flatpak.lst")
+			groups, parseErr = packages.ParseLST("flatpak", "pkg_flatpak.lst")
 			if parseErr != nil {
 				return
 			}

@@ -14,9 +14,9 @@ import (
 
 var packageCmd = &cobra.Command{
 	Use:     "general",
-	Aliases: []string{"package"},
-	Short:   "Instalar paquetes generales",
-	Long:    `Instala todos los paquetes definidos en pkg_general.toml.`,
+	Aliases: []string{"package", "base"},
+	Short:   "Instalar paquetes base",
+	Long:    `Instala todos los paquetes definidos en pkg_base.lst.`,
 	Run:     runPackageInstall,
 }
 
@@ -33,7 +33,7 @@ func runPackageInstall(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	fmt.Println(ui.Title("Instalador de Paquetes Generales"))
+	fmt.Println(ui.Title("Instalador de Paquetes Base"))
 
 	// Clonar/actualizar dotfiles con spinner
 	if err := utils.CloneOrUpdateDotfilesWithSpinner(); err != nil {
@@ -50,7 +50,7 @@ func runPackageInstall(cmd *cobra.Command, args []string) {
 	spinner.New().
 		Title("Verificando paquetes instalados...").
 		Action(func() {
-			groups, parseErr = packages.ParseLST("arch", "pkg_general.lst")
+			groups, parseErr = packages.ParseLST("arch", "pkg_base.lst")
 			if parseErr != nil {
 				return
 			}

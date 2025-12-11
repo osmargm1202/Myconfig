@@ -10,7 +10,7 @@ import (
 	"orgmos/internal/ui"
 )
 
-const Version = "1.02"
+const Version = "1.04"
 
 var (
 	cfgFile string

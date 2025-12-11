@@ -43,7 +43,7 @@ func runArchInstall(cmd *cobra.Command, args []string) {
 	}
 
 	// Cargar paquetes desde LST
-	groups, err := packages.ParseLST("arch", "pkg_arch.lst")
+	groups, err := packages.ParseLST("arch", "pkg_base.lst")
 	if err != nil {
 		fmt.Println(ui.Error(fmt.Sprintf("Error cargando paquetes: %v", err)))
 		return
