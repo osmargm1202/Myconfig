@@ -85,31 +85,37 @@ func runFlatpakInstall(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Mostrar aplicaciones a instalar
-	fmt.Println(ui.Info(fmt.Sprintf("Aplicaciones a instalar (%d):", len(toInstall))))
+	// Crear opciones para multi-select (preseleccionadas)
+	var options []huh.Option[string]
+	finalSelection := make([]string, len(toInstall))
+	copy(finalSelection, toInstall) // Preseleccionar todos
 	for _, pkg := range toInstall {
-		fmt.Println(ui.Dim(fmt.Sprintf("  • %s", pkg)))
+		options = append(options, huh.NewOption(pkg, pkg))
 	}
 
-	// Confirmación final
-	var confirm bool
-	ui.NewForm(
+	// Mostrar lista multi-select preseleccionada
+	form := ui.NewForm(
 		huh.NewGroup(
-			huh.NewConfirm().
-				Title(fmt.Sprintf("Se instalarán %d aplicaciones Flatpak", len(toInstall))).
-				Affirmative("Instalar").
-				Negative("Cancelar").
-				Value(&confirm),
+			huh.NewMultiSelect[string]().
+				Title(fmt.Sprintf("Selecciona aplicaciones Flatpak a instalar (%d disponibles)", len(toInstall))).
+				Description("Todas las aplicaciones están preseleccionadas. Deselecciona las que no deseas instalar.").
+				Options(options...).
+				Value(&finalSelection),
 		),
-	).Run()
+	)
 
-	if !confirm {
+	if err := form.Run(); err != nil {
 		fmt.Println(ui.Warning("Instalación cancelada"))
 		return
 	}
 
+	if len(finalSelection) == 0 {
+		fmt.Println(ui.Warning("No se seleccionaron aplicaciones para instalar"))
+		return
+	}
+
 	// Instalar
-	if err := packages.InstallFlatpak(toInstall); err != nil {
+	if err := packages.InstallFlatpak(finalSelection); err != nil {
 		fmt.Println(ui.Error(fmt.Sprintf("Error: %v", err)))
 		return
 	}

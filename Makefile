@@ -18,8 +18,9 @@ build:
 install: build
 	@echo "Installing $(BINARY_NAME) to $(INSTALL_DIR)..."
 	@mkdir -p $(INSTALL_DIR)
-	@cp $(DIST_DIR)/$(BINARY_NAME) $(INSTALL_DIR)/$(BINARY_NAME)
-	@chmod +x $(INSTALL_DIR)/$(BINARY_NAME)
+	@cp $(DIST_DIR)/$(BINARY_NAME) $(INSTALL_DIR)/$(BINARY_NAME).tmp && \
+		mv $(INSTALL_DIR)/$(BINARY_NAME).tmp $(INSTALL_DIR)/$(BINARY_NAME) && \
+		chmod +x $(INSTALL_DIR)/$(BINARY_NAME)
 	@echo "Binary installed to $(INSTALL_DIR)/$(BINARY_NAME)"
 	@echo "Creating desktop entry..."
 	@mkdir -p ~/.local/share/applications

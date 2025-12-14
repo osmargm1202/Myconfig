@@ -62,30 +62,38 @@ func runScriptsInstall(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	fmt.Println(ui.Info(fmt.Sprintf("Se ejecutarán %d scripts:", len(scripts))))
-	for i, s := range scripts {
-		fmt.Println(ui.Dim(fmt.Sprintf("  %d. %s", i+1, s)))
+	// Crear opciones para multi-select (preseleccionadas)
+	var options []huh.Option[string]
+	finalSelection := make([]string, len(scripts))
+	copy(finalSelection, scripts) // Preseleccionar todos
+	for _, script := range scripts {
+		options = append(options, huh.NewOption(script, script))
 	}
 
-	var confirm bool
-	ui.NewForm(
+	// Mostrar lista multi-select preseleccionada
+	form := ui.NewForm(
 		huh.NewGroup(
-			huh.NewConfirm().
-				Title("¿Ejecutar scripts de instalación?").
-				Description("Se ejecutarán secuencialmente usando bash -c.").
-				Affirmative("Ejecutar").
-				Negative("Cancelar").
-				Value(&confirm),
+			huh.NewMultiSelect[string]().
+				Title(fmt.Sprintf("Selecciona scripts a ejecutar (%d disponibles)", len(scripts))).
+				Description("Todos los scripts están preseleccionados. Deselecciona los que no deseas ejecutar.").
+				Options(options...).
+				Value(&finalSelection),
 		),
-	).Run()
+	)
 
-	if !confirm {
+	if err := form.Run(); err != nil {
 		fmt.Println(ui.Warning("Ejecución cancelada"))
 		return
 	}
 
-	for idx, script := range scripts {
-		fmt.Println(ui.Info(fmt.Sprintf("(%d/%d) Ejecutando: %s", idx+1, len(scripts), script)))
+	if len(finalSelection) == 0 {
+		fmt.Println(ui.Warning("No se seleccionaron scripts para ejecutar"))
+		return
+	}
+
+	// Ejecutar solo los scripts seleccionados
+	for idx, script := range finalSelection {
+		fmt.Println(ui.Info(fmt.Sprintf("(%d/%d) Ejecutando: %s", idx+1, len(finalSelection), script)))
 		if err := utils.RunCommand("bash", "-c", script); err != nil {
 			fmt.Println(ui.Error(fmt.Sprintf("Error ejecutando script %d: %v", idx+1, err)))
 			return
