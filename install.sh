@@ -25,7 +25,7 @@ log_status() {
     echo -e "${color}${message}${NC}"
 }
 
-BIN_URL="https://custom.or-gm.com/orgmos"
+BIN_URL="https://raw.githubusercontent.com/osmargm1202/Myconfig/master/orgmos"
 BIN_DIR="$HOME/.local/bin"
 TMP_BIN="/tmp/orgmos_install"
 

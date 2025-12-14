@@ -109,6 +109,11 @@ func CheckInstalledFlatpak(packages []string) map[string]bool {
 
 // GetPackageSource determina el origen de un paquete
 func GetPackageSource(pkg string) string {
+	return GetPackageSourceWithInstaller(pkg, "")
+}
+
+// GetPackageSourceWithInstaller determina el origen de un paquete usando un instalador específico
+func GetPackageSourceWithInstaller(pkg string, aurInstaller string) string {
 	// Verificar en repos oficiales
 	output, err := utils.RunCommandSilent("pacman", "-Si", pkg)
 	if err == nil {
@@ -125,16 +130,31 @@ func GetPackageSource(pkg string) string {
 		}
 	}
 
-	// Verificar en AUR (paru o yay)
-	if utils.CommandExists("paru") {
-		_, err = utils.RunCommandSilent("paru", "-Si", pkg)
-		if err == nil {
-			return "aur"
+	// Verificar en AUR usando el instalador especificado o detectar automáticamente
+	if aurInstaller != "" {
+		if aurInstaller == "paru" && utils.CommandExists("paru") {
+			_, err = utils.RunCommandSilent("paru", "-Si", pkg)
+			if err == nil {
+				return "aur"
+			}
+		} else if aurInstaller == "yay" && utils.CommandExists("yay") {
+			_, err = utils.RunCommandSilent("yay", "-Si", pkg)
+			if err == nil {
+				return "aur"
+			}
 		}
-	} else if utils.CommandExists("yay") {
-		_, err = utils.RunCommandSilent("yay", "-Si", pkg)
-		if err == nil {
-			return "aur"
+	} else {
+		// Detección automática: paru primero, luego yay
+		if utils.CommandExists("paru") {
+			_, err = utils.RunCommandSilent("paru", "-Si", pkg)
+			if err == nil {
+				return "aur"
+			}
+		} else if utils.CommandExists("yay") {
+			_, err = utils.RunCommandSilent("yay", "-Si", pkg)
+			if err == nil {
+				return "aur"
+			}
 		}
 	}
 
@@ -162,6 +182,25 @@ func CategorizePackages(packages []string) map[string][]string {
 // CheckParuInstalled verifica si paru está instalado
 func CheckParuInstalled() bool {
 	return utils.CommandExists("paru")
+}
+
+// CheckYayInstalled verifica si yay está instalado
+func CheckYayInstalled() bool {
+	return utils.CommandExists("yay")
+}
+
+// CheckInstallerAvailable verifica si un instalador está disponible
+func CheckInstallerAvailable(installer string) bool {
+	switch installer {
+	case "pacman":
+		return utils.CommandExists("pacman")
+	case "paru":
+		return utils.CommandExists("paru")
+	case "yay":
+		return utils.CommandExists("yay")
+	default:
+		return false
+	}
 }
 
 // OfferInstallParu ofrece instalar paru

@@ -34,10 +34,58 @@ func runArchInstall(cmd *cobra.Command, args []string) {
 		fmt.Println(ui.Warning("Se intentará continuar con el repositorio existente si está disponible"))
 	}
 
-	// Verificar paru antes de continuar
-	if !packages.CheckParuInstalled() {
-		if !packages.OfferInstallParu() {
-			fmt.Println(ui.Warning("Instalación cancelada. Paru es necesario para instalar paquetes AUR."))
+	// Seleccionar instalador
+	var installer string
+	form := ui.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("Selecciona el instalador").
+				Description("Elige el gestor de paquetes que deseas usar").
+				Options(
+					huh.NewOption("pacman (solo repos oficiales)", "pacman"),
+					huh.NewOption("paru (AUR + repos oficiales)", "paru"),
+					huh.NewOption("yay (AUR + repos oficiales)", "yay"),
+				).
+				Value(&installer),
+		),
+	)
+
+	if err := form.Run(); err != nil {
+		fmt.Println(ui.Warning("Instalación cancelada"))
+		return
+	}
+
+	// Verificar que el instalador existe
+	if !packages.CheckInstallerAvailable(installer) {
+		if installer == "paru" {
+			// Intentar compilar paru
+			fmt.Println(ui.Info("Paru no está instalado. Intentando compilar..."))
+			if !packages.OfferInstallParu() {
+				// Si falla, ofrecer yay como fallback
+				fmt.Println(ui.Warning("No se pudo compilar paru. ¿Deseas usar yay como alternativa?"))
+				var useYay bool
+				form2 := ui.NewForm(
+					huh.NewGroup(
+						huh.NewConfirm().
+							Title("Usar yay como alternativa").
+							Description("yay puede instalar paquetes AUR y repos oficiales").
+							Affirmative("Sí, usar yay").
+							Negative("No, cancelar").
+							Value(&useYay),
+					),
+				)
+				if err := form2.Run(); err != nil || !useYay {
+					fmt.Println(ui.Warning("Instalación cancelada"))
+					return
+				}
+				if !packages.CheckYayInstalled() {
+					fmt.Println(ui.Error("yay no está instalado. Instálalo primero con: yay -S yay"))
+					return
+				}
+				installer = "yay"
+			}
+		} else {
+			fmt.Println(ui.Error(fmt.Sprintf("%s no está instalado. Instálalo primero.", installer)))
 			return
 		}
 	}
@@ -72,32 +120,37 @@ func runArchInstall(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Mostrar paquetes a instalar
-	fmt.Println(ui.Info(fmt.Sprintf("Paquetes a instalar (%d):", len(toInstall))))
+	// Crear opciones para multi-select (preseleccionadas)
+	var options []huh.Option[string]
+	finalSelection := make([]string, len(toInstall))
+	copy(finalSelection, toInstall) // Preseleccionar todos
 	for _, pkg := range toInstall {
-		fmt.Println(ui.Dim(fmt.Sprintf("  • %s", pkg)))
+		options = append(options, huh.NewOption(pkg, pkg))
 	}
 
-	// Confirmación
-	var confirm bool
-	form := ui.NewForm(
+	// Mostrar lista multi-select preseleccionada
+	form3 := ui.NewForm(
 		huh.NewGroup(
-			huh.NewConfirm().
-				Title(fmt.Sprintf("Se instalarán %d paquetes", len(toInstall))).
-				Affirmative("Instalar").
-				Negative("Cancelar").
-				Value(&confirm),
+			huh.NewMultiSelect[string]().
+				Title(fmt.Sprintf("Selecciona paquetes a instalar (%d disponibles)", len(toInstall))).
+				Description("Todos los paquetes están preseleccionados. Deselecciona los que no deseas instalar.").
+				Options(options...).
+				Value(&finalSelection),
 		),
 	)
 
-	if err := form.Run(); err != nil || !confirm {
+	if err := form3.Run(); err != nil {
 		fmt.Println(ui.Warning("Instalación cancelada"))
 		return
 	}
 
-	// Categorizar e instalar
-	categories := packages.CategorizePackages(toInstall)
-	if err := packages.InstallCategorized(categories); err != nil {
+	if len(finalSelection) == 0 {
+		fmt.Println(ui.Warning("No se seleccionaron paquetes para instalar"))
+		return
+	}
+
+	// Instalar todos los paquetes seleccionados en una sola corrida
+	if err := packages.InstallAllPackages(installer, finalSelection); err != nil {
 		fmt.Println(ui.Error(fmt.Sprintf("Error: %v", err)))
 		return
 	}

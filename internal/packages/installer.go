@@ -36,6 +36,23 @@ func InstallParu(packages []string) error {
 	return utils.RunCommand("paru", args...)
 }
 
+// InstallYay instala paquetes con yay (AUR)
+func InstallYay(packages []string) error {
+	if len(packages) == 0 {
+		return nil
+	}
+
+	if !utils.CommandExists("yay") {
+		fmt.Println(ui.Warning("yay no está instalado. Instálalo primero para paquetes AUR."))
+		return nil
+	}
+
+	fmt.Println(ui.Info(fmt.Sprintf("Instalando %d paquetes AUR con yay...", len(packages))))
+
+	args := append([]string{"-S", "--noconfirm", "--needed"}, packages...)
+	return utils.RunCommand("yay", args...)
+}
+
 // InstallFlatpak instala aplicaciones Flatpak
 func InstallFlatpak(packages []string) error {
 	if len(packages) == 0 {
@@ -103,4 +120,37 @@ func InstallCategorized(categories map[string][]string) error {
 	}
 
 	return nil
+}
+
+// InstallAllPackages instala todos los paquetes en una sola corrida usando el instalador especificado
+// installer puede ser "pacman", "paru" o "yay"
+// Si es paru o yay, instala todos los paquetes juntos (pueden manejar repos oficiales y AUR)
+// Si es pacman, solo instala repos oficiales
+func InstallAllPackages(installer string, packages []string) error {
+	if len(packages) == 0 {
+		return nil
+	}
+
+	fmt.Println(ui.Info(fmt.Sprintf("Instalando %d paquetes en una sola corrida con %s...", len(packages), installer)))
+
+	// Si el instalador es paru o yay, puede instalar todo junto (repos oficiales + AUR)
+	if installer == "paru" {
+		if !utils.CommandExists("paru") {
+			return fmt.Errorf("paru no está instalado")
+		}
+		args := append([]string{"-S", "--noconfirm", "--needed"}, packages...)
+		return utils.RunCommand("paru", args...)
+	} else if installer == "yay" {
+		if !utils.CommandExists("yay") {
+			return fmt.Errorf("yay no está instalado")
+		}
+		args := append([]string{"-S", "--noconfirm", "--needed"}, packages...)
+		return utils.RunCommand("yay", args...)
+	} else if installer == "pacman" {
+		// Pacman solo puede instalar repos oficiales
+		args := append([]string{"-S", "--noconfirm", "--needed"}, packages...)
+		return utils.RunCommandWithSudo("pacman", args...)
+	}
+
+	return fmt.Errorf("instalador desconocido: %s", installer)
 }
